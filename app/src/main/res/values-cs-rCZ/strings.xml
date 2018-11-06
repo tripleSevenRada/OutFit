@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OutFit</string>
+
+    <string name="btn_directory_picker">Vyber adresář</string>
+</resources>
