@@ -35,3 +35,9 @@ dependencies {
     // get locus API
     implementation 'com.asamm:locus-api-android:[0.3.0]'
 }
+dependencies {
+    // https://github.com/passy/Android-DirectoryChooser
+    implementation 'net.rdrei.android.dirchooser:library:3.2@aar'
+    // https://github.com/passy/Android-DirectoryChooser/issues/65
+    implementation 'com.gu:option:1.3'
+}

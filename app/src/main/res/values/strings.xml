@@ -1,6 +1,18 @@
 <resources>
-    <string name="app_name">OutFit</string>
+    <string name="app_name">out_fit</string>
 
     <string name="btn_directory_picker">Select directory</string>
+
+    <!-- dialog.xml -->
+    <string name="directory_selected_label">selected_label</string>
+    <string name="none">none</string>
+    <string name="btn_choose">btn_choose</string>
+
+    <!-- main.xml -->
+    <string name="choose_directory">choose_directory</string>
+    <string name="btn_switch">btn_switch</string>
+
+    <!-- MainActivity DirectoryChooserConfig-->
+    <string name="new_directory_name">_data</string>
 
 </resources>
