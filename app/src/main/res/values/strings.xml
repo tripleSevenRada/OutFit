@@ -1,18 +1,25 @@
 <resources>
     <string name="app_name">out_fit</string>
 
-    <string name="btn_directory_picker">Select directory</string>
+    <!-- activity_main.xml -->
+    <string name="btn_directory_picker">Select export folder</string>
+    <string name="root_folder_label">Export folder:</string>
+    <string name="stats_label">Stats:</string>
+    <string name="not_set">Not yet set</string>
+    <string name="filename_label">Filename:</string>
+    <string name="filename_hint">filename.fit</string>
+    <string name="btn_export">Export</string>
 
-    <!-- dialog.xml -->
-    <string name="directory_selected_label">selected_label</string>
-    <string name="none">none</string>
-    <string name="btn_choose">btn_choose</string>
-
-    <!-- main.xml -->
-    <string name="choose_directory">choose_directory</string>
-    <string name="btn_switch">btn_switch</string>
-
-    <!-- MainActivity DirectoryChooserConfig-->
+    <!-- MainActivity.kt DirectoryChooserConfig-->
     <string name="new_directory_name">_data</string>
+
+    <!-- MainActivity.kt toast messages-->
+    <string name="permission_needed">Permission is needed</string>
+
+    <!-- Stats.kt-->
+    <string name="name_stats">Name:</string>
+    <string name="length_stats">Length:</string>
+    <string name="nmb_points_stats">Number of points:</string>
+    <string name="nmb_waypoints_stats">Number of waypoints:</string>
 
 </resources>

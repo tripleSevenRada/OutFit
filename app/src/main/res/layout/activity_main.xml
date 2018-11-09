@@ -2,20 +2,75 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:orientation="vertical" >
+    android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
-
-    <Button
-        android:id="@+id/button"
+    <LinearLayout
+        android:id="@+id/llBorder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/btn_directory_picker"
-        android:onClick="directoryPick"/>
+        android:orientation="vertical"
+        android:background="@color/blueBackground">
+
+        <TextView
+            android:id="@+id/tvRootDirLabel"
+            style="@style/labelTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/root_folder_label" />
+
+        <TextView
+            android:id="@+id/tvRootDir"
+            style="@style/mainTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp" />
+
+        <Button
+            style="@style/customButton"
+            android:id="@+id/btnDirPick"
+            android:layout_marginTop="16dp"
+            android:onClick="directoryPick"
+            android:text="@string/btn_directory_picker" />
+
+        <TextView
+            android:id="@+id/tvFilenameLabel"
+            style="@style/labelTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/filename_label" />
+
+        <EditText
+            android:id="@+id/etFilename"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:hint="@string/filename_hint"
+            android:inputType="text" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvStatsLabel"
+        style="@style/labelTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/stats_label" />
+
+    <TextView
+        android:id="@+id/tvStats"
+        style="@style/mainTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp" />
+
+    <Button
+        style="@style/customButton"
+        android:id="@+id/btnExport"
+        android:layout_marginTop="16dp"
+        android:onClick="export"
+        android:text="@string/btn_export" />
 
 </LinearLayout>
