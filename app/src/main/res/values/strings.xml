@@ -14,7 +14,9 @@
     <string name="new_directory_name">_data</string>
 
     <!-- MainActivity.kt toast messages-->
-    <string name="permission_needed">Permission is needed</string>
+    <string name="permission_needed">Permission is needed.</string>
+    <string name="locus_not_installed">Locus is not installed!</string>
+    <string name="locus_not_running">Locus is not running.</string>
 
     <!-- Stats.kt-->
     <string name="name_stats">Name:</string>

@@ -19,8 +19,13 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.app.ActivityCompat
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
+import locus.api.android.utils.LocusInfo
 import radim.outfit.core.Filename
 import radim.outfit.core.Stats
+import radim.outfit.core.export.logic.*
+import locus.api.android.ActionTools
+
+
 
 const val LOG_TAG = "MAIN"
 const val REQUEST_CODE_OPEN_DIRECTORY = 9999
@@ -32,7 +37,11 @@ fun AppCompatActivity.getString(name: String): String {
 
 class MainActivity : AppCompatActivity() {
 
-    private var appExportRoot: File? = null
+    private val exportListener = ExportListener(
+            ExportFunction(),
+            ExportPOJO(null,null,null),
+            ::exportListenerCallback
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,11 +54,23 @@ class MainActivity : AppCompatActivity() {
             // TODO finish gracefully
         }
 
+        btnExport.setOnClickListener(exportListener)
+
         if (permWriteIsGranted()) {
             setAppStorageRoot()
             setTvRootDir()
         } else {
             requestPermWrite()
+        }
+
+        val activeLocus = LocusUtils.getActiveVersion(this)
+        if (activeLocus == null) {
+            toast(getString("locus_not_installed"),Toast.LENGTH_LONG)
+        } else {
+            Log.i(LOG_TAG,"activeLocus.versionName: ${activeLocus.versionName}")
+            Log.i(LOG_TAG,"activeLocus.versionCode: ${activeLocus.versionCode}")
+            val info = locusInfo()
+            if(!info.isRunning)toast(getString("locus_not_running"), Toast.LENGTH_SHORT)
         }
 
         if (LocusUtils.isIntentTrackTools(this.intent)) {
@@ -77,16 +98,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun export(@Suppress("UNUSED_PARAMETER") v: View){
-        //TODO
+    private fun exportListenerCallback(resultPOJO: ResultPOJO){
+        Log.i("$LOG_TAG ELCALLBCK","${resultPOJO.publicMessage}; ${resultPOJO.debugMessage}")
     }
 
     fun directoryPick(@Suppress("UNUSED_PARAMETER") v: View) {
         if(!permWriteIsGranted()) toast(getString("permission_needed"), Toast.LENGTH_SHORT)
-        val rootI = appExportRoot
-        val rootPath = rootI?.path ?: ""
+        val rootPath = getRoot(exportListener)?.path ?:Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOCUMENTS).path
         val chooserIntent = Intent(this, DirectoryChooserActivity::class.java)
-        Log.i(LOG_TAG, "calling DirectoryChooserActivity with root: $rootI")
+        Log.i(LOG_TAG, "calling DirectoryChooserActivity with root: $rootPath")
 
         val config = DirectoryChooserConfig.builder()
                 .newDirectoryName("${getString(R.string.app_name)}${getString(R.string.new_directory_name)}")
@@ -119,18 +140,17 @@ class MainActivity : AppCompatActivity() {
         Log.i(LOG_TAG, "SELECTED_DIR: $selectedDir")
         val newRoot: File? = File(selectedDir)
         if (storageDirExists(newRoot)) {
-            appExportRoot = newRoot
+            setRoot(newRoot, exportListener)
             setTvRootDir()
-            Log.i(LOG_TAG, "new root: $appExportRoot")
+            Log.i(LOG_TAG, "new root: ${getRoot(exportListener)}")
         } else {
-            appExportRoot = null
             setTvRootDir()
             Log.e(LOG_TAG, "storageDirExists(newRoot) == false - should never happen")
         }
     }
 
     private fun setTvRootDir() {
-        val text: String? = appExportRoot?.path
+        val text: String? = getRoot(exportListener)?.path
         if (text != null){
             tvRootDir.setTextColor(this.getColor(R.color.imitateButtons))
             tvRootDir.text = text
@@ -138,6 +158,19 @@ class MainActivity : AppCompatActivity() {
             tvRootDir.setTextColor(this.getColor(R.color.colorAccent))
             tvRootDir.text = this.getString("not_set")
         }
+    }
+
+    // LOCUS INFO UTILS
+
+    private fun locusInfo(): LocusInfo {
+        lateinit var info: LocusInfo
+        try {
+            info = ActionTools.getLocusInfo(this, LocusUtils.getActiveVersion(this))
+        } catch (e: RequiredVersionMissingException) {
+            e.printStackTrace()
+            //TODO
+        }
+        return info
     }
 
     // EXTERNAL STORAGE UTILS
@@ -152,17 +185,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setAppStorageRoot() {
-        appExportRoot = File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOCUMENTS), this.getString("app_name"))
-        val created: Boolean = appExportRoot?.mkdirs() ?: false
-        if (created) {
-            Log.i(LOG_TAG, "setAppStorageRoot() - directory created")
-        } else {
-            Log.i(LOG_TAG, "setAppStorageRoot() - directory not created")
-        }
-        if(!storageDirExists(appExportRoot)){
-            appExportRoot = null
-            Log.e(LOG_TAG,"storageDirExists(appExportRoot) = false: this should never happen here")
+
+        val locusExportDir = File(locusInfo().rootDirExport)
+        if(storageDirExists(locusExportDir)){
+            setRoot(locusExportDir, exportListener)
+        }else {
+            val appExportRoot = File(Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOCUMENTS), this.getString("app_name"))
+            val created: Boolean = appExportRoot.mkdirs()
+            if (created) {
+                Log.i(LOG_TAG, "setAppStorageRoot() - directory created")
+            } else {
+                Log.i(LOG_TAG, "setAppStorageRoot() - directory not created")
+            }
+            setRoot(appExportRoot, exportListener)
         }
     }
 
@@ -190,7 +226,6 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     // permission denied, boo! Disable the
                     // functionality
-                    appExportRoot = null
                     setTvRootDir()
                 }
                 return
