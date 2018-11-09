@@ -16,11 +16,17 @@ fun mergeExportPOJOS(old: ExportPOJO, new: ExportPOJO): ExportPOJO{
 // EXPORT POJO UTILS
 
 fun setRoot(root: File?, listener: ExportListener){
-    val exportPOJOold = listener.exportPOJO
-    val exportPOJOnew = mergeExportPOJOS(exportPOJOold, ExportPOJO(root, null, null))
-    listener.exportPOJO = exportPOJOnew
+    listener.exportPOJO = mergeExportPOJOS(listener.exportPOJO, ExportPOJO(root, null, null))
 }
 
 fun getRoot(listener: ExportListener): File?{
     return listener.exportPOJO.file
+}
+
+fun setTrack(track: Track?, listener: ExportListener){
+    listener.exportPOJO = mergeExportPOJOS(listener.exportPOJO, ExportPOJO(null, null, track))
+}
+
+fun setFilename(filename: String, listener: ExportListener){
+    listener.exportPOJO = mergeExportPOJOS(listener.exportPOJO, ExportPOJO(null, filename, null))
 }

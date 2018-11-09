@@ -17,6 +17,7 @@ import java.io.File
 import android.content.pm.PackageManager
 import android.support.v4.content.ContextCompat
 import android.support.v4.app.ActivityCompat
+import android.text.InputFilter
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import locus.api.android.utils.LocusInfo
@@ -24,7 +25,8 @@ import radim.outfit.core.Filename
 import radim.outfit.core.Stats
 import radim.outfit.core.export.logic.*
 import locus.api.android.ActionTools
-
+import radim.outfit.core.FilenameCharsFilter
+import java.io.FilenameFilter
 
 
 const val LOG_TAG = "MAIN"
@@ -92,7 +94,10 @@ class MainActivity : AppCompatActivity() {
         if (track != null && track.points != null && track.points.size > 0) {
             // do work
             tvStats.text = Stats().basicInfo(track, this)
-            etFilename.setText(Filename().getFilename(track))
+            val filename = Filename().getFilename(track)
+            etFilename.setText(filename)
+            setTrack(track, exportListener)
+            setFilename(filename, exportListener)
         } else {
             // TODO finish gracefully
         }
