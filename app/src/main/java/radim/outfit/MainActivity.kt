@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
         val rootI = appExportRoot
         val rootPath = rootI?.path ?: ""
         val chooserIntent = Intent(this, DirectoryChooserActivity::class.java)
-        Log.i(LOG_TAG, "calling DirectoryChooserActivity with root: $appExportRoot")
+        Log.i(LOG_TAG, "calling DirectoryChooserActivity with root: $rootI")
 
         val config = DirectoryChooserConfig.builder()
                 .newDirectoryName("${getString(R.string.app_name)}${getString(R.string.new_directory_name)}")
