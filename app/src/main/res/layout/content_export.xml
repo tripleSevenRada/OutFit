@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/llExport"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvStatsLabel"
+        style="@style/labelTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/stats_label" />
+
+    <TextView
+        android:id="@+id/tvStats"
+        style="@style/mainTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp" />
+
+    <Button
+        style="@style/customButton"
+        android:id="@+id/btnExport"
+        android:layout_marginTop="16dp"
+        android:text="@string/btn_export" />
+
+</LinearLayout>

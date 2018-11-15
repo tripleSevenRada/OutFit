@@ -10,6 +10,9 @@
     <string name="filename_hint">filename</string>
     <string name="btn_export">Export</string>
 
+    <!-- activity_finish_gracefully.xml default filename no extension-->
+    <string name="what_happened">What happened:</string>
+
     <!-- MainActivity.kt DirectoryChooserConfig-->
     <string name="new_directory_name">_data</string>
 

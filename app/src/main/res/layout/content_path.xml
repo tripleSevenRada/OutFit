@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/llPath"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/blueBackground"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvRootDirLabel"
+        style="@style/labelTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/root_folder_label" />
+
+    <TextView
+        android:id="@+id/tvRootDir"
+        style="@style/mainTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp" />
+
+    <Button
+        android:id="@+id/btnDirPick"
+        style="@style/customButton"
+        android:layout_marginTop="16dp"
+        android:onClick="directoryPick"
+        android:text="@string/btn_directory_picker" />
+
+    <TextView
+        android:id="@+id/tvFilenameLabel"
+        style="@style/labelTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/filename_label" />
+
+    <EditText
+        android:id="@+id/etFilename"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:hint="@string/filename_hint"
+        android:inputType="text" />
+
+</LinearLayout>

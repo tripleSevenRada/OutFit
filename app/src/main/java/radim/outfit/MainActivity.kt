@@ -18,18 +18,22 @@ import android.content.pm.PackageManager
 import android.support.v4.content.ContextCompat
 import android.support.v4.app.ActivityCompat
 import android.widget.Toast
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_export.*
+import kotlinx.android.synthetic.main.content_path.*
 import locus.api.android.utils.LocusInfo
 import radim.outfit.core.Stats
 import radim.outfit.core.export.logic.*
 import locus.api.android.ActionTools
 import radim.outfit.core.FilenameCharsFilter
 import radim.outfit.core.getFilename
-import java.lang.RuntimeException
 
 const val LOG_TAG = "MAIN"
 const val REQUEST_CODE_OPEN_DIRECTORY = 9999
 const val REQUEST_CODE_PERM_WRITE_EXTERNAL = 7777
+const val EXTRA_MESSAGE_FINISH = "start finish gracefully activity to explain what happened"
+
+// error codes:
+// 1 - 7
 
 fun AppCompatActivity.getString(name: String): String {
     return resources.getString(resources.getIdentifier(name, "string", packageName))
@@ -48,27 +52,21 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val activeLocus = LocusUtils.getActiveVersion(this)
-        if(activeLocus == null){
-            // TODO finish gracefully
-            toast(getString("locus_not_installed"),Toast.LENGTH_LONG)
-            finish()
+        if (activeLocus == null){
+            failGracefully(this.getString("locus_not_installed") + " Error 1")
             return
         }
 
         try{
             ActionTools.getLocusInfo(this, activeLocus)
         }catch(e: RequiredVersionMissingException){
-            // TODO finish gracefully
-            toast(getString("required_version_missing"),Toast.LENGTH_LONG)
-            finish()
+            failGracefully(this.getString("required_version_missing - ") + e.localizedMessage + " Error 2")
             return
         }
 
-        if (isExternalStorageWritable()) {
-            Log.i(LOG_TAG, "isExternalStorageWritable() == true")
-        } else {
-            Log.e(LOG_TAG, "isExternalStorageWritable() == false")
-            // TODO finish gracefully
+        if (!isExternalStorageWritable()) {
+            failGracefully("isExternalStorageWritable() == false" + " Error 3")
+            return
         }
 
         etFilename.filters = arrayOf(FilenameCharsFilter())
@@ -96,13 +94,15 @@ class MainActivity : AppCompatActivity() {
 
     // isIntentTrackTools(intent) = true
     private fun handleIntentTrackToolsMenu(act: Activity, intent: Intent) {
-        var track: Track? = null
+        val track: Track?
         try {
             track = LocusUtils.handleIntentTrackTools(act, intent)
         } catch (e: RequiredVersionMissingException) {
-            // TODO finish gracefully
+            failGracefully(this.getString("required_version_missing - ") + e.localizedMessage + " Error 4")
+            return
         } catch (e: Exception) {
-            // TODO finish gracefully
+            failGracefully(e.localizedMessage + " Error 5")
+            return
         }
         if (track != null && track.points != null && track.points.size > 0) {
             // do work
@@ -112,7 +112,8 @@ class MainActivity : AppCompatActivity() {
             setTrack(track, exportListener)
             setFilename(filename, exportListener)
         } else {
-            // TODO finish gracefully
+            failGracefully(" Error 6")
+            return
         }
     }
 
@@ -147,7 +148,8 @@ class MainActivity : AppCompatActivity() {
                     handleDirectoryChoice(data!!
                             .getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR))
                 } catch (e: Exception) {
-                    // TODO
+                    failGracefully(" Error 7")
+                    return
                 }
             } else {
                 Log.w(LOG_TAG, "Nothing selected")
@@ -259,12 +261,16 @@ class MainActivity : AppCompatActivity() {
         toast.show()
     }
 
-    private fun getFinnishIntent(message: String){
-
+    private fun getFinnishIntent(message: String): Intent{
+        return Intent(this, FinishGracefully::class.java).apply {
+            putExtra(EXTRA_MESSAGE_FINISH, message)
+        }
     }
 
-    private fun failGracefully(message: String): Nothing{
-        throw RuntimeException(message)
+    private fun failGracefully(message: String){
+        val intent = getFinnishIntent(message)
+        startActivity(intent)
+        this.finish()
     }
 
 }
