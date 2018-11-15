@@ -17,17 +17,15 @@ import java.io.File
 import android.content.pm.PackageManager
 import android.support.v4.content.ContextCompat
 import android.support.v4.app.ActivityCompat
-import android.text.InputFilter
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import locus.api.android.utils.LocusInfo
-import radim.outfit.core.Filename
 import radim.outfit.core.Stats
 import radim.outfit.core.export.logic.*
 import locus.api.android.ActionTools
 import radim.outfit.core.FilenameCharsFilter
-import java.io.FilenameFilter
-
+import radim.outfit.core.getFilename
+import java.lang.RuntimeException
 
 const val LOG_TAG = "MAIN"
 const val REQUEST_CODE_OPEN_DIRECTORY = 9999
@@ -49,6 +47,23 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val activeLocus = LocusUtils.getActiveVersion(this)
+        if(activeLocus == null){
+            // TODO finish gracefully
+            toast(getString("locus_not_installed"),Toast.LENGTH_LONG)
+            finish()
+            return
+        }
+
+        try{
+            ActionTools.getLocusInfo(this, activeLocus)
+        }catch(e: RequiredVersionMissingException){
+            // TODO finish gracefully
+            toast(getString("required_version_missing"),Toast.LENGTH_LONG)
+            finish()
+            return
+        }
+
         if (isExternalStorageWritable()) {
             Log.i(LOG_TAG, "isExternalStorageWritable() == true")
         } else {
@@ -56,7 +71,10 @@ class MainActivity : AppCompatActivity() {
             // TODO finish gracefully
         }
 
+        etFilename.filters = arrayOf(FilenameCharsFilter())
         btnExport.setOnClickListener(exportListener)
+        exportListener.attachView(etFilename)
+        exportListener.attachDefaultFilename(this.getString("default_filename"))
 
         if (permWriteIsGranted()) {
             setAppStorageRoot()
@@ -65,15 +83,10 @@ class MainActivity : AppCompatActivity() {
             requestPermWrite()
         }
 
-        val activeLocus = LocusUtils.getActiveVersion(this)
-        if (activeLocus == null) {
-            toast(getString("locus_not_installed"),Toast.LENGTH_LONG)
-        } else {
-            Log.i(LOG_TAG,"activeLocus.versionName: ${activeLocus.versionName}")
-            Log.i(LOG_TAG,"activeLocus.versionCode: ${activeLocus.versionCode}")
-            val info = locusInfo()
-            if(!info.isRunning)toast(getString("locus_not_running"), Toast.LENGTH_SHORT)
-        }
+        Log.i(LOG_TAG,"activeLocus.versionName: ${activeLocus.versionName}")
+        Log.i(LOG_TAG,"activeLocus.versionCode: ${activeLocus.versionCode}")
+        val info = locusInfo()
+        if(!info.isRunning)toast(getString("locus_not_running"), Toast.LENGTH_SHORT)
 
         if (LocusUtils.isIntentTrackTools(this.intent)) {
             // event performed if user tap on your app icon in tools menu of 'Track'
@@ -94,7 +107,7 @@ class MainActivity : AppCompatActivity() {
         if (track != null && track.points != null && track.points.size > 0) {
             // do work
             tvStats.text = Stats().basicInfo(track, this)
-            val filename = Filename().getFilename(track)
+            val filename = getFilename(track.name, getString("default_filename"))
             etFilename.setText(filename)
             setTrack(track, exportListener)
             setFilename(filename, exportListener)
@@ -104,7 +117,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun exportListenerCallback(resultPOJO: ResultPOJO){
-        Log.i("$LOG_TAG ELCALLBCK","${resultPOJO.publicMessage}; ${resultPOJO.debugMessage}")
+        Log.i("$LOG_TAG ELCALLBCK","${resultPOJO.publicMessage};" +
+                "${resultPOJO.debugMessage}" + "${resultPOJO.errorMessage}")
     }
 
     fun directoryPick(@Suppress("UNUSED_PARAMETER") v: View) {
@@ -166,14 +180,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     // LOCUS INFO UTILS
-
+    @Throws(RequiredVersionMissingException::class)
     private fun locusInfo(): LocusInfo {
         lateinit var info: LocusInfo
         try {
             info = ActionTools.getLocusInfo(this, LocusUtils.getActiveVersion(this))
         } catch (e: RequiredVersionMissingException) {
             e.printStackTrace()
-            //TODO
         }
         return info
     }
@@ -245,4 +258,13 @@ class MainActivity : AppCompatActivity() {
         val toast = Toast.makeText(applicationContext, message, duration)
         toast.show()
     }
+
+    private fun getFinnishIntent(message: String){
+
+    }
+
+    private fun failGracefully(message: String): Nothing{
+        throw RuntimeException(message)
+    }
+
 }

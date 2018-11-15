@@ -7,15 +7,19 @@
     <string name="stats_label">Stats:</string>
     <string name="not_set">Not yet set</string>
     <string name="filename_label">Filename:</string>
-    <string name="filename_hint">filename.fit</string>
+    <string name="filename_hint">filename</string>
     <string name="btn_export">Export</string>
 
     <!-- MainActivity.kt DirectoryChooserConfig-->
     <string name="new_directory_name">_data</string>
 
+    <!-- MainActivity.kt default filename no extension-->
+    <string name="default_filename">outfit_export</string>
+
     <!-- MainActivity.kt toast messages-->
     <string name="permission_needed">Permission is needed.</string>
     <string name="locus_not_installed">Locus is not installed!</string>
+    <string name="required_version_missing">Locus is probably too old!</string>
     <string name="locus_not_running">Locus is not running.</string>
 
     <!-- Stats.kt-->

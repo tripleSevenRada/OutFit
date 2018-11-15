@@ -7,8 +7,11 @@ class ExportFunction: (File?, String?, Track?)-> ResultPOJO{
 
     override operator fun invoke(file: File?, filename: String?, track: Track?): ResultPOJO{
         // TODO real work finally
-        return ResultPOJO("public message",
-                "performed with: File: $file, Filename: $filename, Track: $track")
+        val result = ResultPOJO(mutableListOf(),mutableListOf(),mutableListOf())
+        result.addToPublicMessage("performed with: File: $file, Filename: $filename, Track: $track")
+        result.addToDebugMessage("no debug")
+        result.addToErrorMessage("no error")
+        return result
     }
 
 }
