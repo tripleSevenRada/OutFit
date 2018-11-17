@@ -43,4 +43,9 @@ dependencies {
     // https://github.com/passy/Android-DirectoryChooser/issues/65
     implementation 'com.gu:option:1.3'
 }
+dependencies {
+    // https://antonioleiva.com/anko-background-kotlin-android/
+    // https://github.com/Kotlin/anko
+    implementation 'org.jetbrains.anko:anko-common:0.9'
+}
 
