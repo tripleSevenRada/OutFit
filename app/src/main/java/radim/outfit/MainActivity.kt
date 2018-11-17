@@ -2,7 +2,6 @@ package radim.outfit
 
 import android.Manifest
 import android.app.Activity
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.content.Intent
@@ -17,7 +16,10 @@ import java.io.File
 import android.content.pm.PackageManager
 import android.support.v4.content.ContextCompat
 import android.support.v4.app.ActivityCompat
+import android.support.v7.app.AppCompatActivity
+import android.widget.ProgressBar
 import android.widget.Toast
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_export.*
 import kotlinx.android.synthetic.main.content_path.*
 import locus.api.android.utils.LocusInfo
@@ -51,6 +53,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        progressBar.visibility = ProgressBar.INVISIBLE
 
         val activeLocus = LocusUtils.getActiveVersion(this)
         if (activeLocus == null){
@@ -118,20 +122,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //  CALLBACKS
+
     private fun exportListenerCallback(resultPOJO: ResultPOJO){
         Log.i("$LOG_TAG ELCALLBCK","${resultPOJO.publicMessage};" +
                 "${resultPOJO.debugMessage}" + "${resultPOJO.errorMessage}")
         // enable executive UI
-        btnExport.enabled = true
-        // TODO set progress bar rolling OFF
+        btnExport.isEnabled = true
+        progressBar.visibility = ProgressBar.INVISIBLE
     }
 
     private fun clickedCallback(){
         Log.i("$LOG_TAG CLCALLBCK","clicked")
         // disable executive UI
-        btnExport.enabled = false
-        // TODO set progress bar rolling ON 
+        btnExport.isEnabled = false
+        progressBar.visibility = ProgressBar.VISIBLE
     }
+
+    //  CALLBACKS
 
     fun directoryPick(@Suppress("UNUSED_PARAMETER") v: View) {
         if(!permWriteIsGranted()) toast(getString("permission_needed"), Toast.LENGTH_SHORT)

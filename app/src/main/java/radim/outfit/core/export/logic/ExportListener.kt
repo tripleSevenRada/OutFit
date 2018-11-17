@@ -49,17 +49,21 @@ class ExportListener(
                 mostRecentFilenameNotEmptyAsserted,
                         exportPOJO.track))
 
+        // TODO ASYNC
+
+        // consider: https://medium.com/coding-blocks/making-asynctask-obsolete-with-kotlin-5fe1d944d69
+        // https://antonioleiva.com/anko-background-kotlin-android/
+
         clickedCallback()
 
         callback(execute(finalExportPojo.file, finalExportPojo.filename, finalExportPojo.track))
     }
 
     private fun callBackResultError(singleErrorMessage: String){
-        val publicMessage = mutableListOf<String>()
-        val debugMessage = mutableListOf<String>()
-        val errorMessage = mutableListOf<String>()
-        errorMessage.add(singleErrorMessage) 
-        callback(ResultPOJO(List<String>(publicMessage), List<String>(debugMessage), List<String>(errorMessage)))
+        val publicMessage = listOf<String>()
+        val debugMessage = listOf<String>()
+        val errorMessage = listOf(singleErrorMessage)
+        callback(ResultPOJO(publicMessage, debugMessage, errorMessage))
     }
 
 }

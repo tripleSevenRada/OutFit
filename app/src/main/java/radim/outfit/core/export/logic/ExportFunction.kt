@@ -10,11 +10,10 @@ class ExportFunction: (File?, String?, Track?)-> ResultPOJO{
         return if(file != null && filename != null && track != null){
             Encoder().encode(track, file, filename)
         } else {
-            val result = ResultPOJO(mutableListOf(),mutableListOf(),mutableListOf())
-            result.addToPublicMessage("Dir: $file, Filename: $filename, Track: $track")
-            result.addToDebugMessage("null value, should never happen here")
-            result.addToErrorMessage("null value")
-            result
+            val exposedPublicMessage = listOf("Dir: $file, Filename: $filename, Track: $track")
+            val exposedDebugMessage = listOf("null value, should never happen here")
+            val exposedErrorMessage = listOf("null value")
+            ResultPOJO(exposedPublicMessage, exposedDebugMessage,exposedErrorMessage)
         }
     }
 }

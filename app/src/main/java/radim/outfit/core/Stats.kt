@@ -12,7 +12,7 @@ class Stats{
         return "${ctx.getString("name_stats")} ${track.name?:""}\n" +
                 "${ctx.getString("length_stats")} ${track.stats?.totalLength?:""}\n" +
                 "${ctx.getString("nmb_points_stats")} ${track.stats?.numOfPoints?:""}\n" +
-                "${ctx.getString("nmb_waypoints_stats")} ${track.waypoints?.size?:""}\n"
+                "${ctx.getString("nmb_waypoints_stats")} ${track.waypoints?.size?:""}"
     }
 
 }
