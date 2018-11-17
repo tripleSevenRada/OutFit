@@ -3,6 +3,8 @@ package radim.outfit.core.export.logic
 import android.view.View
 import android.widget.EditText
 import locus.api.objects.extra.Track
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import radim.outfit.core.getFilename
 import java.io.File
 
@@ -48,15 +50,18 @@ class ExportListener(
                 ExportPOJO(exportPOJO.file,
                 mostRecentFilenameNotEmptyAsserted,
                         exportPOJO.track))
-
-        // TODO ASYNC
-
+        
         // consider: https://medium.com/coding-blocks/making-asynctask-obsolete-with-kotlin-5fe1d944d69
         // https://antonioleiva.com/anko-background-kotlin-android/
 
         clickedCallback()
 
-        callback(execute(finalExportPojo.file, finalExportPojo.filename, finalExportPojo.track))
+        doAsync {
+            val result = execute(finalExportPojo.file, finalExportPojo.filename, finalExportPojo.track)
+            uiThread {
+                callback(result)
+            }
+        }
     }
 
     private fun callBackResultError(singleErrorMessage: String){

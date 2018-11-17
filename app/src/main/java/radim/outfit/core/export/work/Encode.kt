@@ -7,6 +7,8 @@ import java.io.File
 import radim.outfit.core.export.logic.ResultPOJO
 import java.util.*
 
+// we don't want the progressBar just to flick
+const val MIN_TIME_TAKEN = 300
 
 class Encoder{
 
@@ -31,7 +33,12 @@ class Encoder{
         encoder.write(getCourseMesg(track, filename))
         encoder.close()
 
-        Log.i("Encode","time taken: ${System.currentTimeMillis() - start}")
+        val timeTaken = System.currentTimeMillis() - start
+        Log.i("Encode","time taken: $timeTaken")
+        if(timeTaken < MIN_TIME_TAKEN){
+            // TODO interupted?
+            Thread.sleep(MIN_TIME_TAKEN - timeTaken)
+        }
         val exposedPublicMessages: List<String> = publicMessages
         val exposedDebugMessages: List<String> = debugMessages
         val exposedErrorMessages: List<String> = errorMessages
