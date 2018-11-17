@@ -44,7 +44,8 @@ class MainActivity : AppCompatActivity() {
     private val exportListener = ExportListener(
             ExportFunction(),
             ExportPOJO(null,null,null),
-            ::exportListenerCallback
+            ::exportListenerCallback,
+            ::clickedCallback
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,6 +121,16 @@ class MainActivity : AppCompatActivity() {
     private fun exportListenerCallback(resultPOJO: ResultPOJO){
         Log.i("$LOG_TAG ELCALLBCK","${resultPOJO.publicMessage};" +
                 "${resultPOJO.debugMessage}" + "${resultPOJO.errorMessage}")
+        // enable executive UI
+        btnExport.enabled = true
+        // TODO set progress bar rolling OFF
+    }
+
+    private fun clickedCallback(){
+        Log.i("$LOG_TAG CLCALLBCK","clicked")
+        // disable executive UI
+        btnExport.enabled = false
+        // TODO set progress bar rolling ON 
     }
 
     fun directoryPick(@Suppress("UNUSED_PARAMETER") v: View) {

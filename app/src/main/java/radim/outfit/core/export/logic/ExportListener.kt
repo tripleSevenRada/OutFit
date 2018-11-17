@@ -9,7 +9,8 @@ import java.io.File
 class ExportListener(
         private val execute: (File?, String?, Track?)-> ResultPOJO,
         var exportPOJO: ExportPOJO,
-        private val callback: (ResultPOJO) -> Unit
+        private val callback: (ResultPOJO) -> Unit,
+        private val clickedCallback: () -> Unit
         ): View.OnClickListener{
 
     private lateinit var editTextFilename: EditText
@@ -48,13 +49,17 @@ class ExportListener(
                 mostRecentFilenameNotEmptyAsserted,
                         exportPOJO.track))
 
-        callback(execute(finalExportPojo.file, finalExportPojo.filename,finalExportPojo.track))
+        clickedCallback()
+
+        callback(execute(finalExportPojo.file, finalExportPojo.filename, finalExportPojo.track))
     }
 
-    private fun callBackResultError(errorMessage: String){
-        val result = ResultPOJO(mutableListOf(), mutableListOf(), mutableListOf())
-        result.addToErrorMessage(errorMessage)
-        callback(result)
+    private fun callBackResultError(singleErrorMessage: String){
+        val publicMessage = mutableListOf<String>()
+        val debugMessage = mutableListOf<String>()
+        val errorMessage = mutableListOf<String>()
+        errorMessage.add(singleErrorMessage) 
+        callback(ResultPOJO(List<String>(publicMessage), List<String>(debugMessage), List<String>(errorMessage)))
     }
 
 }
