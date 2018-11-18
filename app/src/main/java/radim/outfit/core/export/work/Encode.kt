@@ -28,11 +28,15 @@ class Encoder{
 
         val outputFile = File(dir.absolutePath + File.separatorChar + filename)
         val encoder = FileEncoder(outputFile, Fit.ProtocolVersion.V2_0)
+        //
+        //
         // Every FIT file MUST contain a 'File ID' message as the first message
         encoder.write(getFileIdMesg(track))
         encoder.write(getCourseMesg(track, filename))
         encoder.close()
-
+        //
+        //
+        //
         val timeTaken = System.currentTimeMillis() - start
         Log.i("Encode","time taken: $timeTaken")
         if(timeTaken < MIN_TIME_TAKEN){
