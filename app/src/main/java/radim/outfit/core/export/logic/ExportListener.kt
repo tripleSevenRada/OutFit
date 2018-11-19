@@ -50,7 +50,7 @@ class ExportListener(
                 ExportPOJO(exportPOJO.file,
                 mostRecentFilenameNotEmptyAsserted,
                         exportPOJO.track))
-        
+
         // consider: https://medium.com/coding-blocks/making-asynctask-obsolete-with-kotlin-5fe1d944d69
         // https://antonioleiva.com/anko-background-kotlin-android/
 
