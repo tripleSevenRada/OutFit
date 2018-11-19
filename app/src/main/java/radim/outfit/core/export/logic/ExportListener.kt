@@ -8,6 +8,8 @@ import org.jetbrains.anko.uiThread
 import radim.outfit.core.getFilename
 import java.io.File
 
+
+// error codes 8 -
 class ExportListener(
         private val execute: (File?, String?, Track?)-> ResultPOJO,
         var exportPOJO: ExportPOJO,
@@ -29,21 +31,30 @@ class ExportListener(
     // https://stackoverflow.com/questions/44912803/passing-and-using-function-as-constructor-argument-in-kotlin
 
     override fun onClick(v: View){
-
-        if(exportPOJO.track == null) {
-            callBackResultError("trackPOJO.track = null")
-            return
-        }
-        if(exportPOJO.file == null) {
-            callBackResultError("trackPOJO.file = null")
+        // SANITY CHECKS START
+        val track = exportPOJO.track
+        if(track == null) {
+            callBackResultError(" 8 - trackPOJO.track = null")
             return
         }
         val dir = exportPOJO.file
-        if(dir != null && (!dir.exists() || !dir.isDirectory )){
-            callBackResultError("trackPOJO.file non existent or non directory")
+        if(dir == null) {
+            callBackResultError("9 - trackPOJO.file = null")
             return
         }
-
+        if(!dir.exists() || !dir.isDirectory ){
+            callBackResultError("10 - trackPOJO.file non existent or non directory")
+            return
+        }
+        if(track.points == null || track.points.size < 2){
+            callBackResultError("11 - trackpoints == null or start only")
+            return
+        }
+        if(track.stats == null){
+            callBackResultError("12 - stats == null")
+            return
+        }
+        // SANITY CHECKS END
         val mostRecentFilename = editTextFilename.text.toString()
         val mostRecentFilenameNotEmptyAsserted = getFilename(mostRecentFilename, defaultFilename)
         val finalExportPojo = mergeExportPOJOS(exportPOJO,
@@ -51,7 +62,7 @@ class ExportListener(
                 mostRecentFilenameNotEmptyAsserted,
                         exportPOJO.track))
 
-        // consider: https://medium.com/coding-blocks/making-asynctask-obsolete-with-kotlin-5fe1d944d69
+        // https://medium.com/coding-blocks/making-asynctask-obsolete-with-kotlin-5fe1d944d69
         // https://antonioleiva.com/anko-background-kotlin-android/
 
         clickedCallback()

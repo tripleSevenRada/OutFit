@@ -6,9 +6,16 @@ import locus.api.objects.extra.Track
 import java.io.File
 import radim.outfit.core.export.logic.ResultPOJO
 import java.util.*
+import com.garmin.fit.LapMesg
+import locus.api.objects.extra.Location
+import radim.outfit.core.radim.outfit.core.locusapiextensions.isTimestamped
+import java.lang.RuntimeException
 
 // we don't want the progressBar just to flick
 const val MIN_TIME_TAKEN = 300
+
+// TODO temporary fix
+const val DEF_SPEED_M_PER_S = 5.0F
 
 class Encoder{
 
@@ -33,6 +40,48 @@ class Encoder{
         // Every FIT file MUST contain a 'File ID' message as the first message
         encoder.write(getFileIdMesg(track))
         encoder.write(getCourseMesg(track, filename))
+        val trackIsFullyTimestamped = track.isTimestamped() && track.stats.isTimestamped()
+        val distancesNonNullPoints = assignPointDistancesToNonNullPoints(track)
+        val timestampsNonNullPoints = assignPointTimestampsToNonNullPoints(track, distancesNonNullPoints)
+        if(distancesNonNullPoints.size != timestampsNonNullPoints.size) throw RuntimeException("sizes!")
+        val timeBundle = if (trackIsFullyTimestamped) {
+            TrackTimestampsBundle(
+                    track.stats.startTime,
+                    track.stats.totalTime.toFloat(),
+                    extractPointTimestampsFromPoints(track)
+            )
+        }else {
+            TrackTimestampsBundle(
+                    System.currentTimeMillis(),
+                    timestampsNonNullPoints[timestampsNonNullPoints.lastIndex].toFloat(),
+                    timestampsNonNullPoints
+            )
+        }
+        encoder.write(getLapMesg(track, timeBundle))
+
+        if(trackIsFullyTimestamped) {
+            var count = 0
+            //does not contain null elements
+            track.points.forEach {
+                encoder.write(getRecordMesg(it,
+                            distancesNonNullPoints[count],
+                            timestampsNonNullPoints[count],
+                        true)
+                        )
+                count ++
+            }
+        } else {
+            var count = 0
+            for(i in 0 until track.points.size){
+                if(track.points[i] == null)continue
+                encoder.write(getRecordMesg(track.points[i],
+                        distancesNonNullPoints[count],
+                        timestampsNonNullPoints[count],
+                        false)
+                )
+                count ++
+            }
+        }
         encoder.close()
         //
         //
@@ -51,6 +100,7 @@ class Encoder{
 
     private fun getFileIdMesg(track: Track): FileIdMesg{
         val fileIdMesg = FileIdMesg()
+        fileIdMesg.localNum = 0
         fileIdMesg.type = com.garmin.fit.File.COURSE
         fileIdMesg.manufacturer = Manufacturer.DYNASTREAM
         fileIdMesg.product = 12345
@@ -69,5 +119,48 @@ class Encoder{
         courseMesg.capabilities = CourseCapabilities.NAVIGATION // Not required
         return courseMesg
     }
+
+    private fun getLapMesg(track: Track, trackTimestampsBundle: TrackTimestampsBundle): LapMesg{
+        val lapMesg = LapMesg()
+        lapMesg.localNum = 0
+        val firstPoint = track.points[0]
+        val lastPoint = track.points[track.points.lastIndex]
+
+        lapMesg.startPositionLat = firstPoint.getLatitude().toSemiCircles()
+        lapMesg.startPositionLong = firstPoint.getLongitude().toSemiCircles()
+        lapMesg.endPositionLat = lastPoint.getLatitude().toSemiCircles()
+        lapMesg.endPositionLong = lastPoint.getLongitude().toSemiCircles()
+
+        lapMesg.timestamp = DateTime(trackTimestampsBundle.startTime)
+        lapMesg.startTime = DateTime(trackTimestampsBundle.startTime)
+        lapMesg.totalTimerTime = trackTimestampsBundle.totalTime
+        lapMesg.totalElapsedTime = trackTimestampsBundle.totalTime
+
+
+        lapMesg.totalDistance = track.stats.totalLength
+
+        return lapMesg
+    }
+
+    private fun getRecordMesg(point: Location,
+                              dst: Float,
+                              time: Long,
+                              timestamped: Boolean): RecordMesg{
+        val record = RecordMesg()
+        record.positionLat = point.latitude.toSemiCircles()
+        record.positionLong = point.longitude.toSemiCircles()
+        if(point.hasAltitude()) record.altitude = point.altitude.toFloat()
+        record.distance = dst
+        record.timestamp = DateTime(point.time)
+        return record
+    }
+
+    /*
+    private fun getCoursePointMesg(track: Track): CoursePointMesg{
+        val cpMesg = CoursePointMesg()
+        cpMesg.localNum = 0
+        return cpMesg
+    }
+    */
 
 }
