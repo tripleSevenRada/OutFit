@@ -1,4 +1,4 @@
-package radim.outfit.core.radim.outfit.core.locusapiextensions
+package radim.outfit.core.export.work.locusapiextensions
 
 import locus.api.objects.extra.Track
 import locus.api.objects.extra.TrackStats

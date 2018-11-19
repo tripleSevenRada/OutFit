@@ -1,7 +1,8 @@
-package radim.outfit.core.export.work
+package radim.outfit.core.export.work.locusapiextensions
 
 import locus.api.objects.extra.Track
 import locus.api.objects.utils.LocationCompute
+import radim.outfit.core.export.work.DEF_SPEED_M_PER_S
 
 // track does not contain null elements
 fun extractPointTimestampsFromPoints(track: Track): List<Long>{

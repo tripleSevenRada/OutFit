@@ -8,7 +8,7 @@ import radim.outfit.core.export.logic.ResultPOJO
 import java.util.*
 import com.garmin.fit.LapMesg
 import locus.api.objects.extra.Location
-import radim.outfit.core.radim.outfit.core.locusapiextensions.isTimestamped
+import radim.outfit.core.export.work.locusapiextensions.*
 import java.lang.RuntimeException
 
 // we don't want the progressBar just to flick
