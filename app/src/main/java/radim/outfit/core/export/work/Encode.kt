@@ -19,7 +19,7 @@ const val DEF_SPEED_M_PER_S = 5.0F
 
 class Encoder{
 
-    // with help of:
+    // with great help of:
     // https://github.com/gimportexportdevs/gexporter/blob/master/app/src/main/java/org/surfsite/gexporter/Gpx2Fit.java
 
     fun encode(track: Track, dir: File, filename: String): ResultPOJO{
@@ -40,10 +40,27 @@ class Encoder{
         // Every FIT file MUST contain a 'File ID' message as the first message
         encoder.write(getFileIdMesg(track))
         encoder.write(getCourseMesg(track, filename))
+
+        // expensive calls
         val trackIsFullyTimestamped = track.isTimestamped() && track.stats.isTimestamped()
+        debugMessages.add("trackIsFullyTimestamped: $trackIsFullyTimestamped")
+        val trackHasAltitude = track.hasAltitude()
+        debugMessages.add("trackHasAltitude: $trackHasAltitude")
+
         val distancesNonNullPoints = assignPointDistancesToNonNullPoints(track)
-        val timestampsNonNullPoints = assignPointTimestampsToNonNullPoints(track, distancesNonNullPoints)
-        if(distancesNonNullPoints.size != timestampsNonNullPoints.size) throw RuntimeException("sizes!")
+        val timestampsNonNullPoints = if(trackIsFullyTimestamped){
+                listOf<Long>()
+            } else {
+                assignPointTimestampsToNonNullPoints(track, distancesNonNullPoints)
+            }
+        }
+
+        if(distancesNonNullPoints.size != timestampsNonNullPoints.size) {
+            errorMessages.add("Sizes!")
+            errorMessages.add("distancesNonNullPoints.size: ${distancesNonNullPoints.size}")
+            errorMessages.add("timestampsNonNullPoints.size: ${timestampsNonNullPoints.size}")
+        }
+        
         val timeBundle = if (trackIsFullyTimestamped) {
             TrackTimestampsBundle(
                     track.stats.startTime,
@@ -53,35 +70,33 @@ class Encoder{
         }else {
             TrackTimestampsBundle(
                     System.currentTimeMillis(),
-                    timestampsNonNullPoints[timestampsNonNullPoints.lastIndex].toFloat(),
-                    timestampsNonNullPoints
+                    timestampsNonNullPoints[timestampsNonNullPoints.lastIndex].toFloat(), // here not empty
+                    timestampsNonNullPoints // here not empty
             )
         }
         encoder.write(getLapMesg(track, timeBundle))
 
-        if(trackIsFullyTimestamped) {
-            var count = 0
-            //does not contain null elements
-            track.points.forEach {
-                encoder.write(getRecordMesg(it,
-                            distancesNonNullPoints[count],
-                            timestampsNonNullPoints[count],
-                        true)
-                        )
-                count ++
+        //RECORDS START
+        var index = 0
+        for(i in 0 until track.points.size){
+            if(track.points[i] == null) {
+                debugMessages.add("NULL PRESENT!")
+                continue
             }
-        } else {
-            var count = 0
-            for(i in 0 until track.points.size){
-                if(track.points[i] == null)continue
-                encoder.write(getRecordMesg(track.points[i],
-                        distancesNonNullPoints[count],
-                        timestampsNonNullPoints[count],
-                        false)
+            encoder.write(
+                getRecordMesg(
+                    track.points[i],
+                    distancesNonNullPoints[index],
+                    timestampsNonNullPoints[index],
+                    trackIsFullyTimestamped,
+                    trackHasAltitude,
+                    count
                 )
-                count ++
-            }
+            )
+            index ++
         }
+        // RECORDS END
+
         encoder.close()
         //
         //
@@ -143,15 +158,21 @@ class Encoder{
     }
 
     private fun getRecordMesg(point: Location,
-                              dst: Float,
-                              time: Long,
-                              timestamped: Boolean): RecordMesg{
+                              dst: List<Float>,
+                              time: List<Long>,
+                              fullyTimestamped: Boolean,
+                              hasAltitude: Boolean,
+                              index: Int): RecordMesg{
         val record = RecordMesg()
         record.positionLat = point.latitude.toSemiCircles()
         record.positionLong = point.longitude.toSemiCircles()
-        if(point.hasAltitude()) record.altitude = point.altitude.toFloat()
-        record.distance = dst
-        record.timestamp = DateTime(point.time)
+        if(hasAltitude) record.altitude = point.altitude.toFloat()
+        record.distance = dst[index]
+        record.timestamp = if (fullyTimestamped) {
+            DateTime(point.time)
+        } else {
+            DateTime(time[index])
+        } 
         return record
     }
 

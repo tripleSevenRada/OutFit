@@ -4,7 +4,7 @@ import locus.api.objects.extra.Track
 import locus.api.objects.utils.LocationCompute
 import radim.outfit.core.export.work.DEF_SPEED_M_PER_S
 
-// track does not contain null elements
+// track does not contain null elements and is fully timestamped
 fun extractPointTimestampsFromPoints(track: Track): List<Long>{
     val timestampMutableList = mutableListOf<Long>()
     track.points.forEach{
@@ -13,17 +13,19 @@ fun extractPointTimestampsFromPoints(track: Track): List<Long>{
     return timestampMutableList
 }
 
+// track may contain null elements and is not considered fully timestamped
 fun assignPointTimestampsToNonNullPoints(track: Track, distances: List<Float>): List<Long>{
     val mutableListOfTimestamps = mutableListOf<Long>()
     var count = 0
     for( i in 0 until track.points.size) {
         if (track.points[i] == null) continue
-        val dst = distances[count]
-        if(dst == 0F){
-            mutableListOfTimestamps.add(0)
-            count ++
+        // first point
+        if(count == 0){
+            mutableListOfTimestamps.add(0L)
+            count = 1
             continue
         }
+        val dst = distances[count]
         val timeMilis = (dst / DEF_SPEED_M_PER_S) * 1000F
         mutableListOfTimestamps.add(timeMilis.toLong())
         count ++
@@ -39,7 +41,7 @@ fun assignPointDistancesToNonNullPoints(track: Track): List<Float>{
     for( i in 0 until track.points.size){
         if(track.points[i] == null) continue
         if(!firstZeroSet) {
-            mutableListOfDistances.add(0F)
+            mutableListOfDistances.add(sum) // 0F
             lastPoint = track.points[i]
             firstZeroSet = true
             continue

@@ -3,8 +3,7 @@ package radim.outfit.core.export.work.locusapiextensions
 import locus.api.objects.extra.Track
 import locus.api.objects.extra.TrackStats
 
-
-fun TrackStats.isTimestamped():Boolean{
+fun TrackStats.isTimestamped(): Boolean{
     return ((this.startTime != this.stopTime) &&
             this.startTime > 100L &&
             this.stopTime > 100L &&
@@ -14,13 +13,21 @@ fun TrackStats.isTimestamped():Boolean{
 }
 
 fun Track.isTimestamped(): Boolean{
-    val points = this.points
     var lastTimestamp = 100L
-    points.forEach{
+    this.points.forEach{
         if(it != null) {
             if (it.time < lastTimestamp) return false
             lastTimestamp = it.time
-        } else return false
+        }
+    }
+    return true
+}
+
+fun Track.hasAltitude(): Boolean{
+    this.points.forEach{
+        if(it != null){
+            if(!it.hasAltitude()) return false
+        }
     }
     return true
 }
