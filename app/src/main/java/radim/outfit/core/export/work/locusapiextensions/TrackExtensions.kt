@@ -24,10 +24,5 @@ fun Track.isTimestamped(): Boolean{
 }
 
 fun Track.hasAltitude(): Boolean{
-    this.points.forEach{
-        if(it != null){
-            if(!it.hasAltitude()) return false
-        }
-    }
-    return true
+    return !this.points.any{(it != null) && (!it.hasAltitude())}
 }

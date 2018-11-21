@@ -10,7 +10,9 @@ public class LocationStringDump {
 		List<String> dump = new LinkedList<String>();
 			dump.add("---------------------Location dump");
 			dump.add("--------------------------latitude   " + loc.latitude);
+			dump.add("--------------------------latitudeSemicircles   " + loc.latitude.toSemiCircles());
 			dump.add("--------------------------longitude   " + loc.longitude);
+			dump.add("--------------------------longitudeSemicircles   " + loc.longitude.toSemiCircles());
 			dump.add("--------------------------hasSpeed()   " + loc.hasSpeed());
 			dump.add("--------------------------getSpeed()   " + loc.getSpeed());
 			dump.add("--------------------------getTime()   " + loc.getTime());

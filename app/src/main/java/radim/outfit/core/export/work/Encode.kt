@@ -23,12 +23,14 @@ class Encoder{
     // https://github.com/gimportexportdevs/gexporter/blob/master/app/src/main/java/org/surfsite/gexporter/Gpx2Fit.java
 
     fun encode(track: Track, dir: File, filename: String): ResultPOJO{
+
+        val debug = true
+
         val start = System.currentTimeMillis()
 
         val publicMessages = mutableListOf<String>()
         val debugMessages = mutableListOf<String>()
         val errorMessages = mutableListOf<String>()
-
         publicMessages.add("Dir: $dir, Filename: $filename, Track: $track")
         debugMessages.add("Debug:")
         errorMessages.add("Error:")
@@ -38,15 +40,19 @@ class Encoder{
         //
         //
         // Every FIT file MUST contain a 'File ID' message as the first message
-        encoder.write(getFileIdMesg(track))
-        encoder.write(getCourseMesg(track, filename))
+        val fileIdMesg = getFileIdMesg(track) 
+        encoder.write(fileIdMesg)
+        val courseMesg = getCourseMesg(track, filename) 
+        encoder.write(courseMesg)
 
         // expensive calls
         val trackIsFullyTimestamped = track.isTimestamped() && track.stats.isTimestamped()
-        debugMessages.add("trackIsFullyTimestamped: $trackIsFullyTimestamped")
+        if (debug) debugMessages.add("trackIsFullyTimestamped: $trackIsFullyTimestamped")
         val trackHasAltitude = track.hasAltitude()
-        debugMessages.add("trackHasAltitude: $trackHasAltitude")
-
+        if (debug) {
+            debugMessages.add("trackHasAltitude: $trackHasAltitude")
+            debugMessages.add(TrackStringDump.stringDescriptionDeep(track))
+        }
         val distancesNonNullPoints = assignPointDistancesToNonNullPoints(track)
         val timestampsNonNullPoints = if(trackIsFullyTimestamped){
                 listOf<Long>()
@@ -54,13 +60,18 @@ class Encoder{
                 assignPointTimestampsToNonNullPoints(track, distancesNonNullPoints)
             }
         }
-
+        if(debug){
+            debugMessages.add("++++++++++++++++++++++distancesNonNullPoints")
+            distancesNonNullPoints.forEach{debugMessages.add(it)}
+            debugMessages.add("++++++++++++++++++++++timestampsNonNullPoints")
+            timestampsNonNullPoints.forEach{debugMessages.add(it)}
+            debugMessages.addAll(Dumps.banner())
+        }
         if(distancesNonNullPoints.size != timestampsNonNullPoints.size) {
             errorMessages.add("Sizes!")
             errorMessages.add("distancesNonNullPoints.size: ${distancesNonNullPoints.size}")
             errorMessages.add("timestampsNonNullPoints.size: ${timestampsNonNullPoints.size}")
         }
-        
         val timeBundle = if (trackIsFullyTimestamped) {
             TrackTimestampsBundle(
                     track.stats.startTime,
@@ -74,25 +85,33 @@ class Encoder{
                     timestampsNonNullPoints // here not empty
             )
         }
-        encoder.write(getLapMesg(track, timeBundle))
+        val lapMesg = getLapMesg(track, timeBundle)
+        encoder.write(lapMesg)
+        if(debug){
+            debugMessages.addAll(Dumps.fileIdMessageDump(fileIdMesg))
+            debugMessages.addAll(Dumps.courseMessageDump(courseMesg))
+            debugMessages.addAll(Dumps.lapMessageDump(lapMesg))
+            debugMessages.addAll(Dumps.banner())
+        }
 
         //RECORDS START
         var index = 0
         for(i in 0 until track.points.size){
             if(track.points[i] == null) {
-                debugMessages.add("NULL PRESENT!")
+                if(debug)debugMessages.add("NULL PRESENT! NULL PRESENT! NULL PRESENT! NULL PRESENT! NULL PRESENT!")
+                errorMessages.add("NULL PRESENT!")
                 continue
             }
-            encoder.write(
-                getRecordMesg(
+            val recordMesg = getRecordMesg(
                     track.points[i],
-                    distancesNonNullPoints[index],
-                    timestampsNonNullPoints[index],
+                    distancesNonNullPoints,
+                    timestampsNonNullPoints,
                     trackIsFullyTimestamped,
                     trackHasAltitude,
                     index
                 )
-            )
+            if(debug) debugMessages.addAll(Dumps.recordMessageDump(recordMesg))
+            encoder.write(recordMesg)
             index ++
         }
         // RECORDS END
@@ -151,12 +170,12 @@ class Encoder{
         lapMesg.totalTimerTime = trackTimestampsBundle.totalTime
         lapMesg.totalElapsedTime = trackTimestampsBundle.totalTime
 
-
         lapMesg.totalDistance = track.stats.totalLength
 
         return lapMesg
     }
 
+    // waypoint is "Point" trackpoint is "Location"
     private fun getRecordMesg(point: Location,
                               dst: List<Float>,
                               time: List<Long>,
