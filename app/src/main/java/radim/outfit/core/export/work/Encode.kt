@@ -67,7 +67,7 @@ class Encoder{
                     track.stats.totalTime.toFloat(),
                     extractPointTimestampsFromPoints(track)
             )
-        }else {
+        } else {
             TrackTimestampsBundle(
                     System.currentTimeMillis(),
                     timestampsNonNullPoints[timestampsNonNullPoints.lastIndex].toFloat(), // here not empty
@@ -90,7 +90,7 @@ class Encoder{
                     timestampsNonNullPoints[index],
                     trackIsFullyTimestamped,
                     trackHasAltitude,
-                    count
+                    index
                 )
             )
             index ++
@@ -169,8 +169,10 @@ class Encoder{
         if(hasAltitude) record.altitude = point.altitude.toFloat()
         record.distance = dst[index]
         record.timestamp = if (fullyTimestamped) {
+            // time (List) is empty
             DateTime(point.time)
         } else {
+            // time (List) is non empty
             DateTime(time[index])
         } 
         return record
