@@ -13,6 +13,7 @@ import java.lang.RuntimeException
 
 // we don't want the progressBar just to flick
 const val MIN_TIME_TAKEN = 300
+const val MILIS_TO_UTC_00_00_Dec_31_1989_FROM_START_OF_UNIX_ERA = 631065600000L
 
 // TODO temporary fix
 const val DEF_SPEED_M_PER_S = 5.0F
@@ -126,10 +127,7 @@ class Encoder{
             // TODO interupted?
             Thread.sleep(MIN_TIME_TAKEN - timeTaken)
         }
-        val exposedPublicMessages: List<String> = publicMessages
-        val exposedDebugMessages: List<String> = debugMessages
-        val exposedErrorMessages: List<String> = errorMessages
-        return ResultPOJO(exposedPublicMessages, exposedDebugMessages, exposedErrorMessages)
+        return ResultPOJO(publicMessages, debugMessages, errorMessages)
     }
 
     private fun getFileIdMesg(track: Track): FileIdMesg{
@@ -165,12 +163,12 @@ class Encoder{
         lapMesg.endPositionLat = lastPoint.getLatitude().toSemiCircles()
         lapMesg.endPositionLong = lastPoint.getLongitude().toSemiCircles()
 
-        lapMesg.timestamp = DateTime(trackTimestampsBundle.startTime)
-        lapMesg.startTime = DateTime(trackTimestampsBundle.startTime)
+        lapMesg.timestamp = DateTime(trackTimestampsBundle.startTime - MILIS_TO_UTC_00_00_Dec_31_1989_FROM_START_OF_UNIX_ERA)
+        lapMesg.startTime = DateTime(trackTimestampsBundle.startTime - MILIS_TO_UTC_00_00_Dec_31_1989_FROM_START_OF_UNIX_ERA)
         lapMesg.totalTimerTime = trackTimestampsBundle.totalTime
         lapMesg.totalElapsedTime = trackTimestampsBundle.totalTime
 
-        lapMesg.totalDistance = track.stats.totalLength
+        lapMesg.totalDistance = track.stats.totalLength * 100 // TODO in cm too?
 
         return lapMesg
     }
@@ -186,13 +184,13 @@ class Encoder{
         record.positionLat = point.latitude.toSemiCircles()
         record.positionLong = point.longitude.toSemiCircles()
         if(hasAltitude) record.altitude = point.altitude.toFloat()
-        record.distance = dst[index]
+        record.distance = dst[index] * 100 // in cm!
         record.timestamp = if (fullyTimestamped) {
             // time (List) is empty
-            DateTime(point.time)
+            DateTime(point.time - MILIS_TO_UTC_00_00_Dec_31_1989_FROM_START_OF_UNIX_ERA)
         } else {
             // time (List) is non empty
-            DateTime(time[index])
+            DateTime(time[index] - MILIS_TO_UTC_00_00_Dec_31_1989_FROM_START_OF_UNIX_ERA)
         } 
         return record
     }

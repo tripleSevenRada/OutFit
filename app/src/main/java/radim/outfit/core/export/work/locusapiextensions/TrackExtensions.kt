@@ -26,3 +26,12 @@ fun Track.isTimestamped(): Boolean{
 fun Track.hasAltitude(): Boolean{
     return !this.points.any{(it != null) && (!it.hasAltitude())}
 }
+
+// TODO lap property
+fun Track.hasAltitudeTotals(): Boolean{
+    return false
+}
+// TODO lap property
+fun Track.hasAltitudeBounds(): Boolean{
+    return false
+}
