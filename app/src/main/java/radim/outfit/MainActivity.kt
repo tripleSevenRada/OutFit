@@ -26,8 +26,11 @@ import locus.api.android.utils.LocusInfo
 import radim.outfit.core.Stats
 import radim.outfit.core.export.logic.*
 import locus.api.android.ActionTools
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import radim.outfit.core.FilenameCharsFilter
 import radim.outfit.core.getFilename
+import radim.outfit.debugdumps.writeTextFile
 
 const val LOG_TAG = "MAIN"
 const val REQUEST_CODE_OPEN_DIRECTORY = 9999
@@ -43,9 +46,11 @@ fun AppCompatActivity.getString(name: String): String {
 
 class MainActivity : AppCompatActivity() {
 
+    private val debug = true
+
     private val exportListener = ExportListener(
             ExportFunction(),
-            ExportPOJO(null,null,null),
+            ExportPOJO(null, null, null),
             ::exportListenerCallback,
             ::clickedCallback
     )
@@ -57,14 +62,14 @@ class MainActivity : AppCompatActivity() {
         progressBar.visibility = ProgressBar.INVISIBLE
 
         val activeLocus = LocusUtils.getActiveVersion(this)
-        if (activeLocus == null){
+        if (activeLocus == null) {
             failGracefully(this.getString("locus_not_installed") + " Error 1")
             return
         }
 
-        try{
+        try {
             ActionTools.getLocusInfo(this, activeLocus)
-        }catch(e: RequiredVersionMissingException){
+        } catch (e: RequiredVersionMissingException) {
             failGracefully(this.getString("required_version_missing - ") + e.localizedMessage + " Error 2")
             return
         }
@@ -86,10 +91,10 @@ class MainActivity : AppCompatActivity() {
             requestPermWrite()
         }
 
-        Log.i(LOG_TAG,"activeLocus.versionName: ${activeLocus.versionName}")
-        Log.i(LOG_TAG,"activeLocus.versionCode: ${activeLocus.versionCode}")
+        Log.i(LOG_TAG, "activeLocus.versionName: ${activeLocus.versionName}")
+        Log.i(LOG_TAG, "activeLocus.versionCode: ${activeLocus.versionCode}")
         val info = locusInfo()
-        if(!info.isRunning)toast(getString("locus_not_running"), Toast.LENGTH_SHORT)
+        if (!info.isRunning) toast(getString("locus_not_running"), Toast.LENGTH_SHORT)
 
         if (LocusUtils.isIntentTrackTools(this.intent)) {
             // event performed if user tap on your app icon in tools menu of 'Track'
@@ -124,16 +129,36 @@ class MainActivity : AppCompatActivity() {
 
     //  CALLBACKS
 
-    private fun exportListenerCallback(resultPOJO: ResultPOJO){
-        Log.i("$LOG_TAG ELCALLBCK","${resultPOJO.publicMessage};" +
+    private fun exportListenerCallback(resultPOJO: ResultPOJO) {
+        Log.i("$LOG_TAG ELCALLBCK", "${resultPOJO.publicMessage};" +
                 "${resultPOJO.debugMessage}" + "${resultPOJO.errorMessage}")
         // enable executive UI
         btnExport.isEnabled = true
         progressBar.visibility = ProgressBar.INVISIBLE
+
+        if (debug) {
+            //fire and forget writing log file
+            var success = true
+            doAsync {
+                try {
+                    writeTextFile(File(resultPOJO.logFileDir.absolutePath +
+                            File.separatorChar +
+                            resultPOJO.filename +
+                            ".debug.dump"
+                    ), resultPOJO.debugMessage)
+                } catch (e: Exception){
+                    e.printStackTrace()
+                    success = false
+                }
+                uiThread {
+                    if (success) toast(getString("debug_log_written"), Toast.LENGTH_SHORT)
+                }
+            }
+        }
     }
 
-    private fun clickedCallback(){
-        Log.i("$LOG_TAG CLCALLBCK","clicked")
+    private fun clickedCallback() {
+        Log.i("$LOG_TAG CLCALLBCK", "clicked")
         // disable executive UI
         btnExport.isEnabled = false
         progressBar.visibility = ProgressBar.VISIBLE
@@ -142,9 +167,10 @@ class MainActivity : AppCompatActivity() {
     //  CALLBACKS
 
     fun directoryPick(@Suppress("UNUSED_PARAMETER") v: View) {
-        if(!permWriteIsGranted()) toast(getString("permission_needed"), Toast.LENGTH_SHORT)
-        val rootPath = getRoot(exportListener)?.path ?:Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOCUMENTS).path
+        if (!permWriteIsGranted()) toast(getString("permission_needed"), Toast.LENGTH_SHORT)
+        val rootPath = getRoot(exportListener)?.path
+                ?: Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_DOCUMENTS).path
         val chooserIntent = Intent(this, DirectoryChooserActivity::class.java)
         Log.i(LOG_TAG, "calling DirectoryChooserActivity with root: $rootPath")
 
@@ -191,7 +217,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setTvRootDir() {
         val text: String? = getRoot(exportListener)?.path
-        if (text != null){
+        if (text != null) {
             tvRootDir.setTextColor(this.getColor(R.color.imitateButtons))
             tvRootDir.text = text
         } else {
@@ -226,9 +252,9 @@ class MainActivity : AppCompatActivity() {
     private fun setAppStorageRoot() {
 
         val locusExportDir = File(locusInfo().rootDirExport)
-        if(storageDirExists(locusExportDir)){
+        if (storageDirExists(locusExportDir)) {
             setRoot(locusExportDir, exportListener)
-        }else {
+        } else {
             val appExportRoot = File(Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_DOCUMENTS), this.getString("app_name"))
             val created: Boolean = appExportRoot.mkdirs()
@@ -275,18 +301,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun toast(message: String, duration: Int){
+    private fun toast(message: String, duration: Int) {
         val toast = Toast.makeText(applicationContext, message, duration)
         toast.show()
     }
 
-    private fun getFinnishIntent(message: String): Intent{
+    private fun getFinnishIntent(message: String): Intent {
         return Intent(this, FinishGracefully::class.java).apply {
             putExtra(EXTRA_MESSAGE_FINISH, message)
         }
     }
 
-    private fun failGracefully(message: String){
+    private fun failGracefully(message: String) {
         val intent = getFinnishIntent(message)
         startActivity(intent)
         this.finish()
