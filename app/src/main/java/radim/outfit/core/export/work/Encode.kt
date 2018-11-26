@@ -4,7 +4,7 @@ import android.util.Log
 import com.garmin.fit.*
 import locus.api.objects.extra.Location
 import locus.api.objects.extra.Track
-import radim.outfit.core.export.logic.ResultPOJO
+import radim.outfit.core.export.logic.Result
 import radim.outfit.core.export.work.locusapiextensions.*
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.TrackStringDump
 import radim.outfit.debugdumps.FitSDKDebugDumps.Dumps
@@ -22,7 +22,7 @@ class Encoder {
     // with great help of:
     // https://github.com/gimportexportdevs/gexporter/blob/master/app/src/main/java/org/surfsite/gexporter/Gpx2Fit.java
 
-    fun encode(track: Track, dir: File, filename: String): ResultPOJO {
+    fun encode(track: Track, dir: File, filename: String): Result {
 
         val debug = true
 
@@ -71,6 +71,7 @@ class Encoder {
             errorMessages.add("Sizes!")
             errorMessages.add("distancesNonNullPoints.size: ${distancesNonNullPoints.size}")
             errorMessages.add("timestampsNonNullPoints.size: ${timestampsNonNullPoints.size}")
+            return Result.Fail(debugMessages, errorMessages, dir, filename)
         }
         val timeBundle = if (trackIsFullyTimestamped) {
             TrackTimestampsBundle(
@@ -127,7 +128,7 @@ class Encoder {
             // TODO interupted?
             Thread.sleep(MIN_TIME_TAKEN - timeTaken)
         }
-        return ResultPOJO(publicMessages, debugMessages, errorMessages, dir, filename)
+        return Result.Success(publicMessages, debugMessages, dir, filename)
     }
 
     private fun getFileIdMesg(track: Track): FileIdMesg {

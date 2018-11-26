@@ -25,6 +25,7 @@
     <string name="required_version_missing">Locus is probably too old!</string>
     <string name="locus_not_running">Locus is not running.</string>
     <string name="debug_log_written">Debug log written.</string>
+    <string name="debug_log_write_error">Debug log write error.</string>
 
     <!-- Stats.kt-->
     <string name="name_stats">Name:</string>

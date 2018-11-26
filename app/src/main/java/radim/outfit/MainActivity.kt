@@ -129,29 +129,48 @@ class MainActivity : AppCompatActivity() {
 
     //  CALLBACKS
 
-    private fun exportListenerCallback(resultPOJO: ResultPOJO) {
-        Log.i("$LOG_TAG ELCALLBCK", "${resultPOJO.publicMessage};" +
-                "${resultPOJO.debugMessage}" + "${resultPOJO.errorMessage}")
+    private fun exportListenerCallback(result: Result) {
         // enable executive UI
         btnExport.isEnabled = true
         progressBar.visibility = ProgressBar.INVISIBLE
 
         if (debug) {
             //fire and forget writing log file
-            var success = true
+            var savedOK = true
             doAsync {
                 try {
-                    writeTextFile(File(resultPOJO.logFileDir.absolutePath +
-                            File.separatorChar +
-                            resultPOJO.filename +
-                            ".debug.dump"
-                    ), resultPOJO.debugMessage)
-                } catch (e: Exception){
+                    when (result) {
+                        is Result.Success -> {
+                            writeTextFile(File(result.logFileDir.absolutePath +
+                                    File.separatorChar +
+                                    result.filename +
+                                    ".debug.dump"
+                            ), result.debugMessage)
+                        }
+                        is Result.Fail -> {
+                            if (result.logFileDir != null && result.logFileDir.exists() && result.filename != null) {
+                                val rootPath = result.logFileDir.absolutePath +
+                                        File.separatorChar +
+                                        result.filename
+                                writeTextFile(
+                                        File("$rootPath.error.dump"
+                                        ), result.errorMessage)
+                                writeTextFile(
+                                        File("$rootPath.debug.dump"
+                                        ), result.debugMessage)
+                            } else {
+                                savedOK = false
+                                Log.e(LOG_TAG, result.errorMessage.toString())
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
                     e.printStackTrace()
-                    success = false
+                    savedOK = false
                 }
                 uiThread {
-                    if (success) toast(getString("debug_log_written"), Toast.LENGTH_SHORT)
+                    if (savedOK) toast(getString("debug_log_written"), Toast.LENGTH_SHORT)
+                    else toast(getString("debug_log_write_error"), Toast.LENGTH_SHORT)
                 }
             }
         }
