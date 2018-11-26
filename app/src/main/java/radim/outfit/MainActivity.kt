@@ -127,7 +127,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //  CALLBACKS
+    //  CALLBACKS START
 
     private fun exportListenerCallback(result: Result) {
         // enable executive UI
@@ -136,8 +136,8 @@ class MainActivity : AppCompatActivity() {
 
         if (debug) {
             //fire and forget writing log file
-            var savedOK = true
             doAsync {
+                var savedOK = true
                 try {
                     when (result) {
                         is Result.Success -> {
@@ -149,15 +149,9 @@ class MainActivity : AppCompatActivity() {
                         }
                         is Result.Fail -> {
                             if (result.logFileDir != null && result.logFileDir.exists() && result.filename != null) {
-                                val rootPath = result.logFileDir.absolutePath +
-                                        File.separatorChar +
-                                        result.filename
-                                writeTextFile(
-                                        File("$rootPath.error.dump"
-                                        ), result.errorMessage)
-                                writeTextFile(
-                                        File("$rootPath.debug.dump"
-                                        ), result.debugMessage)
+                                val rootPath = result.logFileDir.absolutePath + File.separatorChar + result.filename
+                                writeTextFile(File("$rootPath.debug.dump"), result.debugMessage)
+                                writeTextFile(File("$rootPath.error.dump"), result.errorMessage)
                             } else {
                                 savedOK = false
                                 Log.e(LOG_TAG, result.errorMessage.toString())
@@ -171,19 +165,20 @@ class MainActivity : AppCompatActivity() {
                 uiThread {
                     if (savedOK) toast(getString("debug_log_written"), Toast.LENGTH_SHORT)
                     else toast(getString("debug_log_write_error"), Toast.LENGTH_SHORT)
+                    if(result is Result.Fail) failGracefully(result.errorMessage.toString())
                 }
             }
         }
+        // TODO do something public about result
     }
 
     private fun clickedCallback() {
-        Log.i("$LOG_TAG CLCALLBCK", "clicked")
         // disable executive UI
         btnExport.isEnabled = false
         progressBar.visibility = ProgressBar.VISIBLE
     }
 
-    //  CALLBACKS
+    //  CALLBACKS END
 
     fun directoryPick(@Suppress("UNUSED_PARAMETER") v: View) {
         if (!permWriteIsGranted()) toast(getString("permission_needed"), Toast.LENGTH_SHORT)

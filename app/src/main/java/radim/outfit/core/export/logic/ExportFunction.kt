@@ -7,11 +7,11 @@ import java.io.File
 
 class ExportFunction: (File?, String?, Track?)-> Result{
 
-    override operator fun invoke(file: File?, filename: String?, track: Track?): Result{
-        return if(file != null && filename != null && track != null){
-            Encoder().encode(track, file, filename)
+    override operator fun invoke(dir: File?, filename: String?, track: Track?): Result{
+        return if(dir != null && filename != null && track != null){
+            Encoder().encode(track, dir, filename)
         } else {
-            Result.Fail(listOf("debug:"), listOf("error:"), file, filename)
+            Result.Fail(listOf("debug:"), listOf("error:", "dir or filename or track == null"), dir, filename)
         }
     }
 }
