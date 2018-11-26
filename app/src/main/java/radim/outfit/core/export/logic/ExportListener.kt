@@ -9,11 +9,11 @@ import radim.outfit.core.getFilename
 import java.io.File
 
 
-// error codes 8 -
+// error codes 8 - 12
 class ExportListener(
-        private val execute: (File?, String?, Track?)-> ResultPOJO,
+        private val execute: (File?, String?, Track?)-> Result,
         var exportPOJO: ExportPOJO,
-        private val callback: (ResultPOJO) -> Unit,
+        private val callback: (Result) -> Unit,
         private val clickedCallback: () -> Unit
         ): View.OnClickListener{
 
@@ -76,10 +76,9 @@ class ExportListener(
     }
 
     private fun callBackResultError(singleErrorMessage: String){
-        val publicMessage = listOf<String>()
-        val debugMessage = listOf<String>()
-        val errorMessage = listOf(singleErrorMessage)
-        callback(ResultPOJO(publicMessage, debugMessage, errorMessage))
+        val debugMessage = listOf("debug:")
+        val errorMessage = listOf("error:", singleErrorMessage)
+        callback(Result.Fail(debugMessage, errorMessage))
     }
 
 }

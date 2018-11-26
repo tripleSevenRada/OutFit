@@ -4,7 +4,7 @@ import android.util.Log
 import com.garmin.fit.*
 import locus.api.objects.extra.Location
 import locus.api.objects.extra.Track
-import radim.outfit.core.export.logic.ResultPOJO
+import radim.outfit.core.export.logic.Result
 import radim.outfit.core.export.work.locusapiextensions.*
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.TrackStringDump
 import radim.outfit.debugdumps.FitSDKDebugDumps.Dumps
@@ -22,7 +22,7 @@ class Encoder {
     // with great help of:
     // https://github.com/gimportexportdevs/gexporter/blob/master/app/src/main/java/org/surfsite/gexporter/Gpx2Fit.java
 
-    fun encode(track: Track, dir: File, filename: String): ResultPOJO {
+    fun encode(track: Track, dir: File, filename: String): Result {
 
         val debug = true
 
@@ -71,6 +71,7 @@ class Encoder {
             errorMessages.add("Sizes!")
             errorMessages.add("distancesNonNullPoints.size: ${distancesNonNullPoints.size}")
             errorMessages.add("timestampsNonNullPoints.size: ${timestampsNonNullPoints.size}")
+            return Result.Fail(debugMessages, errorMessages, dir, filename)
         }
         val timeBundle = if (trackIsFullyTimestamped) {
             TrackTimestampsBundle(
@@ -127,7 +128,7 @@ class Encoder {
             // TODO interupted?
             Thread.sleep(MIN_TIME_TAKEN - timeTaken)
         }
-        return ResultPOJO(publicMessages, debugMessages, errorMessages, dir, filename)
+        return Result.Success(publicMessages, debugMessages, dir, filename)
     }
 
     private fun getFileIdMesg(track: Track): FileIdMesg {
@@ -139,7 +140,7 @@ class Encoder {
         fileIdMesg.serialNumber = 12345L
         fileIdMesg.number = track.points.hashCode() // Not required
         fileIdMesg.timeCreated = DateTime((System.currentTimeMillis() -
-                MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000)
+                MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
         return fileIdMesg
     }
 
@@ -171,10 +172,10 @@ class Encoder {
         // Set timestamp field Units: s Comment: Lap end time.
         lapMesg.timestamp = DateTime(
                 (trackTimestampsBundle.pointStamps[trackTimestampsBundle.pointStamps.lastIndex] -
-                        MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000)
+                        MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
         // Set start_time field
         lapMesg.startTime = DateTime((trackTimestampsBundle.startTime -
-                MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000)
+                MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
         // Set total_timer_time field Units: s Comment: Timer Time (excludes pauses)
         lapMesg.totalTimerTime = trackTimestampsBundle.totalTime / 1000F
         // Set total_elapsed_time field Units: s Comment: Time (includes pauses)
@@ -199,10 +200,10 @@ class Encoder {
         record.distance = dst[index] * 100 // in cm!
         record.timestamp = if (fullyTimestamped) {
             // time (List) is empty
-            DateTime((point.time - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000)
+            DateTime((point.time - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
         } else {
             // time (List) is non empty
-            DateTime((time[index] - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000)
+            DateTime((time[index] - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
         }
         return record
     }
