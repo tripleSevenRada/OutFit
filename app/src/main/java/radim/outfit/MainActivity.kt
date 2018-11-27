@@ -163,8 +163,8 @@ class MainActivity : AppCompatActivity() {
                     savedOK = false
                 }
                 uiThread {
-                    if (savedOK) toast(getString("debug_log_written"), Toast.LENGTH_SHORT)
-                    else toast(getString("debug_log_write_error"), Toast.LENGTH_SHORT)
+                    if (savedOK) toast(getString("logs_written"), Toast.LENGTH_SHORT)
+                    else toast(getString("logs_write_error"), Toast.LENGTH_SHORT)
                     if(result is Result.Fail) failGracefully(result.errorMessage.toString())
                 }
             }
