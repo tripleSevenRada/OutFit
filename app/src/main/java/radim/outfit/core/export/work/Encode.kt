@@ -9,6 +9,8 @@ import radim.outfit.core.export.work.locusapiextensions.*
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.TrackStringDump
 import radim.outfit.debugdumps.FitSDKDebugDumps.Dumps
 import java.io.File
+import java.lang.reflect.InvocationTargetException
+import com.garmin.fit.DateTime
 
 // we don't want the progressBar just to flick
 const val MIN_TIME_TAKEN = 300
@@ -79,19 +81,22 @@ class Encoder {
                 timestampsNonNullPoints.forEach { debugMessages.add(it.toString()) }
                 debugMessages.addAll(Dumps.banner())
             }
-            if (distancesNonNullPoints.size != timestampsNonNullPoints.size) {
+            if (!trackIsFullyTimestamped &&
+                    distancesNonNullPoints.size != timestampsNonNullPoints.size) {
                 errorMessages.add("Sizes!")
                 errorMessages.add("distancesNonNullPoints.size: ${distancesNonNullPoints.size}")
                 errorMessages.add("timestampsNonNullPoints.size: ${timestampsNonNullPoints.size}")
                 return Result.Fail(debugMessages, errorMessages, dir, filename)
             }
             val timeBundle = if (trackIsFullyTimestamped) {
+                //track has NO null elements
                 TrackTimestampsBundle(
                         track.stats.startTime,
                         track.stats.totalTime.toFloat(),
                         extractPointTimestampsFromPoints(track)
                 )
             } else {
+                //track may contain null elements and is considered not timestamped
                 TrackTimestampsBundle(
                         System.currentTimeMillis(),
                         timestampsNonNullPoints[timestampsNonNullPoints.lastIndex].toFloat() -
@@ -101,7 +106,12 @@ class Encoder {
             }
 
             // 'Lap message'
-            val lapMesg = getLapMesg(track, timeBundle, distancesNonNullPoints)
+            val lapMesg = getLapMesg(track,
+                    timeBundle,
+                    distancesNonNullPoints,
+                    errorMessages,
+                    debugMessages)
+
             encoder.write(lapMesg)
 
             if (debug) {
@@ -111,8 +121,23 @@ class Encoder {
                 debugMessages.addAll(Dumps.banner())
             }
 
+            val eventMesg = EventMesg()
+            eventMesg.localNum = 0
+            eventMesg.event = Event.TIMER
+            eventMesg.eventType = EventType.START
+            eventMesg.eventGroup = 0.toShort()
+            eventMesg.timestamp = (DateTime((timeBundle.startTime -
+                    MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L))
+            encoder.write(eventMesg)
+
+            if (debug) {
+                debugMessages.addAll(Dumps.banner())
+                debugMessages.addAll(Dumps.eventMessageDump(eventMesg))
+            }
+
             //RECORDS START
             var index = 0
+            var timestamp: DateTime? = null
             for (i in 0 until track.points.size) {
                 if (track.points[i] == null) {
                     if (debug) debugMessages.add("NULL PRESENT!")
@@ -126,11 +151,24 @@ class Encoder {
                         trackHasAltitude,
                         index
                 )
+                timestamp = recordMesg.timestamp
                 if (debug) debugMessages.addAll(Dumps.recordMessageDump(recordMesg))
                 encoder.write(recordMesg)
                 index++
             }
             // RECORDS END
+
+            eventMesg.event = Event.TIMER
+            eventMesg.eventType = EventType.STOP_DISABLE_ALL
+            eventMesg.eventGroup = 0.toShort()
+            eventMesg.timestamp = timestamp
+
+            encoder.write(eventMesg)
+
+            if (debug) {
+                debugMessages.addAll(Dumps.banner())
+                debugMessages.addAll(Dumps.eventMessageDump(eventMesg))
+            }
 
         } catch (e: Exception) {
             errorMessages.add(e.localizedMessage)
@@ -157,12 +195,21 @@ class Encoder {
     private fun getFileIdMesg(track: Track): FileIdMesg {
         val fileIdMesg = FileIdMesg()
         fileIdMesg.localNum = 0
+        //file:///home/radim/fit/FitSDKRelease_20.76.00/java/doc/com/garmin/fit/File.html
         fileIdMesg.type = com.garmin.fit.File.COURSE
+        //Set manufacturer field
         fileIdMesg.manufacturer = Manufacturer.DYNASTREAM
+        //Set product field
         fileIdMesg.product = 12345
+        //Set serial_number field
         fileIdMesg.serialNumber = 12345L
+        //Set time_created field Comment: Only set for files that are can be created/erased.
+        //file:///home/radim/fit/FitSDKRelease_20.76.00/java/doc/com/garmin/fit/DateTime.html
+        //Seconds since UTC 00:00 Dec 31 1989 If <0x10000000 = system time
         fileIdMesg.timeCreated = DateTime((System.currentTimeMillis() -
                 MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
+        //Set number field Comment: Only set for files that are not created/erased.
+        fileIdMesg.number = track.points.hashCode()
         return fileIdMesg
     }
 
@@ -174,16 +221,23 @@ class Encoder {
         } else {
             filename.substring(0, filename.lastIndexOf("."))
         }
+        courseMesg.sport = Sport.GENERIC
         courseMesg.capabilities = CourseCapabilities.NAVIGATION // Not required
         return courseMesg
     }
 
-    private fun getLapMesg(track: Track, trackTimestampsBundle: TrackTimestampsBundle, dst: List<Float>): LapMesg {
+    private fun getLapMesg(track: Track,
+                           trackTimestampsBundle: TrackTimestampsBundle,
+                           dst: List<Float>,
+                           errorMsg: MutableList<String>,
+                           debugMsg: MutableList<String>
+    ): LapMesg {
         val lapMesg = LapMesg()
         lapMesg.localNum = 0
-        // TODO first / last non null point
-        val firstPoint = track.points[0]
-        val lastPoint = track.points[track.points.lastIndex]
+        val firstPoint = track.getFirstNonNullPoint()
+        val lastPoint = track.getLastNonNullPoint()
+
+        if (firstPoint == null || lastPoint == null) throw RuntimeException("Track has null elements only.")
 
         lapMesg.startPositionLat = firstPoint.getLatitude().toSemiCircles()
         lapMesg.startPositionLong = firstPoint.getLongitude().toSemiCircles()
@@ -204,6 +258,44 @@ class Encoder {
         //Set total_distance field Units: m
         lapMesg.totalDistance = dst[dst.lastIndex]
 
+        // elevation
+        if (track.hasAltitudeTotals()) {
+            lapMesg.totalAscent = track.stats.elePositiveHeight.toInt()
+            lapMesg.totalDescent = track.stats.eleNegativeHeight.toInt()
+        }
+        if (track.hasAltitudeBounds()) {
+            lapMesg.minAltitude = track.stats.altitudeMin
+            lapMesg.maxAltitude = track.stats.altitudeMax
+        }
+
+        // Add the bounding box of the course in the undocumented fields
+        try {
+            val c = Field::class.java.getDeclaredConstructor(String::class.java, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType,
+                    Double::class.javaPrimitiveType, Double::class.javaPrimitiveType, String::class.java,
+                    Boolean::class.javaPrimitiveType, Profile.Type::class.java)
+            c.isAccessible = true
+            lapMesg.addField(c.newInstance("bound_max_position_lat", 27, 133, 1.0, 0.0, "semicircles", false, Profile.Type.SINT32) as Field)
+            lapMesg.addField(c.newInstance("bound_max_position_long", 28, 133, 1.0, 0.0, "semicircles", false, Profile.Type.SINT32) as Field)
+            lapMesg.addField(c.newInstance("bound_min_position_lat", 29, 133, 1.0, 0.0, "semicircles", false, Profile.Type.SINT32) as Field)
+            lapMesg.addField(c.newInstance("bound_min_position_long", 30, 133, 1.0, 0.0, "semicircles", false, Profile.Type.SINT32) as Field)
+            lapMesg.setFieldValue(27, 0, track.maxLat()?.toSemiCircles() as Int, "\uffff")
+            lapMesg.setFieldValue(28, 0, track.maxLon()?.toSemiCircles() as Int, "\uffff")
+            lapMesg.setFieldValue(29, 0, track.minLat()?.toSemiCircles() as Int, "\uffff")
+            lapMesg.setFieldValue(30, 0, track.minLon()?.toSemiCircles() as Int, "\uffff")
+        } catch (e: NoSuchMethodException) {
+            errorMsg.add(e.localizedMessage)
+            debugMsg.add(e.localizedMessage)
+        } catch (e: IllegalAccessException) {
+            errorMsg.add(e.localizedMessage)
+            debugMsg.add(e.localizedMessage)
+        } catch (e: InstantiationException) {
+            errorMsg.add(e.localizedMessage)
+            debugMsg.add(e.localizedMessage)
+        } catch (e: InvocationTargetException) {
+            errorMsg.add(e.localizedMessage)
+            debugMsg.add(e.localizedMessage)
+        }
+
         return lapMesg
     }
 
@@ -218,7 +310,7 @@ class Encoder {
         record.positionLat = point.latitude.toSemiCircles()
         record.positionLong = point.longitude.toSemiCircles()
         if (hasAltitude) record.altitude = point.altitude.toFloat()
-        record.distance = dst[index] * 100 // in cm!
+        record.distance = dst[index]
         record.timestamp = if (fullyTimestamped) {
             // time (List) is empty
             DateTime((point.time - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)

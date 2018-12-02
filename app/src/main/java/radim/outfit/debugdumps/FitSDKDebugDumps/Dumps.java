@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.garmin.fit.CourseMesg;
+import com.garmin.fit.EventMesg;
 import com.garmin.fit.FileIdMesg;
 import com.garmin.fit.LapMesg;
 import com.garmin.fit.RecordMesg;
@@ -43,6 +44,20 @@ public class Dumps {
         data.add("==========getEndPositionLong()   " + message.getEndPositionLong());
         data.add("==========getStartTime()   " + message.getStartTime());
         data.add("==========getTotalElapsedTime()   " + message.getTotalElapsedTime());
+        data.add("==========getTimestamp().toString()   " + message.getTimestamp().toString());
+        data.add("==========getMaxAltitude()   " + message.getMaxAltitude());
+        data.add("==========getMinAltitude()   " + message.getMinAltitude());
+        data.add("==========getTotalDescent()   " + message.getTotalDescent());
+        data.add("==========getTotalAscent()   " + message.getTotalAscent());
+        return data;
+    }
+
+    public static List<String> eventMessageDump(EventMesg message) {
+        List<String> data = new LinkedList<String>();
+        data.add("=====EventMesg dump");
+        data.add("==========getName()   " + message.getName());
+        data.add("==========getEvent().name()   " + message.getEvent().name());
+        data.add("==========getEventType().name()   " + message.getEventType().name());
         data.add("==========getTimestamp().toString()   " + message.getTimestamp().toString());
         return data;
     }
