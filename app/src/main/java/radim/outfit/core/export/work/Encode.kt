@@ -49,7 +49,13 @@ class Encoder {
             // message type (i.e. 0). The file_id, and course messages need only be recorded once, at the start of the course file. At least
             // one lap message will be recorded in each course file; however multiple lap messages may be recorded if desired. Redefining
             // local message type 0 for all of these messages will ensure simple processors can handle all course data. The rest of the
-            // course file will consist of multiple record messages detailing the course
+            // course file will consist of multiple record messages detailing the course.
+
+            // I do not recommend following garmin instructions for courses bundled in
+            // FitSDKRelease_20.76.00.
+            // These seem to be outdated to me.
+            // Helpful tool: https://github.com/mrihtar/Garmin-FIT
+            // Dump course exported directly from Garmin Connect and follow what you see in there
 
             // Every FIT file MUST contain a 'File ID' message as the first message
             val fileIdMesg = getFileIdMesg(track)
@@ -61,13 +67,21 @@ class Encoder {
 
             // expensive calls
 
+            //================================================================================
             val trackIsFullyTimestamped = track.isTimestamped() && track.stats.isTimestamped()
+            //================================================================================
+
             if (debug) debugMessages.add("trackIsFullyTimestamped: $trackIsFullyTimestamped")
+
+            //================================================================================
             val trackHasAltitude = track.hasAltitude()
+            //================================================================================
+
             if (debug) {
                 debugMessages.add("trackHasAltitude: $trackHasAltitude")
                 debugMessages.addAll(TrackStringDump.stringDescriptionDeep(track))
             }
+
             val distancesNonNullPoints = assignPointDistancesToNonNullPoints(track)
             val timestampsNonNullPoints = if (trackIsFullyTimestamped) {
                 listOf()
@@ -109,7 +123,10 @@ class Encoder {
                 )
             }
 
+            //================================================================================
             val trackHasSpeed = track.hasSpeed()
+            //================================================================================
+
             if (debug) debugMessages.add("trackHasSpeed: $trackHasSpeed")
             val speedsNonNullPoints = if (trackHasSpeed) {
                 listOf()
@@ -141,10 +158,10 @@ class Encoder {
             }
 
             /*
-  timestamp (253-1-UINT32): 2018-11-03T07:42:28 (910161748)
-  event (0-1-ENUM): timer (0)
-  event_group (4-1-UINT8): 0
-  event_type (1-1-ENUM): start (0)
+timestamp (253-1-UINT32): 2018-11-03T07:42:28 (910161748)
+event (0-1-ENUM): timer (0)
+event_group (4-1-UINT8): 0
+event_type (1-1-ENUM): start (0)
              */
 
             val eventMesgStart = EventMesg()
@@ -189,17 +206,17 @@ class Encoder {
 
             // sanity check
             if (index != distancesNonNullPoints.size ||
-                    index != timestampsNonNullPoints.size ||
-                    index != speedsNonNullPoints.size) {
+                    (!trackIsFullyTimestamped && index != timestampsNonNullPoints.size) ||
+                    (!trackHasSpeed && index != speedsNonNullPoints.size)) {
                 errorMessages.add("Sizes mismatch: Encode")
                 return Result.Fail(debugMessages, errorMessages, dir, filename)
             }
 
             /*
-  timestamp (253-1-UINT32): 2018-11-03T09:27:37 (910168057)
-  event (0-1-ENUM): timer (0)
-  event_group (4-1-UINT8): 0
-  event_type (1-1-ENUM): stop_disable_all (9)
+timestamp (253-1-UINT32): 2018-11-03T09:27:37 (910168057)
+event (0-1-ENUM): timer (0)
+event_group (4-1-UINT8): 0
+event_type (1-1-ENUM): stop_disable_all (9)
              */
 
             val eventMesgStop = EventMesg()
@@ -239,13 +256,13 @@ class Encoder {
 
     private fun getFileIdMesg(track: Track): FileIdMesg {
         /*
-        exported course from garmin connect printed by https://github.com/mrihtar/Garmin-FIT
-        type (0-1-ENUM): course (6)
-        manufacturer (1-1-UINT16): garmin (1)
-        garmin_product (2-1-UINT16, original name: product): connect (65534)
-        time_created (4-1-UINT32): 2018-11-03T07:42:28 (910161748)
-        serial_number (3-1-UINT32Z): 21431572
-        number (5-1-UINT16): 1
+exported course from garmin connect printed by https://github.com/mrihtar/Garmin-FIT
+type (0-1-ENUM): course (6)
+manufacturer (1-1-UINT16): garmin (1)
+garmin_product (2-1-UINT16, original name: product): connect (65534)
+time_created (4-1-UINT32): 2018-11-03T07:42:28 (910161748)
+serial_number (3-1-UINT32Z): 21431572
+number (5-1-UINT16): 1
         */
         val fileIdMesg = FileIdMesg()
         fileIdMesg.localNum = 0
@@ -336,36 +353,6 @@ class Encoder {
             lapMesg.minAltitude = track.stats.altitudeMin
             lapMesg.maxAltitude = track.stats.altitudeMax
         }
-
-        /*
-        // Add the bounding box of the course in the undocumented fields
-        try {
-            val c = Field::class.java.getDeclaredConstructor(String::class.java, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType,
-                    Double::class.javaPrimitiveType, Double::class.javaPrimitiveType, String::class.java,
-                    Boolean::class.javaPrimitiveType, Profile.Type::class.java)
-            c.isAccessible = true
-            lapMesg.addField(c.newInstance("bound_max_position_lat", 27, 133, 1.0, 0.0, "semicircles", false, Profile.Type.SINT32) as Field)
-            lapMesg.addField(c.newInstance("bound_max_position_long", 28, 133, 1.0, 0.0, "semicircles", false, Profile.Type.SINT32) as Field)
-            lapMesg.addField(c.newInstance("bound_min_position_lat", 29, 133, 1.0, 0.0, "semicircles", false, Profile.Type.SINT32) as Field)
-            lapMesg.addField(c.newInstance("bound_min_position_long", 30, 133, 1.0, 0.0, "semicircles", false, Profile.Type.SINT32) as Field)
-            lapMesg.setFieldValue(27, 0, track.maxLat()?.toSemiCircles() as Int, "\uffff")
-            lapMesg.setFieldValue(28, 0, track.maxLon()?.toSemiCircles() as Int, "\uffff")
-            lapMesg.setFieldValue(29, 0, track.minLat()?.toSemiCircles() as Int, "\uffff")
-            lapMesg.setFieldValue(30, 0, track.minLon()?.toSemiCircles() as Int, "\uffff")
-        } catch (e: NoSuchMethodException) {
-            errorMsg.add(e.localizedMessage)
-            debugMsg.add(e.localizedMessage)
-        } catch (e: IllegalAccessException) {
-            errorMsg.add(e.localizedMessage)
-            debugMsg.add(e.localizedMessage)
-        } catch (e: InstantiationException) {
-            errorMsg.add(e.localizedMessage)
-            debugMsg.add(e.localizedMessage)
-        } catch (e: InvocationTargetException) {
-            errorMsg.add(e.localizedMessage)
-            debugMsg.add(e.localizedMessage)
-        }
-        */
 
         return lapMesg
     }
