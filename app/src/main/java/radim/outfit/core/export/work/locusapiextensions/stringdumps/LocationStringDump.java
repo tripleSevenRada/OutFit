@@ -11,15 +11,10 @@ public class LocationStringDump {
     public static List<String> stringDescription(Location loc) {
         List<String> dump = new LinkedList<String>();
         dump.add("---------------------Location dump");
-        dump.add("--------------------------latitude   " + loc.latitude);
-        dump.add("--------------------------latitudeSemicircles   " + toSemiCirclesJava(loc.latitude));
-        dump.add("--------------------------longitude   " + loc.longitude);
-        dump.add("--------------------------longitudeSemicircles   " + toSemiCirclesJava(loc.longitude));
-        dump.add("--------------------------hasSpeed()   " + loc.hasSpeed());
-        dump.add("--------------------------getSpeed()   " + loc.getSpeed());
-        dump.add("--------------------------getTime()   " + loc.getTime());
-        dump.add("--------------------------hasAltitude()   " + loc.hasAltitude());
-        dump.add("--------------------------getAltitude()   " + loc.getAltitude());
+        dump.add("lat | long: " + loc.latitude + ", " + toSemiCirclesJava(loc.latitude) + " | " + loc.longitude + ", " + toSemiCirclesJava(loc.longitude));
+        dump.add("speed: " + loc.hasSpeed() + ", " + loc.getSpeed());
+        dump.add("time: " + loc.getTime());
+        dump.add("alt: " + loc.hasAltitude() + ", " + loc.getAltitude());
         return dump;
     }
 }

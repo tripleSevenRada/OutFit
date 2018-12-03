@@ -1,5 +1,6 @@
 package radim.outfit.core.export.work.locusapiextensions
 
+import locus.api.objects.extra.Location
 import locus.api.objects.extra.Track
 import locus.api.objects.utils.LocationCompute
 import radim.outfit.core.export.work.DEF_SPEED_M_PER_S
@@ -56,6 +57,28 @@ fun assignPointDistancesToNonNullPoints(track: Track): List<Float> {
         lastPoint = track.points[i]
     }
     return mutableListOfDistances
+}
+
+fun assignSpeedsToNonNullPoints(track: Track, timeBundle: TrackTimestampsBundle, dist: List<Float>): List<Float> {
+    val speeds = mutableListOf<Float>()
+    var index = 0
+    var lastTime: Long = timeBundle.pointStamps[0]
+    var lastDist: Float = dist[0]
+    for (i in track.points.indices) {
+        if (track.points[i] == null) continue
+        var timeDeltaInS: Float = ((timeBundle.pointStamps[index] - lastTime).toFloat()) / 1000F
+        var distDeltaInM: Float = dist[index] - lastDist
+        if(timeDeltaInS < 0F) timeDeltaInS = 0F
+        if(distDeltaInM < 0F) distDeltaInM = 0F
+        val speed = distDeltaInM / timeDeltaInS
+        speeds.add(if(speed.isFinite()) speed else 0F)
+        lastTime = timeBundle.pointStamps[index]
+        lastDist = dist[index]
+        index++
+    }
+    if (timeBundle.pointStamps.size != dist.size || dist.size != speeds.size)
+        throw RuntimeException("Data sizes - TrackEnhancements")
+    return speeds
 }
 
 data class TrackTimestampsBundle(val startTime: Long, val totalTime: Float, val pointStamps: List<Long>)

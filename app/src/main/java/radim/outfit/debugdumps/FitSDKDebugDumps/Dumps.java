@@ -12,9 +12,7 @@ import com.garmin.fit.RecordMesg;
 public class Dumps {
     public static List<String> banner() {
         List<String> banner = new LinkedList<String>();
-        banner.add("==============================================================");
-        banner.add("==============================================================");
-        banner.add("==============================================================");
+        banner.add("__________________________________________________________________________________________________________");
         return banner;
     }
 
@@ -23,6 +21,9 @@ public class Dumps {
         data.add("=====FileIdMesg dump");
         data.add("==========getName()   " + message.getName());
         data.add("==========getTimeCreated()   " + message.getTimeCreated());
+        data.add("==========getNumber()   " + message.getNumber());
+        data.add("==========getSerialNumber()   " + message.getSerialNumber());
+        data.add("==========getType()   " + message.getType());
         return data;
     }
 
@@ -31,6 +32,7 @@ public class Dumps {
         data.add("=====CourseMesg dump");
         data.add("==========getName()   " + message.getName());
         data.add("==========getCapabilities()   " + message.getCapabilities());
+        data.add("==========getSport()   " + message.getSport());
         return data;
     }
 
@@ -71,6 +73,12 @@ public class Dumps {
         data.add("==========getAltitude()   " + message.getAltitude());
         data.add("==========getDistance()   " + message.getDistance());
         data.add("==========getTimestamp().toString()   " + message.getTimestamp().toString());
+        return data;
+    }
+
+    public static List<String> recordMessageDumpLine(RecordMesg message) {
+        List<String> data = new LinkedList<String>();
+        data.add("Rcrd: "  + message.getName() + ", "+ message.getPositionLat() + ", "+ message.getPositionLong() + ", " + message.getAltitude()+ ", " + message.getDistance() + ", " + message.getTimestamp().toString() + ", " + message.getSpeed());
         return data;
     }
 }
