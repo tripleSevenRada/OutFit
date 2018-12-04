@@ -33,4 +33,7 @@
     <string name="nmb_points_stats">Number of points:</string>
     <string name="nmb_waypoints_stats">Number of waypoints:</string>
 
+    <!-- speed_fragment.xml-->
+    <string name="frag_label">There is no speed associated with this track. Please select some.</string>
+
 </resources>

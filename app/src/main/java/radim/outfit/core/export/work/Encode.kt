@@ -13,11 +13,8 @@ import com.garmin.fit.DateTime
 import java.util.*
 
 // we don't want the progressBar just to flick
-const val MIN_TIME_TAKEN = 300
+const val MIN_TIME_TAKEN = 260
 const val MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989 = 631065600000L
-
-// TODO temporary fix
-const val DEF_SPEED_M_PER_S = 5.0F
 
 class Encoder {
 
@@ -25,7 +22,7 @@ class Encoder {
     // https://github.com/gimportexportdevs/gexporter/blob/master/app/src/main/java/org/surfsite/gexporter/Gpx2Fit.java
     // https://github.com/mrihtar/Garmin-FIT
 
-    fun encode(track: Track, dir: File, filename: String): Result {
+    fun encode(track: Track, dir: File, filename: String, speedIfNotInTrack: Float): Result {
 
         val debug = true
 
@@ -65,8 +62,6 @@ class Encoder {
             val courseMesg = getCourseMesg(track, filename)
             encoder.write(courseMesg)
 
-            // expensive calls
-
             //================================================================================
             val trackIsFullyTimestamped = track.isTimestamped() && track.stats.isTimestamped()
             //================================================================================
@@ -86,7 +81,7 @@ class Encoder {
             val timestampsNonNullPoints = if (trackIsFullyTimestamped) {
                 listOf()
             } else {
-                assignPointTimestampsToNonNullPoints(track, distancesNonNullPoints)
+                assignPointTimestampsToNonNullPoints(track, distancesNonNullPoints, speedIfNotInTrack)
             }
 
             if (debug) {
@@ -123,16 +118,7 @@ class Encoder {
                 )
             }
 
-            //================================================================================
-            val trackHasSpeed = track.hasSpeed()
-            //================================================================================
-
-            if (debug) debugMessages.add("trackHasSpeed: $trackHasSpeed")
-            val speedsNonNullPoints = if (trackHasSpeed) {
-                listOf()
-            } else {
-                assignSpeedsToNonNullPoints(track, timeBundle, distancesNonNullPoints)
-            }
+            val speedsNonNullPoints = assignSpeedsToNonNullPoints(track, timeBundle, distancesNonNullPoints)
 
             if (debug) {
                 debugMessages.addAll(Dumps.banner())
@@ -194,7 +180,6 @@ event_type (1-1-ENUM): start (0)
                         speedsNonNullPoints,
                         trackIsFullyTimestamped,
                         trackHasAltitude,
-                        trackHasSpeed,
                         index
                 )
                 timestamp = recordMesg.timestamp
@@ -206,8 +191,7 @@ event_type (1-1-ENUM): start (0)
 
             // sanity check
             if (index != distancesNonNullPoints.size ||
-                    (!trackIsFullyTimestamped && index != timestampsNonNullPoints.size) ||
-                    (!trackHasSpeed && index != speedsNonNullPoints.size)) {
+                    (!trackIsFullyTimestamped && index != timestampsNonNullPoints.size)) {
                 errorMessages.add("Sizes mismatch: Encode")
                 return Result.Fail(debugMessages, errorMessages, dir, filename)
             }
@@ -364,7 +348,6 @@ number (5-1-UINT16): 1
                               speed: List<Float>,
                               fullyTimestamped: Boolean,
                               hasAltitude: Boolean,
-                              hasSpeed: Boolean,
                               index: Int): RecordMesg {
         /*
   position_lat (0-1-SINT32): 49.9937300 deg (596448431)
@@ -385,11 +368,7 @@ number (5-1-UINT16): 1
             // time (List) is non empty
             DateTime((time[index] - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
         }
-        record.speed = if (hasSpeed) {
-            point.speed
-        } else {
-            speed[index]
-        }
+        record.speed = speed[index]
         record.distance = dst[index]
         if (hasAltitude) record.altitude = point.altitude.toFloat()
         return record

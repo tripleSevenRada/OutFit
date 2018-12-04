@@ -1,9 +1,7 @@
 package radim.outfit.core.export.work.locusapiextensions
 
-import locus.api.objects.extra.Location
 import locus.api.objects.extra.Track
 import locus.api.objects.utils.LocationCompute
-import radim.outfit.core.export.work.DEF_SPEED_M_PER_S
 
 // track does not contain null elements and is fully timestamped
 fun extractPointTimestampsFromPoints(track: Track): List<Long> {
@@ -15,7 +13,7 @@ fun extractPointTimestampsFromPoints(track: Track): List<Long> {
 }
 
 // track may contain null elements and is not considered fully timestamped
-fun assignPointTimestampsToNonNullPoints(track: Track, distances: List<Float>): List<Long> {
+fun assignPointTimestampsToNonNullPoints(track: Track, distances: List<Float>, speedIfNotInTrack: Float): List<Long> {
     val now: Long = System.currentTimeMillis()
     val mutableListOfTimestamps = mutableListOf<Long>()
     var count = 0
@@ -28,7 +26,7 @@ fun assignPointTimestampsToNonNullPoints(track: Track, distances: List<Float>): 
             continue
         }
         val dst = distances[count]
-        val timeMilis = (dst / DEF_SPEED_M_PER_S) * 1000F
+        val timeMilis = (dst / speedIfNotInTrack) * 1000F
         mutableListOfTimestamps.add(now + timeMilis.toLong())
         count++
     }

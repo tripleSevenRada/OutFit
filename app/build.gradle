@@ -49,3 +49,8 @@ dependencies {
     implementation 'org.jetbrains.anko:anko-common:0.9'
 }
 
+dependencies {
+    implementation 'com.android.support:appcompat-v7:28.+'
+    implementation 'com.android.support.constraint:constraint-layout:+'
+    implementation 'android.arch.lifecycle:extensions:1.+'
+}

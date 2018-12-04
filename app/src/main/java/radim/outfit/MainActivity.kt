@@ -52,8 +52,15 @@ class MainActivity : AppCompatActivity() {
             ExportFunction(),
             ExportPOJO(null, null, null),
             ::exportListenerCallback,
-            ::clickedCallback
+            ::clickedCallback,
+            ::showSpeedPickerDialog
     )
+
+    private fun showSpeedPickerDialog(){
+        val fm = supportFragmentManager
+        val spf = SpeedPickerFragment()
+        spf.show(fm,"speed_picker_fragment")
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
