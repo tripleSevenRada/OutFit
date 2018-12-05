@@ -62,6 +62,30 @@ class Encoder {
             val courseMesg = getCourseMesg(track, filename)
             encoder.write(courseMesg)
 
+            /*
+
+            // https://drive.google.com/file/d/1IgF-khr7c0fF5zZzU8fORJqGpF5DXliz/view?usp=sharing
+
+@startuml
+title Track.isFullyTimestamped()
+state "isFullyTimestamped" as stamped {
+  state true
+  state false
+  true --> distancesNonNullPoints: Assign
+  false --> distancesNonNullPoints: Assign
+  true --> timestampsNonNullPoints: Assign EMPTY list
+  false --> timestampsNonNullPoints: Assign
+  true --> trackTimeStampsBundle: ExtractFromPoints
+  false --> trackTimeStampsBundle: extract from\ntimestampsNonNullPoints \nwhich is NOT EMPTY
+  note right of speedsNonNullPoints
+  Depends on:
+  trackTimeStampsBundle
+  distancesNonNullPoints
+  end note
+}
+@enduml
+            */
+
             //================================================================================
             val trackIsFullyTimestamped = track.isTimestamped() && track.stats.isTimestamped()
             //================================================================================
