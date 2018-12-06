@@ -56,10 +56,14 @@ class MainActivity : AppCompatActivity() {
             ::showSpeedPickerDialog
     )
 
-    private fun showSpeedPickerDialog(){
+    private fun showSpeedPickerDialog(okAction: (Float) -> Unit) {
         val fm = supportFragmentManager
-        val spf = SpeedPickerFragment()
-        spf.show(fm,"speed_picker_fragment")
+        val spf = SpeedPickerFragment.newInstance(
+                okAction,
+                ::dialogDismissedCallback,
+                ::clickedCallback
+        )
+        spf.show(fm, "speed_picker_fragment")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -172,7 +176,7 @@ class MainActivity : AppCompatActivity() {
                 uiThread {
                     if (savedOK) toast(getString("logs_written"), Toast.LENGTH_SHORT)
                     else toast(getString("logs_write_error"), Toast.LENGTH_SHORT)
-                    if(result is Result.Fail) failGracefully(result.errorMessage.toString())
+                    if (result is Result.Fail) failGracefully(result.errorMessage.toString())
                 }
             }
         }
@@ -183,6 +187,12 @@ class MainActivity : AppCompatActivity() {
         // disable executive UI
         btnExport.isEnabled = false
         progressBar.visibility = ProgressBar.VISIBLE
+    }
+
+    private fun dialogDismissedCallback() {
+        // enable executive UI
+        btnExport.isEnabled = true
+        progressBar.visibility = ProgressBar.INVISIBLE
     }
 
     //  CALLBACKS END

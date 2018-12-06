@@ -1,27 +1,66 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/speedFrag"
+    android:id="@+id/speedFragVertical"
     android:name="radim.outfit.SpeedPickerFragment"
-    android:orientation="vertical"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/speedFragTV"
         style="@style/mainTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/frag_label"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp" />
+        android:text="@string/frag_label" />
 
-    <NumberPicker
-        android:id="@+id/speedFragNP"
+    <LinearLayout
+        android:id="@+id/speedFragHorizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"/>
+        android:orientation="horizontal">
+
+        <NumberPicker
+            android:id="@+id/speedFragNP"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
+
+        <RadioGroup
+            android:id="@+id/speedFragRG"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="16dp"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/speedFragButtonKmh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="22dp"
+                android:text="@string/kmh" />
+
+            <RadioButton
+                android:id="@+id/speedFragButtonMph"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:text="@string/mph" />
+
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/speedFragButtonOK"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="16dp"
+            android:text="@string/ok" />
+
+    </LinearLayout>
 
 </LinearLayout>

@@ -6,7 +6,8 @@ import java.io.File
 
 class ExportFunction: (File?, String?, Track?, Float)-> Result{
 
-    override operator fun invoke(dir: File?, filename: String?, track: Track?, speedIfNotInTrack: Float): Result{
+    override operator fun invoke(dir: File?, filename: String?, track: Track?,
+                                 speedIfNotInTrack: Float): Result{
         return if(dir != null && filename != null && track != null){
             Encoder().encode(track, dir, filename, speedIfNotInTrack)
         } else {

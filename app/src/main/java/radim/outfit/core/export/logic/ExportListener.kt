@@ -18,7 +18,7 @@ class ExportListener(
         var exportPOJO: ExportPOJO,
         private val callback: (Result) -> Unit,
         private val clickedCallback: () -> Unit,
-        private val showSpeedPickerDialog: () -> Unit
+        private val showSpeedPickerDialog: ((Float) -> Unit) -> Unit
 ) : View.OnClickListener {
 
     private val tag = "ExportListener"
@@ -67,14 +67,22 @@ class ExportListener(
                         mostRecentFilenameNotEmptyAsserted,
                         exportPOJO.track))
 
-        clickedCallback()
-
         // https://medium.com/coding-blocks/making-asynctask-obsolete-with-kotlin-5fe1d944d69
         // https://antonioleiva.com/anko-background-kotlin-android/
 
+        //TODO duplicity
         fun executeAsync() {
             doAsync {
                 val result = execute(finalExportPojo.file, finalExportPojo.filename, finalExportPojo.track, 2.0F)
+                uiThread {
+                    callback(result)
+                }
+            }
+        }
+
+        fun executeAsyncWithSpeed(speedMperS: Float) {
+            doAsync {
+                val result = execute(finalExportPojo.file, finalExportPojo.filename, finalExportPojo.track, speedMperS)
                 uiThread {
                     callback(result)
                 }
@@ -86,12 +94,11 @@ class ExportListener(
             val trackIsFullyTimestamped = track.isTimestamped()
             uiThread {
                 Log.i(tag, "trackIsFullyTimestamped: $trackHasSpeed")
-                Log.i(tag, "trackHasSpeed: $trackIsFullyTimestamped")
+                Log.i(tag, "trackHasSpeed, INFO: $trackIsFullyTimestamped")
                 if (!trackIsFullyTimestamped) {
-                    showSpeedPickerDialog()
-                    //TODO
-                    executeAsync()
+                    showSpeedPickerDialog(::executeAsyncWithSpeed)
                 }else{
+                    clickedCallback()
                     executeAsync()
                 }
             }
