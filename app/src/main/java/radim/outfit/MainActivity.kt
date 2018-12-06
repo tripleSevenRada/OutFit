@@ -56,9 +56,9 @@ class MainActivity : AppCompatActivity(), OkActionProvider {
             ::showSpeedPickerDialog
     )
 
-    private fun showSpeedPickerDialog(okAction: (Float) -> Unit) {
+    private fun showSpeedPickerDialog() {
         val fm = supportFragmentManager
-        val spf = SpeedPickerFragment()//.newInstance(okAction)
+        val spf = SpeedPickerFragment()
         spf.show(fm, "speed_picker_fragment")
     }
 

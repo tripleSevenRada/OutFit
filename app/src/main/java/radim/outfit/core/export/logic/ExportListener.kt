@@ -12,13 +12,13 @@ import radim.outfit.core.getFilename
 import java.io.File
 
 
-// error codes 8 - 13
+// error codes 8 - 14
 class ExportListener(
         private val execute: (File?, String?, Track?, Float) -> Result,
         var exportPOJO: ExportPOJO,
         private val callback: (Result) -> Unit,
         private val clickedCallback: () -> Unit,
-        private val showSpeedPickerDialog: ((Float) -> Unit) -> Unit
+        private val showSpeedPickerDialog: () -> Unit
 ) : View.OnClickListener {
 
     private val tag = "ExportListener"
@@ -35,52 +35,24 @@ class ExportListener(
         this.defaultFilename = filename
     }
 
-    private lateinit var finalExportPojo: ExportPOJO
-
     // syntax:
     // https://stackoverflow.com/questions/44912803/passing-and-using-function-as-constructor-argument-in-kotlin
 
     override fun onClick(v: View) {
-        // SANITY CHECKS START
+
+        if (!isDataNonNull()) return
         val track = exportPOJO.track
         track ?: return
-        //callBackResultError(" 8 - trackPOJO.track = null")
-        val dir = exportPOJO.file
-        if (dir == null) {
-            callBackResultError("9 - trackPOJO.file = null")
-            return
-        }
-        if (!dir.exists() || !dir.isDirectory) {
-            callBackResultError("10 - trackPOJO.file non existent or non directory")
-            return
-        }
-        if (track.points == null || track.points.size < 2) {
-            callBackResultError("11 - trackpoints == null or start only")
-            return
-        }
-        if (track.stats == null) {
-            callBackResultError("12 - stats == null")
-            return
-        }
-        // SANITY CHECKS END
-        val mostRecentFilename = editTextFilename.text.toString()
-        val mostRecentFilenameNotEmptyAsserted = getFilename(mostRecentFilename, defaultFilename)
-        finalExportPojo = mergeExportPOJOS(exportPOJO,
-                ExportPOJO(exportPOJO.file,
-                        mostRecentFilenameNotEmptyAsserted,
-                        exportPOJO.track))
 
         // https://medium.com/coding-blocks/making-asynctask-obsolete-with-kotlin-5fe1d944d69
         // https://antonioleiva.com/anko-background-kotlin-android/
 
         doAsync {
             val trackIsFullyTimestamped = track.isTimestamped()
-            val trackHasSpeed = track.hasSpeed()
             uiThread {
                 Log.i(tag, "trackIsFullyTimestamped: $trackIsFullyTimestamped")
-                Log.i(tag, "trackHasSpeed, ONLY INFO: $trackHasSpeed")
                 if (!trackIsFullyTimestamped) {
-                    showSpeedPickerDialog(::executeAsync)
+                    showSpeedPickerDialog()
                 } else {
                     executeAsync(2.0F)
                 }
@@ -88,29 +60,66 @@ class ExportListener(
         }
     }
 
+    fun getOkAction(): (Float) -> Unit = ::executeAsync
+
     private fun executeAsync(speedMperS: Float) {
-        if (::finalExportPojo.isInitialized) {
-            clickedCallback()
-            doAsync {
-                val result = execute(finalExportPojo.file,
-                        finalExportPojo.filename,
-                        finalExportPojo.track,
-                        speedMperS)
-                uiThread {
-                    callback(result)
-                }
+        if (!isDataNonNull()) return
+        val finalExportPojo = getFinalExportPOJO()
+        clickedCallback()
+        doAsync {
+            val result = execute(finalExportPojo.file,
+                    finalExportPojo.filename,
+                    finalExportPojo.track,
+                    speedMperS)
+            uiThread {
+                callback(result)
             }
-        } else {
-            callBackResultError("13 - lateinit finalExportPojo not initialized")
         }
     }
 
-    fun getOkAction(): (Float) -> Unit = ::executeAsync
+    fun getFinalExportPOJO(): ExportPOJO {
+        val mostRecentFilename = editTextFilename.text.toString()
+        val mostRecentFilenameNotEmptyAsserted = getFilename(mostRecentFilename, defaultFilename)
+        return mergeExportPOJOS(exportPOJO,
+                ExportPOJO(exportPOJO.file,
+                        mostRecentFilenameNotEmptyAsserted,
+                        exportPOJO.track))
+    }
+
+    private fun isDataNonNull(): Boolean {
+        val track = exportPOJO.track
+        track ?: return false
+        val dir = exportPOJO.file
+        if (dir == null) {
+            callBackResultError("9 - trackPOJO.file = null")
+            return false
+        }
+        if (!dir.exists() || !dir.isDirectory) {
+            callBackResultError("10 - trackPOJO.file non existent or non directory")
+            return false
+        }
+        if (track.points == null || track.points.size < 2) {
+            callBackResultError("11 - trackpoints == null or start only")
+            return false
+        }
+        if (track.stats == null) {
+            callBackResultError("12 - stats == null")
+            return false
+        }
+        if (!::editTextFilename.isInitialized) {
+            callBackResultError("13 - editTextFilename - lateinit error")
+            return false
+        }
+        if (!::defaultFilename.isInitialized) {
+            callBackResultError("14 - defaultFilename - lateinit error")
+            return false
+        }
+        return true
+    }
 
     private fun callBackResultError(singleErrorMessage: String) {
         val debugMessage = listOf("debug:")
         val errorMessage = listOf("error:", singleErrorMessage)
         callback(Result.Fail(debugMessage, errorMessage))
     }
-
 }

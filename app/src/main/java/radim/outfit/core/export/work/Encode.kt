@@ -13,7 +13,7 @@ import com.garmin.fit.DateTime
 import java.util.*
 
 // we don't want the progressBar just to flick
-const val MIN_TIME_TAKEN = 260
+const val MIN_TIME_TAKEN = 8000
 const val MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989 = 631065600000L
 
 class Encoder {
