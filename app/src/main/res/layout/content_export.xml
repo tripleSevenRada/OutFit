@@ -21,8 +21,8 @@
         android:layout_marginTop="2dp" />
 
     <Button
-        style="@style/customButton"
         android:id="@+id/btnExport"
+        style="@style/customButton"
         android:layout_marginTop="16dp"
         android:text="@string/btn_export" />
 

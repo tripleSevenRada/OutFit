@@ -20,16 +20,16 @@ class SpeedPickerFragment : DialogFragment() {
                         dismissedAction: () -> Unit,
                         whenCreatedAction: () -> Unit): SpeedPickerFragment {
             val instance = SpeedPickerFragment()
-            instance.okAction = okAction
-            instance.dismissedAction = dismissedAction
-            instance.whenCreatedAction = whenCreatedAction
+            //instance.okAction = okAction
+            //instance.dismissedAction = dismissedAction
+            //instance.whenCreatedAction = whenCreatedAction
             return instance
         }
     }
 
-    private lateinit var okAction: (Float) -> Unit
-    private lateinit var dismissedAction: () -> Unit
-    private lateinit var whenCreatedAction: () -> Unit
+    //private lateinit var okAction: (Float) -> Unit
+    //private lateinit var dismissedAction: () -> Unit
+    //private lateinit var whenCreatedAction: () -> Unit
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -41,18 +41,19 @@ class SpeedPickerFragment : DialogFragment() {
         val np: NumberPicker = view.findViewById(R.id.speedFragNP)
         np.minValue = SPEED_MIN
         np.maxValue = SPEED_MAX
+        //TODO remember position
         np.value = SPEED_DEFAULT
         np.wrapSelectorWheel = false
         val buttonKmh: RadioButton = view.findViewById(R.id.speedFragButtonKmh)
         buttonKmh.isChecked = true
         val buttonOK: Button = view.findViewById(R.id.speedFragButtonOK)
         dialog.setOnDismissListener{
-            dismissedAction
+            //dismissedAction
         }
         buttonOK.setOnClickListener {
             val value = np.value.toFloat()
             //TODO mph vs km/h to m/s
-            okAction(value)
+            //okAction(value)
             dialog.dismiss()
         }
         return view
@@ -60,6 +61,6 @@ class SpeedPickerFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        whenCreatedAction
+        //whenCreatedAction
     }
 }
