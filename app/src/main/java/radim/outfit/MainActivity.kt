@@ -44,7 +44,7 @@ fun AppCompatActivity.getString(name: String): String {
     return resources.getString(resources.getIdentifier(name, "string", packageName))
 }
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OkActionProvider {
 
     private val debug = true
 
@@ -58,13 +58,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun showSpeedPickerDialog(okAction: (Float) -> Unit) {
         val fm = supportFragmentManager
-        val spf = SpeedPickerFragment.newInstance(
-                okAction,
-                ::dialogDismissedCallback,
-                ::clickedCallback
-        )
+        val spf = SpeedPickerFragment()//.newInstance(okAction)
         spf.show(fm, "speed_picker_fragment")
     }
+
+    override fun getOkAction(): (Float) -> Unit = exportListener.getOkAction()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -187,12 +185,6 @@ class MainActivity : AppCompatActivity() {
         // disable executive UI
         btnExport.isEnabled = false
         progressBar.visibility = ProgressBar.VISIBLE
-    }
-
-    private fun dialogDismissedCallback() {
-        // enable executive UI
-        btnExport.isEnabled = true
-        progressBar.visibility = ProgressBar.INVISIBLE
     }
 
     //  CALLBACKS END

@@ -12,7 +12,7 @@ import radim.outfit.core.getFilename
 import java.io.File
 
 
-// error codes 8 - 12
+// error codes 8 - 13
 class ExportListener(
         private val execute: (File?, String?, Track?, Float) -> Result,
         var exportPOJO: ExportPOJO,
@@ -34,13 +34,16 @@ class ExportListener(
     fun attachDefaultFilename(filename: String) {
         this.defaultFilename = filename
     }
+
+    private lateinit var finalExportPojo: ExportPOJO
+
     // syntax:
     // https://stackoverflow.com/questions/44912803/passing-and-using-function-as-constructor-argument-in-kotlin
 
     override fun onClick(v: View) {
         // SANITY CHECKS START
         val track = exportPOJO.track
-        track?:return
+        track ?: return
         //callBackResultError(" 8 - trackPOJO.track = null")
         val dir = exportPOJO.file
         if (dir == null) {
@@ -62,7 +65,7 @@ class ExportListener(
         // SANITY CHECKS END
         val mostRecentFilename = editTextFilename.text.toString()
         val mostRecentFilenameNotEmptyAsserted = getFilename(mostRecentFilename, defaultFilename)
-        val finalExportPojo = mergeExportPOJOS(exportPOJO,
+        finalExportPojo = mergeExportPOJOS(exportPOJO,
                 ExportPOJO(exportPOJO.file,
                         mostRecentFilenameNotEmptyAsserted,
                         exportPOJO.track))
@@ -70,40 +73,39 @@ class ExportListener(
         // https://medium.com/coding-blocks/making-asynctask-obsolete-with-kotlin-5fe1d944d69
         // https://antonioleiva.com/anko-background-kotlin-android/
 
-        //TODO duplicity
-        fun executeAsync() {
-            doAsync {
-                val result = execute(finalExportPojo.file, finalExportPojo.filename, finalExportPojo.track, 2.0F)
-                uiThread {
-                    callback(result)
-                }
-            }
-        }
-
-        fun executeAsyncWithSpeed(speedMperS: Float) {
-            doAsync {
-                val result = execute(finalExportPojo.file, finalExportPojo.filename, finalExportPojo.track, speedMperS)
-                uiThread {
-                    callback(result)
-                }
-            }
-        }
-
         doAsync {
-            val trackHasSpeed = track.hasSpeed()
             val trackIsFullyTimestamped = track.isTimestamped()
+            val trackHasSpeed = track.hasSpeed()
             uiThread {
-                Log.i(tag, "trackIsFullyTimestamped: $trackHasSpeed")
-                Log.i(tag, "trackHasSpeed, INFO: $trackIsFullyTimestamped")
+                Log.i(tag, "trackIsFullyTimestamped: $trackIsFullyTimestamped")
+                Log.i(tag, "trackHasSpeed, ONLY INFO: $trackHasSpeed")
                 if (!trackIsFullyTimestamped) {
-                    showSpeedPickerDialog(::executeAsyncWithSpeed)
-                }else{
-                    clickedCallback()
-                    executeAsync()
+                    showSpeedPickerDialog(::executeAsync)
+                } else {
+                    executeAsync(2.0F)
                 }
             }
         }
     }
+
+    private fun executeAsync(speedMperS: Float) {
+        if (::finalExportPojo.isInitialized) {
+            clickedCallback()
+            doAsync {
+                val result = execute(finalExportPojo.file,
+                        finalExportPojo.filename,
+                        finalExportPojo.track,
+                        speedMperS)
+                uiThread {
+                    callback(result)
+                }
+            }
+        } else {
+            callBackResultError("13 - lateinit finalExportPojo not initialized")
+        }
+    }
+
+    fun getOkAction(): (Float) -> Unit = ::executeAsync
 
     private fun callBackResultError(singleErrorMessage: String) {
         val debugMessage = listOf("debug:")
