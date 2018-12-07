@@ -12,6 +12,8 @@ import java.io.File
 
 
 // error codes 8 - 14
+// https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
+
 class ExportListener(
         private val execute: (File?, String?, Track?, Float) -> Result,
         var exportPOJO: ExportPOJO,
@@ -33,9 +35,6 @@ class ExportListener(
     fun attachDefaultFilename(filename: String) {
         this.defaultFilename = filename
     }
-
-    // syntax:
-    // https://stackoverflow.com/questions/44912803/passing-and-using-function-as-constructor-argument-in-kotlin
 
     override fun onClick(v: View) {
 
