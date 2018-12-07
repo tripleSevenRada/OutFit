@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">out_fit</string>
+    <string name="app_name">OUT FIT</string>
 
     <!-- activity_main.xml -->
     <string name="btn_directory_picker">Select export folder</string>
@@ -14,7 +14,7 @@
     <string name="what_happened">What happened:</string>
 
     <!-- MainActivity.kt DirectoryChooserConfig-->
-    <string name="new_directory_name">_data</string>
+    <string name="new_directory_name">OUT_FIT_data</string>
 
     <!-- MainActivity.kt default filename no extension-->
     <string name="default_filename">outfit_export</string>
@@ -35,10 +35,16 @@
 
     <!-- speed_fragment.xml-->
     <string name="frag_label">There is no speed in this track. Please select.</string>
-    <string name="kmh">km/h</string>
-    <string name="mph">mph</string>
+    <string name="kmh" translatable="false">km/h</string>
+    <string name="mph" translatable="false">mph</string>
 
-    <string name="ok">OK</string>
+    <string name="ok" translatable="false">OK</string>
+
+    <!-- shared preferences -->
+    <string name="main_activity_preferences" translatable="false">radim.outfit.MainActivity</string>
+    <string name="last_seen_speed_value" translatable="false">value_in_speed_picker</string>
+    <string name="last_seen_speed_units" translatable="false">units_in_speed_picker-id_of_the_widget</string>
+    <string name="last_seen_root" translatable="false">last_seen_root_directory</string>
 
 
 </resources>

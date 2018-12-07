@@ -5,9 +5,9 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextUtils
 
-fun getFilename(trackName: String?, defaultFilename: String): String {
-    if(trackName == null)return "$defaultFilename$FILENAME_SUFFIX" // should never happen, Locus
-    val filename = FilenameCharsFilter().replaceReservedChars(trackName,
+fun getFilename(fileName: String?, defaultFilename: String): String {
+    if(fileName == null)return "$defaultFilename$FILENAME_SUFFIX" // should never happen, Locus
+    val filename = FilenameCharsFilter().replaceReservedChars(fileName,
             FILENAME_RESERVED_CHARS,
             FILENAME_REPLACEMENT_CHAR).toString()
     return if (filename.isNotEmpty()) {

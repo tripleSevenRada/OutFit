@@ -1,10 +1,11 @@
 package radim.outfit
 
 import android.Manifest
-import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Environment
 import android.util.Log
 import locus.api.android.utils.LocusUtils
@@ -31,6 +32,7 @@ import org.jetbrains.anko.uiThread
 import radim.outfit.core.FilenameCharsFilter
 import radim.outfit.core.getFilename
 import radim.outfit.debugdumps.writeTextFile
+import java.lang.RuntimeException
 
 const val LOG_TAG = "MAIN"
 const val REQUEST_CODE_OPEN_DIRECTORY = 9999
@@ -44,7 +46,7 @@ fun AppCompatActivity.getString(name: String): String {
     return resources.getString(resources.getIdentifier(name, "string", packageName))
 }
 
-class MainActivity : AppCompatActivity(), OkActionProvider {
+class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesProvider {
 
     private val debug = true
 
@@ -52,7 +54,7 @@ class MainActivity : AppCompatActivity(), OkActionProvider {
             ExportFunction(),
             ExportPOJO(null, null, null),
             ::exportListenerCallback,
-            ::clickedCallback,
+            ::disableExecutive,
             ::showSpeedPickerDialog
     )
 
@@ -62,13 +64,54 @@ class MainActivity : AppCompatActivity(), OkActionProvider {
         spf.show(fm, "speed_picker_fragment")
     }
 
+    private lateinit var sharedPreferences: SharedPreferences
+
+    // SpeedPickerFragment interfaces impl START
     override fun getOkAction(): (Float) -> Unit = exportListener.getOkAction()
+
+    override fun getSpeed() = sharedPreferences.getInt(getString("last_seen_speed_value"), SPEED_DEFAULT)
+    override fun getUnitsButtonId() = sharedPreferences.getInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
+    override fun setSpeed(value: Int) = persistInSharedPreferences(getString("last_seen_speed_value"), value)
+    override fun setUnitsButtonId(id: Int) = persistInSharedPreferences(getString("last_seen_speed_units"), id)
+
+    private fun <T> persistInSharedPreferences(key: String, value: T) {
+        with(sharedPreferences.edit()) {
+            when (value) {
+                is Int -> {
+                    putInt(key, value)
+                }
+                is Float -> {
+                    putFloat(key, value)
+                }
+                is Boolean -> {
+                    putBoolean(key, value)
+                }
+                else -> {
+                    throw RuntimeException("unimplemented")
+                }
+            }
+            apply()
+        }
+    }
+    // SpeedPickerFragment interfaces impl END
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         progressBar.visibility = ProgressBar.INVISIBLE
+
+        sharedPreferences = this.getSharedPreferences(
+                getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
+        with(sharedPreferences.edit()) {
+            if (!sharedPreferences.contains(getString("last_seen_speed_value"))) {
+                putInt(getString("last_seen_speed_value"), SPEED_DEFAULT)
+            }
+            if (!sharedPreferences.contains(getString("last_seen_speed_units"))) {
+                putInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
+            }
+            apply()
+        }
 
         val activeLocus = LocusUtils.getActiveVersion(this)
         if (activeLocus == null) {
@@ -112,27 +155,30 @@ class MainActivity : AppCompatActivity(), OkActionProvider {
     }
 
     // isIntentTrackTools(intent) = true
-    private fun handleIntentTrackToolsMenu(act: Activity, intent: Intent) {
-        val track: Track?
-        try {
-            track = LocusUtils.handleIntentTrackTools(act, intent)
-        } catch (e: RequiredVersionMissingException) {
-            failGracefully(this.getString("required_version_missing - ") + e.localizedMessage + " Error 4")
-            return
-        } catch (e: Exception) {
-            failGracefully(e.localizedMessage + " Error 5")
-            return
-        }
-        if (track != null && track.points != null && track.points.size > 0) {
-            // do work
-            tvStats.text = Stats().basicInfo(track, this)
-            val filename = getFilename(track.name, getString("default_filename"))
-            etFilename.setText(filename)
-            setTrack(track, exportListener)
-            setFilename(filename, exportListener)
-        } else {
-            failGracefully(" Error 6")
-            return
+    private fun handleIntentTrackToolsMenu(act: AppCompatActivity, intent: Intent) {
+        disableExecutive()
+        doAsync {
+            var track: Track? = null
+            try {
+                track = LocusUtils.handleIntentTrackTools(act, intent)
+            } catch (e: RequiredVersionMissingException) {
+                failGracefully(act.getString("required_version_missing") + " " + e.localizedMessage + " Error 4")
+            } catch (e: Exception) {
+                failGracefully(e.localizedMessage + " Error 5")
+            }
+            uiThread {
+                if (track != null && track.points != null && track.points.size > 0) {
+                    // do work
+                    tvStats.text = Stats().basicInfo(track, act)
+                    val filename = getFilename(track.name, getString("default_filename"))
+                    etFilename.setText(filename)
+                    setTrack(track, exportListener)
+                    setFilename(filename, exportListener)
+                    enableExecutive()
+                } else {
+                    failGracefully(" null - Error 6")
+                }
+            }
         }
     }
 
@@ -181,10 +227,15 @@ class MainActivity : AppCompatActivity(), OkActionProvider {
         // TODO do something public about result
     }
 
-    private fun clickedCallback() {
+    private fun disableExecutive() {
         // disable executive UI
         btnExport.isEnabled = false
         progressBar.visibility = ProgressBar.VISIBLE
+    }
+    private fun enableExecutive() {
+        // enable executive UI
+        btnExport.isEnabled = true
+        progressBar.visibility = ProgressBar.INVISIBLE
     }
 
     //  CALLBACKS END
@@ -198,7 +249,7 @@ class MainActivity : AppCompatActivity(), OkActionProvider {
         Log.i(LOG_TAG, "calling DirectoryChooserActivity with root: $rootPath")
 
         val config = DirectoryChooserConfig.builder()
-                .newDirectoryName("${getString(R.string.app_name)}${getString(R.string.new_directory_name)}")
+                .newDirectoryName(getString(R.string.new_directory_name))
                 .allowReadOnlyDirectory(false)
                 .allowNewDirectoryNameModification(true)
                 .initialDirectory(rootPath)
@@ -229,7 +280,7 @@ class MainActivity : AppCompatActivity(), OkActionProvider {
         Log.i(LOG_TAG, "SELECTED_DIR: $selectedDir")
         val newRoot: File? = File(selectedDir)
         if (storageDirExists(newRoot)) {
-            setRoot(newRoot, exportListener)
+            setRoot(newRoot, exportListener, sharedPreferences, getString("last_seen_root"))
             setTvRootDir()
             Log.i(LOG_TAG, "new root: ${getRoot(exportListener)}")
         } else {
@@ -274,9 +325,18 @@ class MainActivity : AppCompatActivity(), OkActionProvider {
 
     private fun setAppStorageRoot() {
 
+        // if root is stored and exists set it
+        if(sharedPreferences.contains(this.getString("last_seen_root"))){
+            val lastSeenRoot = File(sharedPreferences.getString(this.getString("last_seen_root"),
+                    locusInfo().rootDirExport))
+            if(lastSeenRoot.isDirectory){
+                setRoot(lastSeenRoot, exportListener, sharedPreferences, getString("last_seen_root"))
+                return
+            }
+        }
         val locusExportDir = File(locusInfo().rootDirExport)
         if (storageDirExists(locusExportDir)) {
-            setRoot(locusExportDir, exportListener)
+            setRoot(locusExportDir, exportListener, sharedPreferences, getString("last_seen_root"))
         } else {
             val appExportRoot = File(Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_DOCUMENTS), this.getString("app_name"))
@@ -286,7 +346,7 @@ class MainActivity : AppCompatActivity(), OkActionProvider {
             } else {
                 Log.i(LOG_TAG, "setAppStorageRoot() - directory not created")
             }
-            setRoot(appExportRoot, exportListener)
+            setRoot(appExportRoot, exportListener, sharedPreferences, getString("last_seen_root"))
         }
     }
 
@@ -340,5 +400,4 @@ class MainActivity : AppCompatActivity(), OkActionProvider {
         startActivity(intent)
         this.finish()
     }
-
 }

@@ -6,7 +6,6 @@ import android.widget.EditText
 import locus.api.objects.extra.Track
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import radim.outfit.core.export.work.locusapiextensions.hasSpeed
 import radim.outfit.core.export.work.locusapiextensions.isTimestamped
 import radim.outfit.core.getFilename
 import java.io.File

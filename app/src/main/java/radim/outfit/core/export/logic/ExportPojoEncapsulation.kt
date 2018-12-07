@@ -1,5 +1,6 @@
 package radim.outfit.core.export.logic
 
+import android.content.SharedPreferences
 import locus.api.objects.extra.Track
 import java.io.File
 
@@ -15,8 +16,14 @@ fun mergeExportPOJOS(old: ExportPOJO, new: ExportPOJO): ExportPOJO{
 
 // EXPORT POJO UTILS
 
-fun setRoot(root: File?, listener: ExportListener){
+fun setRoot(root: File?, listener: ExportListener, prefs: SharedPreferences, key: String){
     listener.exportPOJO = mergeExportPOJOS(listener.exportPOJO, ExportPOJO(root, null, null))
+    if(root != null) {
+        with(prefs.edit()) {
+            putString(key, root.absolutePath)
+            apply()
+        }
+    }
 }
 
 fun getRoot(listener: ExportListener): File?{

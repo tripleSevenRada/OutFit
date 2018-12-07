@@ -12,8 +12,7 @@ import java.io.File
 import com.garmin.fit.DateTime
 import java.util.*
 
-// we don't want the progressBar just to flick
-const val MIN_TIME_TAKEN = 8000
+const val MIN_TIME_TAKEN = 8
 const val MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989 = 631065600000L
 
 class Encoder {
@@ -197,6 +196,7 @@ event_type (1-1-ENUM): start (0)
                     if (debug) debugMessages.add("----------------------------------------------------------------------------NULL PRESENT!")
                     continue
                 }
+
                 val recordMesg = getRecordMesg(
                         track.points[i],
                         distancesNonNullPoints,
@@ -241,13 +241,13 @@ event_type (1-1-ENUM): stop_disable_all (9)
                 debugMessages.addAll(Dumps.eventMessageDump(eventMesgStop))
             }
 
-        } catch (e: Exception) {
+        } catch (e: Exception) { //FitRuntimeException
             errorMessages.add(e.localizedMessage)
             return Result.Fail(debugMessages, errorMessages, dir, filename, e)
         } finally {
             try {
                 encoder.close()
-            } catch (e: FitRuntimeException) {
+            } catch (e: Exception) { //FitRuntimeException
                 errorMessages.add(e.localizedMessage)
                 return Result.Fail(debugMessages, errorMessages, dir, filename, e)
             }
