@@ -17,8 +17,8 @@ import java.io.File
 class ExportListener(
         private val execute: (File?, String?, Track?, Float) -> Result,
         var exportPOJO: ExportPOJO,
-        private val callback: (Result) -> Unit,
-        private val clickedCallback: () -> Unit,
+        private val onFinishCallback: (Result) -> Unit,
+        private val onStartCallback: () -> Unit,
         private val showSpeedPickerDialog: () -> Unit
 ) : View.OnClickListener {
 
@@ -63,14 +63,14 @@ class ExportListener(
     private fun executeAsync(speedMperS: Float) {
         if (!isDataNonNull()) return
         val finalExportPojo = getFinalExportPOJO()
-        clickedCallback()
+        onStartCallback()
         doAsync {
             val result = execute(finalExportPojo.file,
                     finalExportPojo.filename,
                     finalExportPojo.track,
                     speedMperS)
             uiThread {
-                callback(result)
+                onFinishCallback(result)
             }
         }
     }
@@ -118,6 +118,6 @@ class ExportListener(
     private fun callBackResultError(singleErrorMessage: String) {
         val debugMessage = listOf("debug:")
         val errorMessage = listOf("error:", singleErrorMessage)
-        callback(Result.Fail(debugMessage, errorMessage))
+        onFinishCallback(Result.Fail(debugMessage, errorMessage))
     }
 }
