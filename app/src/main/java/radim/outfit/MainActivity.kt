@@ -11,12 +11,13 @@ import android.util.Log
 import locus.api.android.utils.LocusUtils
 import locus.api.android.utils.exceptions.RequiredVersionMissingException
 import locus.api.objects.extra.Track
-import net.rdrei.android.dirchooser.DirectoryChooserActivity
-import net.rdrei.android.dirchooser.DirectoryChooserConfig
 import java.io.File
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.DocumentsContract
 import android.support.v4.content.ContextCompat
 import android.support.v4.app.ActivityCompat
+import android.support.v4.provider.FontsContractCompat.Columns.RESULT_CODE_OK
 import android.support.v7.app.AppCompatActivity
 import android.widget.ProgressBar
 import android.widget.Toast
@@ -33,6 +34,7 @@ import radim.outfit.core.FilenameCharsFilter
 import radim.outfit.core.getFilename
 import radim.outfit.debugdumps.writeTextFile
 import java.lang.RuntimeException
+import java.net.URI
 
 const val LOG_TAG = "MAIN"
 const val REQUEST_CODE_OPEN_DIRECTORY = 9999
@@ -246,27 +248,34 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
         val rootPath = getRoot(exportListener)?.path
                 ?: Environment.getExternalStoragePublicDirectory(
                         Environment.DIRECTORY_DOCUMENTS).path
-        val chooserIntent = Intent(this, DirectoryChooserActivity::class.java)
-        Log.i(LOG_TAG, "calling DirectoryChooserActivity with root: $rootPath")
-
-        val config = DirectoryChooserConfig.builder()
-                .newDirectoryName(getString(R.string.new_directory_name))
-                .allowReadOnlyDirectory(false)
-                .allowNewDirectoryNameModification(true)
-                .initialDirectory(rootPath)
-                .build()
-
-        chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config)
-        startActivityForResult(chooserIntent, REQUEST_CODE_OPEN_DIRECTORY)
+        val intent = Intent()
+        intent.setAction(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        val startDir = Uri.fromFile(File(rootPath))
+        intent.setDataAndType(startDir, DocumentsContract.Document.MIME_TYPE_DIR)
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
+        intent.putExtra("android.content.extra.FANCY", true)
+        startActivityForResult(intent, REQUEST_CODE_OPEN_DIRECTORY)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_OPEN_DIRECTORY) {
-            if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
+            if (resultCode == RESULT_CODE_OK) {
                 try {
-                    handleDirectoryChoice(data!!
-                            .getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR))
+                    val uri = intent.data
+                    val type = intent.type
+                    Log.i(LOG_TAG, "Directory selection: $uri $type")
+                    if (uri != null) {
+                        var path: String = uri.toString()
+                        if (path.toLowerCase().startsWith("file://")) {
+                            // Selected file/directory path is below
+                            path = File(URI.create(path)).getAbsolutePath()
+                            Log.i(LOG_TAG, "Directory path: $path")
+
+                        }
+
+                    }
+
                 } catch (e: Exception) {
                     failGracefully(" Error 7")
                     return
