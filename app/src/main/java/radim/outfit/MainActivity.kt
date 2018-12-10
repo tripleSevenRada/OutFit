@@ -235,6 +235,7 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
         btnExport.isEnabled = false
         progressBar.visibility = ProgressBar.VISIBLE
     }
+
     private fun enableExecutive() {
         // enable executive UI
         btnExport.isEnabled = true
@@ -244,16 +245,19 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
     //  CALLBACKS END
 
     fun directoryPick(@Suppress("UNUSED_PARAMETER") v: View) {
+        //SAF NONONO
         if (!permWriteIsGranted()) toast(getString("permission_needed"), Toast.LENGTH_SHORT)
         val rootPath = getRoot(exportListener)?.path
                 ?: Environment.getExternalStoragePublicDirectory(
                         Environment.DIRECTORY_DOCUMENTS).path
-        val intent = Intent()
-        intent.setAction(Intent.ACTION_OPEN_DOCUMENT_TREE)
-        val startDir = Uri.fromFile(File(rootPath))
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        intent.addCategory(Intent.CATEGORY_DEFAULT)
+        val startDir: Uri = Uri.fromFile(File(rootPath))
+        //Log.i(LOG_TAG, "startDir: $startDir")
         intent.setDataAndType(startDir, DocumentsContract.Document.MIME_TYPE_DIR)
-        intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
-        intent.putExtra("android.content.extra.FANCY", true)
+        //intent.setType("*/*")//DocumentsContract.Document.MIME_TYPE_DIR
+        //intent.putExtra("android.content.extra.SHOW_ADVANCED", true)
+        //intent.putExtra("android.content.extra.FANCY", true)
         startActivityForResult(intent, REQUEST_CODE_OPEN_DIRECTORY)
     }
 
@@ -267,15 +271,13 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
                     Log.i(LOG_TAG, "Directory selection: $uri $type")
                     if (uri != null) {
                         var path: String = uri.toString()
+                        Log.i(LOG_TAG, "path: $path")
                         if (path.toLowerCase().startsWith("file://")) {
-                            // Selected file/directory path is below
                             path = File(URI.create(path)).getAbsolutePath()
                             Log.i(LOG_TAG, "Directory path: $path")
-
+                            handleDirectoryChoice(path)
                         }
-
                     }
-
                 } catch (e: Exception) {
                     failGracefully(" Error 7")
                     return
@@ -336,10 +338,10 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
     private fun setAppStorageRoot() {
 
         // if root is stored and exists set it
-        if(sharedPreferences.contains(this.getString("last_seen_root"))){
+        if (sharedPreferences.contains(this.getString("last_seen_root"))) {
             val lastSeenRoot = File(sharedPreferences.getString(this.getString("last_seen_root"),
                     locusInfo().rootDirExport))
-            if(lastSeenRoot.isDirectory){
+            if (lastSeenRoot.isDirectory) {
                 setRoot(lastSeenRoot, exportListener, sharedPreferences, getString("last_seen_root"))
                 return
             }
