@@ -38,7 +38,7 @@
     <string name="kmh" translatable="false">km/h</string>
     <string name="mph" translatable="false">mph</string>
 
-    <string name="ok" translatable="false">OK</string>
+    <string name="ok">CONFIRM</string>
 
     <!-- shared preferences -->
     <string name="main_activity_preferences" translatable="false">radim.outfit.MainActivity</string>
