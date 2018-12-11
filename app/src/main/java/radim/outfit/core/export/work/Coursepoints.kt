@@ -1,18 +1,16 @@
 package radim.outfit.core.export.work
 
-import android.util.Log
-import locus.api.objects.extra.Track
+import com.garmin.fit.CoursePoint
+import locus.api.objects.enums.PointRteAction
 
 val tag = "CP"
 
-fun printCoursepoints(track: Track){
-    track.waypoints.forEach{
-        Log.i(tag, "----------------------------------")
-        Log.i(tag, it.name)
-        if(it.hasParameterDescription()){
-            Log.i(tag, it.parameterDescription)
-        }
-        Log.i(tag, it.parameterRteAction.toString())
-    }
-}
+val routePointActionToCoursePoint: Map<PointRteAction, CoursePoint> = mapOf(
+        PointRteAction.LEFT_SLIGHT to CoursePoint.LEFT,
+        PointRteAction.LEFT to CoursePoint.LEFT,
+        PointRteAction.LEFT_SHARP to CoursePoint.LEFT,
+        PointRteAction.RIGHT_SLIGHT to CoursePoint.RIGHT,
+        PointRteAction.RIGHT to CoursePoint.RIGHT,
+        PointRteAction.RIGHT_SHARP to CoursePoint.RIGHT
+)
 

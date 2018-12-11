@@ -30,7 +30,6 @@ import locus.api.android.ActionTools
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.FilenameCharsFilter
-import radim.outfit.core.export.work.printCoursepoints
 import radim.outfit.core.getFilename
 import radim.outfit.debugdumps.writeTextFile
 import java.lang.RuntimeException
@@ -163,9 +162,6 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
             var track: Track? = null
             try {
                 track = LocusUtils.handleIntentTrackTools(act, intent)
-
-                printCoursepoints(track)
-
             } catch (e: RequiredVersionMissingException) {
                 failGracefully(act.getString("required_version_missing") + " " + e.localizedMessage + " Error 4")
             } catch (e: Exception) {
