@@ -10,6 +10,7 @@ import radim.outfit.core.export.work.locusapiextensions.stringdumps.TrackStringD
 import radim.outfit.debugdumps.FitSDKDebugDumps.Dumps
 import java.io.File
 import com.garmin.fit.DateTime
+import locus.api.objects.extra.GeoDataExtra
 import java.util.*
 
 const val MIN_TIME_TAKEN = 8
@@ -187,6 +188,20 @@ event_type (1-1-ENUM): start (0)
                 debugMessages.addAll(Dumps.eventMessageDump(eventMesgStart))
                 debugMessages.addAll(Dumps.banner())
             }
+
+/*            if (debug){
+                track.waypoints.forEach {
+                    if(it.hasParameter(GeoDataExtra.PAR_RTE_INDEX)) {
+                        val wayLoc = it.location
+                        val index = it.paramRteIndex
+                        val trackLoc = track.points[index]
+                        println("${wayLoc.latitude} ? ${trackLoc.latitude}" )
+                        println("${wayLoc.longitude} ? ${trackLoc.longitude}" )
+                    } else {
+                        println("NO route index")
+                    }
+                }
+            }*/
 
             //RECORDS START
             var index = 0
@@ -396,5 +411,9 @@ number (5-1-UINT16): 1
         record.distance = dst[index]
         if (hasAltitude) record.altitude = point.altitude.toFloat()
         return record
+    }
+
+    private fun getCoursepointMesg(){
+        TODO()
     }
 }
