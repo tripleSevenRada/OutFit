@@ -1,9 +1,11 @@
 package radim.outfit.core.export.work.locusapiextensions
 
+import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
 import locus.api.objects.utils.LocationCompute
-import radim.outfit.core.export.work.routePointActionToCoursePoint
+import radim.outfit.core.export.work.routePointActionsPrioritized
+import radim.outfit.core.export.work.routePointActionsToCoursePoints
 
 // track does not contain null elements and is fully timestamped
 fun extractPointTimestampsFromPoints(track: Track): List<Long> {
@@ -98,10 +100,18 @@ fun mapNonNullPointsIndicesToTimestamps(track: Track, timeBundle: TrackTimestamp
 }
 
 fun ridUnsupportedRtePtActions(waypoints: List<Point>): List<Point>{
-    return waypoints.filter { routePointActionToCoursePoint.keys.contains(it.parameterRteAction) }
+    return waypoints.filter { routePointActionsToCoursePoints.keys.contains(it.parameterRteAction) }
 }
 
 fun reduceWayPointsSizeTo(points: List<Point>, limit: Int): List<Point>{
-    return points
+    var toReduce = points.toMutableList()
+    val range = IntRange(1, routePointActionsPrioritized.size)
+    for (i in range){
+        val rteActionsToRid = routePointActionsPrioritized[i] ?: listOf()
+        toReduce = toReduce.filter { ! rteActionsToRid.contains(it.parameterRteAction) }.toMutableList()
+        if (toReduce.size < limit) break
+    }
+    return toReduce
 }
+
 data class TrackTimestampsBundle(val startTime: Long, val totalTime: Float, val pointStamps: List<Long>)

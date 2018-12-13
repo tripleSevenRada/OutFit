@@ -5,31 +5,31 @@ import locus.api.objects.enums.PointRteAction
 
 val tag = "CP"
 
-val routePointActionToCoursePoint: Map<PointRteAction, CoursePoint> = mapOf(
-        //PointRteAction.LEFT_SLIGHT to CoursePoint.SLIGHT_LEFT,
-        //PointRteAction.RAMP_ON_LEFT to CoursePoint.LEFT_FORK,
-        //PointRteAction.MERGE_LEFT to CoursePoint.SLIGHT_LEFT,
+val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
+        PointRteAction.LEFT_SLIGHT to CoursePoint.SLIGHT_LEFT,
+        PointRteAction.RAMP_ON_LEFT to CoursePoint.LEFT_FORK,
+        PointRteAction.MERGE_LEFT to CoursePoint.SLIGHT_LEFT,
         PointRteAction.LEFT to CoursePoint.LEFT,
-        //PointRteAction.LEFT_SHARP to CoursePoint.SHARP_LEFT,
-        //PointRteAction.U_TURN_LEFT to CoursePoint.SHARP_LEFT,
-        //PointRteAction.EXIT_LEFT to CoursePoint.LEFT,
-        //PointRteAction.RIGHT_SLIGHT to CoursePoint.SLIGHT_RIGHT,
-        //PointRteAction.RAMP_ON_RIGHT to CoursePoint.RIGHT_FORK,
-        //PointRteAction.MERGE_RIGHT to CoursePoint.SLIGHT_RIGHT,
+        PointRteAction.LEFT_SHARP to CoursePoint.SHARP_LEFT,
+        PointRteAction.U_TURN_LEFT to CoursePoint.SHARP_LEFT,
+        PointRteAction.EXIT_LEFT to CoursePoint.LEFT,
+        PointRteAction.RIGHT_SLIGHT to CoursePoint.SLIGHT_RIGHT,
+        PointRteAction.RAMP_ON_RIGHT to CoursePoint.RIGHT_FORK,
+        PointRteAction.MERGE_RIGHT to CoursePoint.SLIGHT_RIGHT,
         PointRteAction.RIGHT to CoursePoint.RIGHT,
-        //PointRteAction.RIGHT_SHARP to CoursePoint.SHARP_RIGHT,
-        //PointRteAction.U_TURN_RIGHT to CoursePoint.SHARP_RIGHT,
-        //PointRteAction.EXIT_RIGHT to CoursePoint.RIGHT,
-        //PointRteAction.U_TURN to CoursePoint.U_TURN,
-        //PointRteAction.CONTINUE_STRAIGHT to CoursePoint.STRAIGHT,
-        //PointRteAction.STAY_STRAIGHT to CoursePoint.STRAIGHT,
-        //PointRteAction.RAMP_STRAIGHT to CoursePoint.MIDDLE_FORK,
-        //PointRteAction.MERGE to CoursePoint.STRAIGHT,
+        PointRteAction.RIGHT_SHARP to CoursePoint.SHARP_RIGHT,
+        PointRteAction.U_TURN_RIGHT to CoursePoint.SHARP_RIGHT,
+        PointRteAction.EXIT_RIGHT to CoursePoint.RIGHT,
+        PointRteAction.U_TURN to CoursePoint.U_TURN,
+        PointRteAction.CONTINUE_STRAIGHT to CoursePoint.STRAIGHT,
+        PointRteAction.STAY_STRAIGHT to CoursePoint.STRAIGHT,
+        PointRteAction.RAMP_STRAIGHT to CoursePoint.MIDDLE_FORK,
+        PointRteAction.MERGE to CoursePoint.STRAIGHT,
         PointRteAction.PASS_PLACE to CoursePoint.GENERIC
 )
 
 // low importance low priority
-val routePointActionPrioritized: Map<Int, List<PointRteAction>> = mapOf(
+val routePointActionsPrioritized: Map<Int, List<PointRteAction>> = mapOf(
         1 to listOf(PointRteAction.MERGE),
         2 to listOf(PointRteAction.RAMP_STRAIGHT),
         3 to listOf(PointRteAction.STAY_STRAIGHT),
