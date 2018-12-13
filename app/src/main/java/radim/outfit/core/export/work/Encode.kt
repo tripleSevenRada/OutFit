@@ -189,7 +189,7 @@ event_type (1-1-ENUM): start (0)
                 debugMessages.addAll(Dumps.banner())
             }
 
-            if (debug){
+/*            if (debug){
                 track.waypoints.forEach {
                     if(it.hasParameter(GeoDataExtra.PAR_RTE_INDEX)) {
                         val wayLoc = it.location
@@ -201,7 +201,7 @@ event_type (1-1-ENUM): start (0)
                         println("NO route index")
                     }
                 }
-            }
+            }*/
 
             //RECORDS START
             var index = 0
@@ -411,5 +411,9 @@ number (5-1-UINT16): 1
         record.distance = dst[index]
         if (hasAltitude) record.altitude = point.altitude.toFloat()
         return record
+    }
+
+    private fun getCoursepointMesg(){
+        TODO()
     }
 }

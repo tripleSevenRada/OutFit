@@ -1,7 +1,9 @@
 package radim.outfit.core.export.work.locusapiextensions
 
+import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
 import locus.api.objects.utils.LocationCompute
+import radim.outfit.core.export.work.routePointActionToCoursePoint
 
 // track does not contain null elements and is fully timestamped
 fun extractPointTimestampsFromPoints(track: Track): List<Long> {
@@ -66,10 +68,10 @@ fun assignSpeedsToNonNullPoints(track: Track, timeBundle: TrackTimestampsBundle,
         if (track.points[i] == null) continue
         var timeDeltaInS: Float = ((timeBundle.pointStamps[index] - lastTime).toFloat()) / 1000F
         var distDeltaInM: Float = dist[index] - lastDist
-        if(timeDeltaInS < 0F) timeDeltaInS = 0F
-        if(distDeltaInM < 0F) distDeltaInM = 0F
+        if (timeDeltaInS < 0F) timeDeltaInS = 0F
+        if (distDeltaInM < 0F) distDeltaInM = 0F
         val speed = distDeltaInM / timeDeltaInS
-        speeds.add(if(speed.isFinite()) speed else 0F)
+        speeds.add(if (speed.isFinite()) speed else 0F)
         lastTime = timeBundle.pointStamps[index]
         lastDist = dist[index]
         index++
@@ -79,4 +81,27 @@ fun assignSpeedsToNonNullPoints(track: Track, timeBundle: TrackTimestampsBundle,
     return speeds
 }
 
+fun mapNonNullPointsIndicesToTimestamps(track: Track, timeBundle: TrackTimestampsBundle): Map<Int, Long> {
+    val nonNullTimestamps = timeBundle.pointStamps
+    val indicesToNonNullTimestamps = mutableMapOf<Int, Long>()
+    var indexNonNull = 0
+    for (index in track.points.indices) {
+        if (track.points[index] == null) continue
+        indicesToNonNullTimestamps.put(index, nonNullTimestamps[indexNonNull])
+        indexNonNull++
+        if (indexNonNull == nonNullTimestamps.size)
+            throw RuntimeException("Indices messed 1 - TrackEnhancements")
+    }
+    if(indicesToNonNullTimestamps.size != nonNullTimestamps.size)
+        throw RuntimeException("Indices messed 2 - TrackEnhancements")
+    return indicesToNonNullTimestamps
+}
+
+fun ridUnsupportedRtePtActions(waypoints: List<Point>): List<Point>{
+    return waypoints.filter { routePointActionToCoursePoint.keys.contains(it.parameterRteAction) }
+}
+
+fun reduceWayPointsSizeTo(points: List<Point>, limit: Int): List<Point>{
+    return points
+}
 data class TrackTimestampsBundle(val startTime: Long, val totalTime: Float, val pointStamps: List<Long>)
