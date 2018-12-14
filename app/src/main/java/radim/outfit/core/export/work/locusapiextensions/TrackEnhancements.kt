@@ -1,6 +1,5 @@
 package radim.outfit.core.export.work.locusapiextensions
 
-import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
 import locus.api.objects.utils.LocationCompute
@@ -21,7 +20,7 @@ fun assignPointTimestampsToNonNullPoints(track: Track, distances: List<Float>, s
     val now: Long = System.currentTimeMillis()
     val mutableListOfTimestamps = mutableListOf<Long>()
     var count = 0
-    for (i in 0 until track.points.size) {
+    for (i in track.points.indices) {
         if (track.points[i] == null) continue
         // first point
         if (count == 0) {
@@ -42,7 +41,7 @@ fun assignPointDistancesToNonNullPoints(track: Track): List<Float> {
     var firstZeroSet = false
     var lastPoint = track.points[0]
     var sum = 0F
-    for (i in 0 until track.points.size) {
+    for (i in track.points.indices) {
         if (track.points[i] == null) continue
         if (!firstZeroSet) {
             mutableListOfDistances.add(sum) // 0F
@@ -105,13 +104,24 @@ fun ridUnsupportedRtePtActions(waypoints: List<Point>): List<Point>{
 
 fun reduceWayPointsSizeTo(points: List<Point>, limit: Int): List<Point>{
     var toReduce = points.toMutableList()
-    val range = IntRange(1, routePointActionsPrioritized.size)
+    val range = IntRange(1, routePointActionsPrioritized.size - 1) // allways keep all PASS_PLACE waypoints here 
     for (i in range){
+        if (toReduce.size <= limit) break
         val rteActionsToRid = routePointActionsPrioritized[i] ?: listOf()
-        toReduce = toReduce.filter { ! rteActionsToRid.contains(it.parameterRteAction) }.toMutableList()
-        if (toReduce.size < limit) break
+        toReduce = toReduce.filter { ! rteActionsToRid.contains(it.parameterRteAction) }.toMutableList()    
     }
-    return toReduce
+    // now reduce even PASS_PLACE if necessary
+    if (toReduce.size <= limit) return toReduce
+    else {
+        val over = toReduce.size - limit
+        val pre: Int
+        val post: Int
+        if(over % 2 == 0){pre = over / 2; post = over / 2}
+        else{pre = (over / 2) + 1; post = over/2}
+        return toReduce.subList(pre, toReduce.size - post)
+    }
 }
 
 data class TrackTimestampsBundle(val startTime: Long, val totalTime: Float, val pointStamps: List<Long>)
+
+
