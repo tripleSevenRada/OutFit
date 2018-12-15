@@ -193,23 +193,32 @@ event_type (1-1-ENUM): start (0)
             }
 
             // WAYPOINTS START
-            track.waypoints.forEach {
-                val mapNonNullIndicesToTmstmp = mapNonNullPointsIndicesToTimestamps(track, timeBundle)
-                val coursePointMesg = getCoursepointMesg(it, mapNonNullIndicesToTmstmp, ctx)
-                if(coursePointMesg != null){
-                    // record CP
+            val unsupportedRid = ridUnsupportedRtePtActions(track.waypoints)
+            val reducedToLimit = reduceWayPointsSizeTo(unsupportedRid, COURSEPOINTS_LIMIT)
+            val mapNonNullIndicesToTmstmp = mapNonNullPointsIndicesToTimestamps(track, timeBundle)
+            var countCP = 0
+            reducedToLimit.forEach {
+                    val coursePointMesg = getCoursepointMesg(it, mapNonNullIndicesToTmstmp, ctx)
+                    if (coursePointMesg != null) {
+                        encoder.write(coursePointMesg)
+                        countCP ++
+                        if(debug) debugMessages.addAll(Dumps.coursePointMessageDumpLine(coursePointMesg))
+                    }
+            }
 
-
-                }
+            if(debug){
+                debugMessages.addAll(Dumps.banner())
+                debugMessages.add("CP count: $countCP")
+                debugMessages.addAll(Dumps.banner())
             }
             // WAYPOINTS END
 
             // RECORDS START
             var index = 0
             var timestamp: DateTime? = null
-            for (i in 0 until track.points.size) {
+            for (i in track.points.indices) {
                 if (track.points[i] == null) {
-                    if (debug) debugMessages.add("----------------------------------------------------------------------------NULL PRESENT!")
+                    if (debug) debugMessages.add("-----------------------------------NULL PRESENT!")
                     continue
                 }
 

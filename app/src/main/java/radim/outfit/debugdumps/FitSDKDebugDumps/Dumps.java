@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.garmin.fit.CourseMesg;
+import com.garmin.fit.CoursePointMesg;
 import com.garmin.fit.EventMesg;
 import com.garmin.fit.FileIdMesg;
 import com.garmin.fit.LapMesg;
@@ -81,4 +82,11 @@ public class Dumps {
         data.add("Rcrd: "  + message.getName() + ", "+ message.getPositionLat() + ", "+ message.getPositionLong() + ", " + message.getAltitude()+ ", " + message.getDistance() + ", " + message.getTimestamp().toString() + ", " + message.getSpeed());
         return data;
     }
+
+    public static List<String> coursePointMessageDumpLine(CoursePointMesg message) {
+        List<String> data = new LinkedList<String>();
+        data.add("CP: "  + message.getName() + ", "+ message.getPositionLat() + ", "+ message.getPositionLong() + ", " + message.getDistance() + ", " + message.getTimestamp().toString());
+        return data;
+    }
+
 }

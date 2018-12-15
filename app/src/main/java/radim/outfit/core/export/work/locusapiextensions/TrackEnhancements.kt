@@ -90,9 +90,9 @@ fun mapNonNullPointsIndicesToTimestamps(track: Track, timeBundle: TrackTimestamp
     for (index in track.points.indices) {
         if (track.points[index] == null) continue
         indicesToNonNullTimestamps.put(index, nonNullTimestamps[indexNonNull])
-        indexNonNull++
         if (indexNonNull == nonNullTimestamps.size)
             throw RuntimeException("Indices messed 1 - TrackEnhancements")
+        indexNonNull++
     }
     if(indicesToNonNullTimestamps.size != nonNullTimestamps.size)
         throw RuntimeException("Indices messed 2 - TrackEnhancements")

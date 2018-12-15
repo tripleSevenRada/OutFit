@@ -56,7 +56,8 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
             ExportPOJO(null, null, null),
             ::exportListenerCallback,
             ::disableExecutive,
-            ::showSpeedPickerDialog
+            ::showSpeedPickerDialog,
+            this
     )
 
     private fun showSpeedPickerDialog() {

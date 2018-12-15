@@ -5,6 +5,8 @@ import locus.api.objects.enums.PointRteAction
 
 val tag = "CP"
 
+const val COURSEPOINTS_LIMIT = 100
+
 val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.LEFT_SLIGHT to CoursePoint.SLIGHT_LEFT,
         PointRteAction.RAMP_ON_LEFT to CoursePoint.LEFT_FORK,

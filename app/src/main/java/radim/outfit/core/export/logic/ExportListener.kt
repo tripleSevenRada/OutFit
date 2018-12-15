@@ -1,5 +1,6 @@
 package radim.outfit.core.export.logic
 
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.EditText
@@ -15,11 +16,12 @@ import java.io.File
 // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
 
 class ExportListener(
-        private val execute: (File?, String?, Track?, Float) -> Result,
+        private val execute: (File?, String?, Track?, Float, AppCompatActivity) -> Result,
         var exportPOJO: ExportPOJO,
         private val onFinishCallback: (Result) -> Unit,
         private val onStartCallback: () -> Unit,
-        private val showSpeedPickerDialog: () -> Unit
+        private val showSpeedPickerDialog: () -> Unit,
+        private val ctx: AppCompatActivity
 ) : View.OnClickListener {
 
     private val tag = "ExportListener"
@@ -68,7 +70,8 @@ class ExportListener(
             val result = execute(finalExportPojo.file,
                     finalExportPojo.filename,
                     finalExportPojo.track,
-                    speedMperS)
+                    speedMperS,
+                    ctx)
             uiThread {
                 onFinishCallback(result)
             }
