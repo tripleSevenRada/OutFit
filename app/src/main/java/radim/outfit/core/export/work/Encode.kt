@@ -1,8 +1,8 @@
 package radim.outfit.core.export.work
 
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.garmin.fit.*
-import locus.api.objects.extra.Location
 import locus.api.objects.extra.Track
 import radim.outfit.core.export.logic.Result
 import radim.outfit.core.export.work.locusapiextensions.*
@@ -10,8 +10,6 @@ import radim.outfit.core.export.work.locusapiextensions.stringdumps.TrackStringD
 import radim.outfit.debugdumps.FitSDKDebugDumps.Dumps
 import java.io.File
 import com.garmin.fit.DateTime
-import locus.api.objects.extra.GeoDataExtra
-import java.util.*
 
 const val MIN_TIME_TAKEN = 8
 const val MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989 = 631065600000L
@@ -22,7 +20,13 @@ class Encoder {
     // https://github.com/gimportexportdevs/gexporter/blob/master/app/src/main/java/org/surfsite/gexporter/Gpx2Fit.java
     // https://github.com/mrihtar/Garmin-FIT
 
-    fun encode(track: Track, dir: File, filename: String, speedIfNotInTrack: Float): Result {
+    fun encode(track: Track,
+               dir: File,
+               filename: String,
+               speedIfNotInTrack: Float,
+               ctx: AppCompatActivity
+
+    ): Result {
 
         val debug = true
 
@@ -55,7 +59,7 @@ class Encoder {
             // Dump course exported directly from Garmin Connect and follow what you see in there
 
             // Every FIT file MUST contain a 'File ID' message as the first message
-            val fileIdMesg = getFileIdMesg(track)
+            val fileIdMesg = getFileIdMesg()
             encoder.write(fileIdMesg)
 
             // 'Course message'
@@ -152,9 +156,8 @@ state "isFullyTimestamped" as stamped {
             // 'Lap message'
             val lapMesg = getLapMesg(track,
                     timeBundle,
-                    distancesNonNullPoints,
-                    errorMessages,
-                    debugMessages)
+                    distancesNonNullPoints
+            )
 
             encoder.write(lapMesg)
 
@@ -189,21 +192,19 @@ event_type (1-1-ENUM): start (0)
                 debugMessages.addAll(Dumps.banner())
             }
 
-/*            if (debug){
-                track.waypoints.forEach {
-                    if(it.hasParameter(GeoDataExtra.PAR_RTE_INDEX)) {
-                        val wayLoc = it.location
-                        val index = it.paramRteIndex
-                        val trackLoc = track.points[index]
-                        println("${wayLoc.latitude} ? ${trackLoc.latitude}" )
-                        println("${wayLoc.longitude} ? ${trackLoc.longitude}" )
-                    } else {
-                        println("NO route index")
-                    }
-                }
-            }*/
+            // WAYPOINTS START
+            track.waypoints.forEach {
+                val mapNonNullIndicesToTmstmp = mapNonNullPointsIndicesToTimestamps(track, timeBundle)
+                val coursePointMesg = getCoursepointMesg(it, mapNonNullIndicesToTmstmp, ctx)
+                if(coursePointMesg != null){
+                    // record CP
 
-            //RECORDS START
+
+                }
+            }
+            // WAYPOINTS END
+
+            // RECORDS START
             var index = 0
             var timestamp: DateTime? = null
             for (i in 0 until track.points.size) {
@@ -275,145 +276,5 @@ event_type (1-1-ENUM): stop_disable_all (9)
             Thread.sleep(MIN_TIME_TAKEN - timeTaken)
         }
         return Result.Success(publicMessages, debugMessages, dir, filename)
-    }
-
-    private fun getFileIdMesg(track: Track): FileIdMesg {
-        /*
-exported course from garmin connect printed by https://github.com/mrihtar/Garmin-FIT
-type (0-1-ENUM): course (6)
-manufacturer (1-1-UINT16): garmin (1)
-garmin_product (2-1-UINT16, original name: product): connect (65534)
-time_created (4-1-UINT32): 2018-11-03T07:42:28 (910161748)
-serial_number (3-1-UINT32Z): 21431572
-number (5-1-UINT16): 1
-        */
-        val fileIdMesg = FileIdMesg()
-        fileIdMesg.localNum = 0
-        fileIdMesg.type = com.garmin.fit.File.COURSE
-        fileIdMesg.manufacturer = Manufacturer.GARMIN
-        fileIdMesg.product = 65534
-        //Seconds since UTC 00:00 Dec 31 1989 If <0x10000000 = system time
-        fileIdMesg.timeCreated = DateTime(Date())
-        //(System.currentTimeMillis() - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L
-
-        fileIdMesg.serialNumber = 21431572
-        fileIdMesg.number = 1
-
-        return fileIdMesg
-    }
-
-    private fun getCourseMesg(track: Track, filename: String): CourseMesg {
-        /*
-        name (5-13-STRING): "kostelecRoad"
-        sport (4-1-ENUM): cycling (2)
-         */
-        val courseMesg = CourseMesg()
-        courseMesg.localNum = 1
-        //TODO lenght?
-        courseMesg.name = if (track.name != null && track.name.isNotEmpty()) {
-            track.name
-        } else {
-            filename.substring(0, filename.lastIndexOf("."))
-        }
-        courseMesg.sport = Sport.GENERIC
-        // courseMesg.capabilities = CourseCapabilities.NAVIGATION // Not required
-        return courseMesg
-    }
-
-    private fun getLapMesg(track: Track,
-                           trackTimestampsBundle: TrackTimestampsBundle,
-                           dst: List<Float>,
-                           errorMsg: MutableList<String>,
-                           debugMsg: MutableList<String>
-    ): LapMesg {
-        /*
-  start_time (2-1-UINT32): 2018-11-03T07:42:28 (910161748)
-  timestamp (253-1-UINT32): 2018-11-03T07:42:28 (910161748)
-  start_position_lat (3-1-SINT32): 49.9937300 deg (596448431)
-  start_position_long (4-1-SINT32): 14.8579999 deg (177262844)
-  end_position_lat (5-1-SINT32): 49.9890330 deg (596392394)
-  end_position_long (6-1-SINT32): 14.8511969 deg (177181681)
-  total_ascent (21-1-UINT16): 785 m (785)
-  total_descent (22-1-UINT16): 766 m (766)
-  swc_lat (29-1-SINT32): 49.8724400 deg (595001385)
-  swc_long (30-1-SINT32): 14.7864799 deg (176409577)
-  nec_lat (27-1-SINT32): 49.9937300 deg (596448431)
-  nec_long (28-1-SINT32): 14.9034800 deg (177805442)
-  avg_speed (13-1-UINT16): 0.000 km/h (0)
-  total_elapsed_time (7-1-UINT32): 6309.142 s (6309142)
-  total_timer_time (8-1-UINT32): 6309.142 s (6309142)
-  total_distance (9-1-UINT32): 43805.72 m (4380572)
-  message_index (254-1-UINT16): selected=0,reserved=0,mask=0 (0)
-         */
-        val lapMesg = LapMesg()
-        lapMesg.localNum = 2
-
-        val firstPoint = track.getFirstNonNullPoint()
-        val lastPoint = track.getLastNonNullPoint()
-
-        if (firstPoint == null || lastPoint == null) throw RuntimeException("Track has null elements only.")
-
-        lapMesg.startTime = DateTime((trackTimestampsBundle.startTime -
-                MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
-        lapMesg.timestamp = DateTime((trackTimestampsBundle.startTime -
-                MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
-
-        lapMesg.startPositionLat = firstPoint.getLatitude().toSemiCircles()
-        lapMesg.startPositionLong = firstPoint.getLongitude().toSemiCircles()
-        lapMesg.endPositionLat = lastPoint.getLatitude().toSemiCircles()
-        lapMesg.endPositionLong = lastPoint.getLongitude().toSemiCircles()
-
-        if (track.hasAltitudeTotals()) {
-            lapMesg.totalAscent = track.stats.elePositiveHeight.toInt()
-            lapMesg.totalDescent = track.stats.eleNegativeHeight.toInt()
-        }
-
-        lapMesg.totalTimerTime = trackTimestampsBundle.totalTime / 1000F
-        lapMesg.totalElapsedTime = trackTimestampsBundle.totalTime / 1000F
-        lapMesg.totalDistance = dst[dst.lastIndex]
-
-        if (track.hasAltitudeBounds()) {
-            lapMesg.minAltitude = track.stats.altitudeMin
-            lapMesg.maxAltitude = track.stats.altitudeMax
-        }
-
-        return lapMesg
-    }
-
-    // waypoint is "Point" trackpoint is "Location"
-    private fun getRecordMesg(point: Location,
-                              dst: List<Float>,
-                              time: List<Long>,
-                              speed: List<Float>,
-                              fullyTimestamped: Boolean,
-                              hasAltitude: Boolean,
-                              index: Int): RecordMesg {
-        /*
-  position_lat (0-1-SINT32): 49.9937300 deg (596448431)
-  position_long (1-1-SINT32): 14.8579999 deg (177262844)
-  timestamp (253-1-UINT32): 2018-11-03T07:42:28 (910161748)
-  speed (6-1-UINT16): 0.000 km/h (0)
-  distance (5-1-UINT32): 0.00 m (0)
-  altitude (2-1-UINT16): 399.0 m (4495)
-         */
-        val record = RecordMesg()
-        record.localNum = 4
-        record.positionLat = point.latitude.toSemiCircles()
-        record.positionLong = point.longitude.toSemiCircles()
-        record.timestamp = if (fullyTimestamped) {
-            // time (List) is empty
-            DateTime((point.time - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
-        } else {
-            // time (List) is non empty
-            DateTime((time[index] - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
-        }
-        record.speed = speed[index]
-        record.distance = dst[index]
-        if (hasAltitude) record.altitude = point.altitude.toFloat()
-        return record
-    }
-
-    private fun getCoursepointMesg(){
-        TODO()
     }
 }
