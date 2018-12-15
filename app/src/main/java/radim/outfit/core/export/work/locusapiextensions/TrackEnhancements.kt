@@ -82,6 +82,7 @@ fun assignSpeedsToNonNullPoints(track: Track, timeBundle: TrackTimestampsBundle,
     return speeds
 }
 
+// it should be possible to position a coursepoint just using a related trackpoint's timestamp
 fun mapNonNullPointsIndicesToTimestamps(track: Track, timeBundle: TrackTimestampsBundle): Map<Int, Long> {
     val nonNullTimestamps = timeBundle.pointStamps
     val indicesToNonNullTimestamps = mutableMapOf<Int, Long>()
