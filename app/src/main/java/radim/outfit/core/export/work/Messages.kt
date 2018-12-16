@@ -190,7 +190,8 @@ internal fun getCoursepointMesg(wp: Point,
             cp.name = ctx.getString("valley_cp_name")
         } else {
             cp.type = CoursePoint.GENERIC
-            cp.name = wp.parameterStyleName ?: "poi"
+            val cpName: String? = wp.parameterStyleName
+            cp.name = if(cpName.isNullOrEmpty()) "poi" else cpName
         }
     }
     return cp
