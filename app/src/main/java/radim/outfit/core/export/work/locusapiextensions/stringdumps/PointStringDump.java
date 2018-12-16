@@ -9,6 +9,10 @@ public class PointStringDump {
     public static List<String> stringDescription(Point point) {
         List<String> dump = new LinkedList<String>();
         dump.add("----------Point dump");
+        if(point == null){
+            dump.add("NULL");
+            return dump;
+        }
         dump.add("---------------getId()   " + point.getId());
         dump.add("---------------getName()   " + point.getName());
         dump.add("---------------getTimeCreated() " + point.getTimeCreated());

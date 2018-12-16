@@ -11,10 +11,15 @@ public class TrackStringDump {
     public static List<String> stringDescription(Track track) {
         List<String> dump = new LinkedList<String>();
         dump.add("Track dump");
+        if(track == null){
+            dump.add("NULL");
+            return dump;
+        }
         dump.add("-----Name: " + track.getName());
         dump.add("-----Activity type: " + track.getActivityType());
         dump.add("-----Points count: " + track.getPointsCount());
-        dump.add("-----Waypoints count: " + track.getWaypoints().size());
+        if(track.getWaypoints()!= null) dump.add("-----Waypoints count: " + track.getWaypoints().size());
+        else dump.add("NULL: WAYPOINTS");
         return dump;
     }
 

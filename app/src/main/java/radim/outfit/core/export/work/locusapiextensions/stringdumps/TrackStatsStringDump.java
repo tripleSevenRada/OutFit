@@ -9,6 +9,10 @@ public class TrackStatsStringDump {
     public static List<String> stringDescription(TrackStats stats) {
         List<String> dump = new LinkedList<String>();
         dump.add("--------------------------TrackStats dump");
+        if(stats == null){
+            dump.add("NULL");
+            return dump;
+        }
         dump.add("-------------------------------getNumOfPoints()" + stats.getNumOfPoints());
         dump.add("-------------------------------getStartTime()" + stats.getStartTime());
         dump.add("-------------------------------getStopTime()" + stats.getStopTime());

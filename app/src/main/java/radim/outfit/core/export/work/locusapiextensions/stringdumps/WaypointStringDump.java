@@ -9,6 +9,10 @@ public class WaypointStringDump {
     public static List<String> stringDescription(Point point) {
         List<String> dump = new LinkedList<String>();
         dump.add("--------------------------Waypoint dump");
+        if(point == null){
+            dump.add("NULL");
+            return dump;
+        }
         // waypoint is "Point" trackpoint is "Location"
         dump.addAll(PointStringDump.stringDescription(point));
         return dump;

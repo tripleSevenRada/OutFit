@@ -32,6 +32,7 @@ import org.jetbrains.anko.uiThread
 import radim.outfit.core.FilenameCharsFilter
 import radim.outfit.core.getFilename
 import radim.outfit.debugdumps.writeTextFile
+import radim.outfit.mocks.getTrackRandomNullsNoCP
 import java.lang.RuntimeException
 
 const val LOG_TAG = "MAIN"
@@ -46,10 +47,10 @@ fun AppCompatActivity.getString(name: String): String {
     return resources.getString(resources.getIdentifier(name, "string", packageName))
 }
 
+
+
 class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesProvider {
-
     private val debug = true
-
     // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
     private val exportListener = ExportListener(
             ExportFunction(),
@@ -162,7 +163,12 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
         doAsync {
             var track: Track? = null
             try {
-                track = LocusUtils.handleIntentTrackTools(act, intent)
+                // track = LocusUtils.handleIntentTrackTools(act, intent)
+                // or inject a mock
+                //track = getTrackOkNoCP()
+                //track = getTrackNullEndNoCP()
+                //track = getTrackNullStartNoCP()
+                track = getTrackRandomNullsNoCP()
             } catch (e: RequiredVersionMissingException) {
                 failGracefully(act.getString("required_version_missing") + " " + e.localizedMessage + " Error 4")
             } catch (e: Exception) {

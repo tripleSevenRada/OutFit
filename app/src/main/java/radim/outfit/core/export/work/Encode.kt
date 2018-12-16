@@ -14,6 +14,7 @@ import com.garmin.fit.DateTime
 const val MIN_TIME_TAKEN = 8
 const val MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989 = 631065600000L
 
+// Error messages 1 - 2
 class Encoder {
 
     // with great help of:
@@ -196,6 +197,12 @@ event_type (1-1-ENUM): start (0)
             val unsupportedRid = ridUnsupportedRtePtActions(track.waypoints)
             val reducedToLimit = reduceWayPointsSizeTo(unsupportedRid, COURSEPOINTS_LIMIT)
             val mapNonNullIndicesToTmstmp = mapNonNullPointsIndicesToTimestamps(track, timeBundle)
+            if(debug){
+                debugMessages.addAll(Dumps.banner())
+                debugMessages.add("++++++++++++++++++++++mapNonNullIndicesToTmstmp")
+                debugMessages.add(mapNonNullIndicesToTmstmp.toString())
+                debugMessages.addAll(Dumps.banner())
+            }
             var countCP = 0
             reducedToLimit.forEach {
                     val coursePointMesg = getCoursepointMesg(it, mapNonNullIndicesToTmstmp, ctx)
@@ -266,13 +273,13 @@ event_type (1-1-ENUM): stop_disable_all (9)
             }
 
         } catch (e: Exception) { //FitRuntimeException
-            errorMessages.add(e.localizedMessage)
+            errorMessages.add("${e.localizedMessage} - 1")
             return Result.Fail(debugMessages, errorMessages, dir, filename, e)
         } finally {
             try {
                 encoder.close()
             } catch (e: Exception) { //FitRuntimeException
-                errorMessages.add(e.localizedMessage)
+                errorMessages.add("${e.localizedMessage} - 2")
                 return Result.Fail(debugMessages, errorMessages, dir, filename, e)
             }
         }

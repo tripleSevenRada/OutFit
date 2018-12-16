@@ -19,6 +19,10 @@ public class Dumps {
 
     public static List<String> fileIdMessageDump(FileIdMesg message) {
         List<String> data = new LinkedList<String>();
+        if(message == null){
+            data.add("NULL");
+            return data;
+        }
         data.add("=====FileIdMesg dump");
         data.add("==========getName()   " + message.getName());
         data.add("==========getTimeCreated()   " + message.getTimeCreated());
@@ -30,6 +34,10 @@ public class Dumps {
 
     public static List<String> courseMessageDump(CourseMesg message) {
         List<String> data = new LinkedList<String>();
+        if(message == null){
+            data.add("NULL");
+            return data;
+        }
         data.add("=====CourseMesg dump");
         data.add("==========getName()   " + message.getName());
         data.add("==========getCapabilities()   " + message.getCapabilities());
@@ -39,6 +47,10 @@ public class Dumps {
 
     public static List<String> lapMessageDump(LapMesg message) {
         List<String> data = new LinkedList<String>();
+        if(message == null){
+            data.add("NULL");
+            return data;
+        }
         data.add("=====LapMesg dump");
         data.add("==========getName()   " + message.getName());
         data.add("==========getStartPositionLat()   " + message.getStartPositionLat());
@@ -57,6 +69,10 @@ public class Dumps {
 
     public static List<String> eventMessageDump(EventMesg message) {
         List<String> data = new LinkedList<String>();
+        if(message == null){
+            data.add("NULL");
+            return data;
+        }
         data.add("=====EventMesg dump");
         data.add("==========getName()   " + message.getName());
         data.add("==========getEvent().name()   " + message.getEvent().name());
@@ -67,6 +83,10 @@ public class Dumps {
 
     public static List<String> recordMessageDump(RecordMesg message) {
         List<String> data = new LinkedList<String>();
+        if(message == null){
+            data.add("NULL");
+            return data;
+        }
         data.add("=====RecordMesg dump");
         data.add("==========getName()   " + message.getName());
         data.add("==========getPositionLat()   " + message.getPositionLat());
@@ -79,12 +99,20 @@ public class Dumps {
 
     public static List<String> recordMessageDumpLine(RecordMesg message) {
         List<String> data = new LinkedList<String>();
+        if(message == null){
+            data.add("NULL");
+            return data;
+        }
         data.add("Rcrd: "  + message.getName() + ", "+ message.getPositionLat() + ", "+ message.getPositionLong() + ", " + message.getAltitude()+ ", " + message.getDistance() + ", " + message.getTimestamp().toString() + ", " + message.getSpeed());
         return data;
     }
 
     public static List<String> coursePointMessageDumpLine(CoursePointMesg message) {
         List<String> data = new LinkedList<String>();
+        if(message == null){
+            data.add("NULL");
+            return data;
+        }
         data.add("CP: "  + message.getName() + ", "+ message.getPositionLat() + ", "+ message.getPositionLong() + ", " + message.getDistance() + ", " + message.getTimestamp().toString());
         return data;
     }
