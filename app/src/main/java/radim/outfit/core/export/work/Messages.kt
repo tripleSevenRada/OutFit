@@ -146,7 +146,7 @@ altitude (2-1-UINT16): 399.0 m (4495)
 internal fun getCoursepointMesg(wp: Point, mapNonNullIndicesToTmstmp: Map<Int, Long>,
                                ctx: AppCompatActivity): CoursePointMesg? {
     val typeInLocus = wp.parameterRteAction
-    // unsupported should be already filtered out by caller
+    // unsupported should be already filtered out by caller!
     if(!routePointActionsToCoursePoints.keys.contains(typeInLocus)) return null
     val cp = CoursePointMesg()
     cp.localNum = 5
@@ -156,7 +156,7 @@ internal fun getCoursepointMesg(wp: Point, mapNonNullIndicesToTmstmp: Map<Int, L
         cp.timestamp = DateTime((tmstmp - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
         if (typeInLocus != PointRteAction.PASS_PLACE){
             // NON - PASS_PLACE PointRteAction
-            // mapping does exists.
+            // we know mapping exists, otherwise null would be returned already
             cp.type = routePointActionsToCoursePoints[typeInLocus]
             cp.name = wp.parameterRteAction.textId ?: ""
         } else {

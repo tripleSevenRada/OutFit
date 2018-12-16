@@ -217,11 +217,10 @@ event_type (1-1-ENUM): start (0)
             var index = 0
             var timestamp: DateTime? = null
             for (i in track.points.indices) {
-                if (track.points[i] == null) {
-                    if (debug) debugMessages.add("-----------------------------------NULL PRESENT!")
+                if (track.points[i] == null && debug) {
+                    debugMessages.add("-----------------------------------NULL PRESENT!")
                     continue
                 }
-
                 val recordMesg = getRecordMesg(
                         track.points[i],
                         distancesNonNullPoints,
