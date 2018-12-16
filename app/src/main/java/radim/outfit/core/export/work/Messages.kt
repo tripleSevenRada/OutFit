@@ -53,8 +53,8 @@ internal fun getCourseMesg(track: Track, filename: String): CourseMesg {
 }
 
 internal fun getLapMesg(track: Track,
-                       trackTimestampsBundle: TrackTimestampsBundle,
-                       dst: List<Float>
+                        trackTimestampsBundle: TrackTimestampsBundle,
+                        dst: List<Float>
 ): LapMesg {
     /*
 start_time (2-1-UINT32): 2018-11-03T07:42:28 (910161748)
@@ -112,12 +112,12 @@ message_index (254-1-UINT16): selected=0,reserved=0,mask=0 (0)
 
 // waypoint is "Point" trackpoint is "Location"
 internal fun getRecordMesg(point: Location,
-                          dst: List<Float>,
-                          time: List<Long>,
-                          speed: List<Float>,
-                          fullyTimestamped: Boolean,
-                          hasAltitude: Boolean,
-                          index: Int): RecordMesg {
+                           dst: List<Float>,
+                           time: List<Long>,
+                           speed: List<Float>,
+                           fullyTimestamped: Boolean,
+                           hasAltitude: Boolean,
+                           index: Int): RecordMesg {
     /*
 position_lat (0-1-SINT32): 49.9937300 deg (596448431)
 position_long (1-1-SINT32): 14.8579999 deg (177262844)
@@ -143,36 +143,55 @@ altitude (2-1-UINT16): 399.0 m (4495)
     return record
 }
 
-internal fun getCoursepointMesg(wp: Point, mapNonNullIndicesToTmstmp: Map<Int, Long>,
-                               ctx: AppCompatActivity): CoursePointMesg? {
-    val typeInLocus = wp.parameterRteAction
+/*
+course_point (32, type: 5, length: 32 bytes):
+timestamp (1-1-UINT32): 2018-12-14T19:50:04 (913747804)
+type (5-1-ENUM): generic (0)
+position_lat (2-1-SINT32): 50.0414826 deg (597018142)
+position_long (3-1-SINT32): 14.4738929 deg (172680268)
+distance (4-1-UINT32): 0.00 m (0)
+name (6-14-STRING): "Generic Point"
+*/
+
+internal fun getCoursepointMesg(wp: Point,
+                                mapNonNullIndicesToTmstmp: Map<Int, Long>,
+                                mapNonNullIndicesToDist: Map<Int, Float>,
+                                track: Track,
+                                ctx: AppCompatActivity): CoursePointMesg? {
+    val typeInLocus: PointRteAction? = wp.parameterRteAction
+    typeInLocus ?: return null
     // unsupported should be already filtered out by caller!
-    if(!routePointActionsToCoursePoints.keys.contains(typeInLocus)) return null
+    if (!routePointActionsToCoursePoints.keys.contains(typeInLocus)) return null
     val cp = CoursePointMesg()
     cp.localNum = 5
     val indexOfTrackpoint = wp.paramRteIndex
     val tmstmp: Long? = mapNonNullIndicesToTmstmp[indexOfTrackpoint]
-    if (tmstmp != null && typeInLocus != null){
-        cp.timestamp = DateTime((tmstmp - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
-        if (typeInLocus != PointRteAction.PASS_PLACE){
-            // NON - PASS_PLACE PointRteAction
-            // we know mapping exists, otherwise null would be returned already
-            cp.type = routePointActionsToCoursePoints[typeInLocus]
-            cp.name = wp.parameterRteAction.textId ?: ""
+    val dst: Float? = mapNonNullIndicesToDist[indexOfTrackpoint]
+    tmstmp ?: return null
+    dst?: return null
+    cp.timestamp = DateTime((tmstmp - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
+    val p: Location? = track.getPoint(indexOfTrackpoint)
+    p ?: return null
+    cp.positionLat = p.latitude.toSemiCircles()
+    cp.positionLong = p.longitude.toSemiCircles()
+    cp.distance = dst
+    if (typeInLocus != PointRteAction.PASS_PLACE) {
+        // NON - PASS_PLACE PointRteAction
+        // we know mapping exists, otherwise null would be returned already
+        cp.type = routePointActionsToCoursePoints[typeInLocus]
+        cp.name = wp.parameterRteAction.textId ?: ""
+    } else {
+        // PASS_PLACE PointRteAction
+        if (wp.parameterStyleName.equals("Summit")) {
+            cp.type = CoursePoint.SUMMIT
+            cp.name = ctx.getString("summit_cp_name")
+        } else if (wp.parameterStyleName.equals("Dropoff")) {
+            cp.type = CoursePoint.VALLEY
+            cp.name = ctx.getString("valley_cp_name")
         } else {
-            // PASS_PLACE PointRteAction
-            if(wp.parameterStyleName.equals("Summit")) {
-                cp.type = CoursePoint.SUMMIT
-                cp.name = ctx.getString("summit_cp_name")
-            }
-            else if (wp.parameterStyleName.equals("Dropoff")) {
-                cp.type = CoursePoint.VALLEY
-                cp.name = ctx.getString("valley_cp_name")
-            } else {
-                cp.type = CoursePoint.GENERIC
-                cp.name = wp.parameterStyleName ?: ""
-            }
+            cp.type = CoursePoint.GENERIC
+            cp.name = wp.parameterStyleName ?: "poi"
         }
-        return cp
-    } else return null
+    }
+    return cp
 }

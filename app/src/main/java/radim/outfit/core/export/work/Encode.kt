@@ -10,6 +10,7 @@ import radim.outfit.core.export.work.locusapiextensions.stringdumps.TrackStringD
 import radim.outfit.debugdumps.FitSDKDebugDumps.Dumps
 import java.io.File
 import com.garmin.fit.DateTime
+import radim.outfit.DEBUG_MODE
 
 const val MIN_TIME_TAKEN = 8
 const val MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989 = 631065600000L
@@ -26,10 +27,7 @@ class Encoder {
                filename: String,
                speedIfNotInTrack: Float,
                ctx: AppCompatActivity
-
     ): Result {
-
-        val debug = true
 
         val start = System.currentTimeMillis()
 
@@ -95,13 +93,13 @@ state "isFullyTimestamped" as stamped {
             val trackIsFullyTimestamped = track.isTimestamped() && track.stats.isTimestamped()
             //================================================================================
 
-            if (debug) debugMessages.add("trackIsFullyTimestamped: $trackIsFullyTimestamped")
+            if (DEBUG_MODE) debugMessages.add("trackIsFullyTimestamped: $trackIsFullyTimestamped")
 
             //================================================================================
             val trackHasAltitude = track.hasAltitude()
             //================================================================================
 
-            if (debug) {
+            if (DEBUG_MODE) {
                 debugMessages.add("trackHasAltitude: $trackHasAltitude")
                 debugMessages.addAll(TrackStringDump.stringDescriptionDeep(track))
             }
@@ -113,7 +111,7 @@ state "isFullyTimestamped" as stamped {
                 assignPointTimestampsToNonNullPoints(track, distancesNonNullPoints, speedIfNotInTrack)
             }
 
-            if (debug) {
+            if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
                 debugMessages.add("++++++++++++++++++++++distancesNonNullPoints")
                 distancesNonNullPoints.forEach { debugMessages.add(it.toString()) }
@@ -149,7 +147,7 @@ state "isFullyTimestamped" as stamped {
 
             val speedsNonNullPoints = assignSpeedsToNonNullPoints(track, timeBundle, distancesNonNullPoints)
 
-            if (debug) {
+            if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
                 speedsNonNullPoints.forEach { debugMessages.add(it.toString()) }
             }
@@ -162,7 +160,7 @@ state "isFullyTimestamped" as stamped {
 
             encoder.write(lapMesg)
 
-            if (debug) {
+            if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
                 debugMessages.addAll(Dumps.fileIdMessageDump(fileIdMesg))
                 debugMessages.addAll(Dumps.banner())
@@ -187,7 +185,7 @@ event_type (1-1-ENUM): start (0)
             eventMesgStart.eventType = EventType.START
             encoder.write(eventMesgStart)
 
-            if (debug) {
+            if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
                 debugMessages.addAll(Dumps.eventMessageDump(eventMesgStart))
                 debugMessages.addAll(Dumps.banner())
@@ -197,7 +195,8 @@ event_type (1-1-ENUM): start (0)
             val unsupportedRid = ridUnsupportedRtePtActions(track.waypoints)
             val reducedToLimit = reduceWayPointsSizeTo(unsupportedRid, COURSEPOINTS_LIMIT)
             val mapNonNullIndicesToTmstmp = mapNonNullPointsIndicesToTimestamps(track, timeBundle)
-            if(debug){
+            val mapNonNullIndicesToDist = mapNonNullPointsIndicesToDistances(track, distancesNonNullPoints)
+            if(DEBUG_MODE){
                 debugMessages.addAll(Dumps.banner())
                 debugMessages.add("++++++++++++++++++++++mapNonNullIndicesToTmstmp")
                 debugMessages.add(mapNonNullIndicesToTmstmp.toString())
@@ -205,15 +204,20 @@ event_type (1-1-ENUM): start (0)
             }
             var countCP = 0
             reducedToLimit.forEach {
-                    val coursePointMesg = getCoursepointMesg(it, mapNonNullIndicesToTmstmp, ctx)
+                    val coursePointMesg = getCoursepointMesg(
+                            it,
+                            mapNonNullIndicesToTmstmp,
+                            mapNonNullIndicesToDist,
+                            track,
+                            ctx)
                     if (coursePointMesg != null) {
                         encoder.write(coursePointMesg)
                         countCP ++
-                        if(debug) debugMessages.addAll(Dumps.coursePointMessageDumpLine(coursePointMesg))
+                        if(DEBUG_MODE) debugMessages.addAll(Dumps.coursePointMessageDumpLine(coursePointMesg))
                     }
             }
 
-            if(debug){
+            if(DEBUG_MODE){
                 debugMessages.addAll(Dumps.banner())
                 debugMessages.add("CP count: $countCP")
                 debugMessages.addAll(Dumps.banner())
@@ -224,7 +228,7 @@ event_type (1-1-ENUM): start (0)
             var index = 0
             var timestamp: DateTime? = null
             for (i in track.points.indices) {
-                if (track.points[i] == null && debug) {
+                if (track.points[i] == null && DEBUG_MODE) {
                     debugMessages.add("-----------------------------------NULL PRESENT!")
                     continue
                 }
@@ -238,7 +242,7 @@ event_type (1-1-ENUM): start (0)
                         index
                 )
                 timestamp = recordMesg.timestamp
-                if (debug) debugMessages.addAll(Dumps.recordMessageDumpLine(recordMesg))
+                if (DEBUG_MODE) debugMessages.addAll(Dumps.recordMessageDumpLine(recordMesg))
                 encoder.write(recordMesg)
                 index++
             }
@@ -267,7 +271,7 @@ event_type (1-1-ENUM): stop_disable_all (9)
 
             encoder.write(eventMesgStop)
 
-            if (debug) {
+            if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
                 debugMessages.addAll(Dumps.eventMessageDump(eventMesgStop))
             }

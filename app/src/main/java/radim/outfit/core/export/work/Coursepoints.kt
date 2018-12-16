@@ -3,8 +3,6 @@ package radim.outfit.core.export.work
 import com.garmin.fit.CoursePoint
 import locus.api.objects.enums.PointRteAction
 
-val tag = "CP"
-
 const val COURSEPOINTS_LIMIT = 100
 
 val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(

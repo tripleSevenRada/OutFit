@@ -82,21 +82,33 @@ fun assignSpeedsToNonNullPoints(track: Track, timeBundle: TrackTimestampsBundle,
     return speeds
 }
 
-// it should be possible to position a coursepoint just using a related trackpoint's timestamp
+
+// According do docs it should be possible to position a coursepoint just using a related trackpoint's timestamp ,
+// but I better don't trust it as Garmin itself does not use that simple approach
+
+
 fun mapNonNullPointsIndicesToTimestamps(track: Track, timeBundle: TrackTimestampsBundle): Map<Int, Long> {
     val nonNullTimestamps = timeBundle.pointStamps
-    val indicesToNonNullTimestamps = mutableMapOf<Int, Long>()
+    return mapNonNullIndicesToValues(track, nonNullTimestamps)
+}
+
+fun mapNonNullPointsIndicesToDistances(track: Track, distances: List<Float>): Map<Int, Float>{
+    return mapNonNullIndicesToValues(track, distances)
+}
+
+fun <V> mapNonNullIndicesToValues(track: Track, values: List<V>): Map<Int,V>{
+    val indicesToNonNullValues = mutableMapOf<Int, V>()
     var indexNonNull = 0
     for (index in track.points.indices) {
         if (track.points[index] == null) continue
-        indicesToNonNullTimestamps.put(index, nonNullTimestamps[indexNonNull])
-        if (indexNonNull == nonNullTimestamps.size)
+        indicesToNonNullValues[index] = values[indexNonNull]
+        if (indexNonNull == values.size)
             throw RuntimeException("Indices messed 1 - TrackEnhancements")
         indexNonNull++
     }
-    if(indicesToNonNullTimestamps.size != nonNullTimestamps.size)
+    if(indicesToNonNullValues.size != values.size)
         throw RuntimeException("Indices messed 2 - TrackEnhancements")
-    return indicesToNonNullTimestamps
+    return indicesToNonNullValues
 }
 
 fun ridUnsupportedRtePtActions(waypoints: List<Point>): List<Point>{

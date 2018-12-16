@@ -47,10 +47,10 @@ fun AppCompatActivity.getString(name: String): String {
     return resources.getString(resources.getIdentifier(name, "string", packageName))
 }
 
-
+const val DEBUG_MODE = true
 
 class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesProvider {
-    private val debug = true
+
     // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
     private val exportListener = ExportListener(
             ExportFunction(),
@@ -163,12 +163,12 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
         doAsync {
             var track: Track? = null
             try {
-                // track = LocusUtils.handleIntentTrackTools(act, intent)
+                track = LocusUtils.handleIntentTrackTools(act, intent)
                 // or inject a mock
                 //track = getTrackOkNoCP()
                 //track = getTrackNullEndNoCP()
                 //track = getTrackNullStartNoCP()
-                track = getTrackRandomNullsNoCP()
+                //track = getTrackRandomNullsNoCP()
             } catch (e: RequiredVersionMissingException) {
                 failGracefully(act.getString("required_version_missing") + " " + e.localizedMessage + " Error 4")
             } catch (e: Exception) {
@@ -197,7 +197,7 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
         btnExport.isEnabled = true
         progressBar.visibility = ProgressBar.INVISIBLE
 
-        if (debug) {
+        if (DEBUG_MODE) {
             //fire and forget writing log file
             doAsync {
                 var savedOK = true
@@ -207,13 +207,13 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
                             writeTextFile(File(result.logFileDir.absolutePath +
                                     File.separatorChar +
                                     result.filename +
-                                    ".debug.dump"
+                                    ".DEBUG_MODE.dump"
                             ), result.debugMessage)
                         }
                         is Result.Fail -> {
                             if (result.logFileDir != null && result.logFileDir.exists() && result.filename != null) {
                                 val rootPath = result.logFileDir.absolutePath + File.separatorChar + result.filename
-                                writeTextFile(File("$rootPath.debug.dump"), result.debugMessage)
+                                writeTextFile(File("$rootPath.DEBUG_MODE.dump"), result.debugMessage)
                                 writeTextFile(File("$rootPath.error.dump"), result.errorMessage)
                             } else {
                                 savedOK = false
