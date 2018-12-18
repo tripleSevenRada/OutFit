@@ -11,9 +11,15 @@ fun getFilename(fileName: String?, defaultFilename: String): String {
             FILENAME_RESERVED_CHARS,
             FILENAME_REPLACEMENT_CHAR).toString()
     return if (filename.isNotEmpty()) {
-        if(!filename.endsWith(FILENAME_SUFFIX))
-            "$filename$FILENAME_SUFFIX"
-        else filename
+        if(!filename.endsWith(FILENAME_SUFFIX)) {
+            if(filename.length > 14) "${filename.subSequence(0, 14)}$FILENAME_SUFFIX"
+            else "$filename$FILENAME_SUFFIX"
+        }
+        else {
+            val stripped = filename.subSequence(0, fileName.length - 4)
+            if(stripped.length > 14) "${stripped.subSequence(0, 14)}$FILENAME_SUFFIX"
+            else "$stripped$FILENAME_SUFFIX"
+        }
     } else {
         "$defaultFilename$FILENAME_SUFFIX"
     }

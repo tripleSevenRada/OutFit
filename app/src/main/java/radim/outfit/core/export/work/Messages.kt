@@ -43,9 +43,12 @@ internal fun getCourseMesg(track: Track, filename: String): CourseMesg {
     val courseMesg = CourseMesg()
     courseMesg.localNum = 1
     courseMesg.name = if (track.name != null && track.name.isNotEmpty()) {
-        track.name
+        if(track.name.length > 12) track.name.subSequence(0, 12).toString()
+        else track.name
     } else {
-        filename.substring(0, filename.lastIndexOf("."))
+        val stripped = filename.subSequence(0, filename.lastIndexOf("."))
+        if(stripped.length > 12) stripped.subSequence(0, 12).toString()
+        else stripped.toString()
     }
     courseMesg.sport = Sport.GENERIC
     // courseMesg.capabilities = CourseCapabilities.NAVIGATION // Not required
@@ -191,7 +194,12 @@ internal fun getCoursepointMesg(wp: Point,
         } else {
             cp.type = CoursePoint.GENERIC
             val cpName: String? = wp.parameterStyleName
-            cp.name = if(cpName.isNullOrEmpty()) "poi" else cpName
+            cp.name = if(cpName.isNullOrEmpty()) "poi"
+            else if (cpName.length > 14) {
+                cpName.substring(0, 14)
+            } else {
+                cpName
+            }
         }
     }
     return cp
