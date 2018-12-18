@@ -248,6 +248,7 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
 
     //  CALLBACKS END
 
+    //https://github.com/passy/Android-DirectoryChooser/issues/65
     fun directoryPick(@Suppress("UNUSED_PARAMETER") v: View) {
         if (!permWriteIsGranted()) toast(getString("permission_needed"), Toast.LENGTH_SHORT)
         val rootPath = getRoot(exportListener)?.path

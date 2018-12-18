@@ -12,8 +12,6 @@ https://www.thisisant.com/resources/fit
 * Android-DirectoryChooser:
 https://github.com/passy/Android-DirectoryChooser
 
-https://github.com/passy/Android-DirectoryChooser/issues/65
-
 * Anko library:
 https://github.com/Kotlin/anko
 
