@@ -135,10 +135,10 @@ altitude (2-1-UINT16): 399.0 m (4495)
         DateTime((point.time - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
     } else {
         // time (List) is non empty
+        record.distance = dst[index]
         DateTime((time[index] - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
     }
     record.speed = speed[index]
-    record.distance = dst[index]
     if (hasAltitude) record.altitude = point.altitude.toFloat()
     return record
 }
