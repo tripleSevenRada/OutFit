@@ -11,6 +11,7 @@ https://www.thisisant.com/resources/fit
 
 * Android-DirectoryChooser:
 https://github.com/passy/Android-DirectoryChooser
+
 https://github.com/passy/Android-DirectoryChooser/issues/65
 
 * Anko library:
@@ -18,3 +19,6 @@ https://github.com/Kotlin/anko
 
 Devices using FIT format according to Openstreetmap wiki:
 https://wiki.openstreetmap.org/wiki/FIT#Devices_using_FIT_format
+
+Devices targeted by companion ConnectIQ App:
+http://developer.garmin.com/connect-iq/compatible-devices/connect-iq-2-devices 
