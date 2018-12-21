@@ -8,11 +8,11 @@ import radim.outfit.core.export.work.routePointActionsToCoursePoints
 
 // track does not contain null elements and is fully timestamped
 fun extractPointTimestampsFromPoints(track: Track): List<Long> {
-    val timestampMutableList = mutableListOf<Long>()
+    val mutableListOfTimestamps = mutableListOf<Long>()
     track.points.forEach {
-        timestampMutableList.add(it.time)
+        mutableListOfTimestamps.add(it.time)
     }
-    return timestampMutableList
+    return mutableListOfTimestamps
 }
 
 // track may contain null elements and is not considered fully timestamped
