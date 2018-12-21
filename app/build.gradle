@@ -54,3 +54,7 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:+'
     implementation 'android.arch.lifecycle:extensions:1.+'
 }
+
+dependencies {
+    implementation 'com.android.support.constraint:constraint-layout:+'
+}

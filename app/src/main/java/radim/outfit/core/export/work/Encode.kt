@@ -11,6 +11,7 @@ import radim.outfit.debugdumps.FitSDKDebugDumps.Dumps
 import java.io.File
 import com.garmin.fit.DateTime
 import radim.outfit.DEBUG_MODE
+import radim.outfit.getString
 
 const val MIN_TIME_TAKEN = 8
 const val MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989 = 631065600000L
@@ -34,7 +35,8 @@ class Encoder {
         val publicMessages = mutableListOf<String>()
         val debugMessages = mutableListOf<String>()
         val errorMessages = mutableListOf<String>()
-        publicMessages.add("Dir: $dir, Filename: $filename, Track: $track")
+        publicMessages.add("${ctx.getString("fit_file_dir")} $dir")
+        publicMessages.add("${ctx.getString("filename")} $filename")
         debugMessages.add("Debug:")
         errorMessages.add("Error:")
 
@@ -64,7 +66,10 @@ class Encoder {
             // 'Course message'
             val courseMesg = getCourseMesg(track, filename)
             encoder.write(courseMesg)
-
+            with(publicMessages) {
+                add("${ctx.getString("course_name")} ${courseMesg.name}")
+                add(ctx.getString("exported"))
+            }
             /*
 
             // https://drive.google.com/file/d/1IgF-khr7c0fF5zZzU8fORJqGpF5DXliz/view?usp=sharing
@@ -196,28 +201,47 @@ event_type (1-1-ENUM): start (0)
             val reducedToLimit = reduceWayPointsSizeTo(unsupportedRid, COURSEPOINTS_LIMIT)
             val mapNonNullIndicesToTmstmp = mapNonNullPointsIndicesToTimestamps(track, timeBundle)
             val mapNonNullIndicesToDist = mapNonNullPointsIndicesToDistances(track, distancesNonNullPoints)
-            if(DEBUG_MODE){
+            if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
                 debugMessages.add("++++++++++++++++++++++mapNonNullIndicesToTmstmp")
                 debugMessages.add(mapNonNullIndicesToTmstmp.toString())
                 debugMessages.addAll(Dumps.banner())
             }
+            val mapFrequenciesRtePtActions = mutableMapOf<String, Int>()
+            val mapFrequenciesRtePtActionsStyleName = mutableMapOf<String, Int>()
+
+
             var countCP = 0
             reducedToLimit.forEach {
-                    val coursePointMesg = getCoursepointMesg(
-                            it,
-                            mapNonNullIndicesToTmstmp,
-                            mapNonNullIndicesToDist,
-                            track,
-                            ctx)
-                    if (coursePointMesg != null) {
-                        encoder.write(coursePointMesg)
-                        countCP ++
-                        if(DEBUG_MODE) debugMessages.addAll(Dumps.coursePointMessageDumpLine(coursePointMesg))
-                    }
+                val coursePointMesg = getCoursepointMesg(
+                        it,
+                        mapNonNullIndicesToTmstmp,
+                        mapNonNullIndicesToDist,
+                        track,
+                        ctx)
+                if (coursePointMesg != null) {
+                    encoder.write(coursePointMesg)
+                    countCP++
+                    if (DEBUG_MODE) debugMessages.addAll(Dumps.coursePointMessageDumpLine(coursePointMesg))
+                }
+
+                if(!it.parameterRteAction.textId.equals("pass_place")) {
+                    countFrequencies(it.parameterRteAction.textId, mapFrequenciesRtePtActions)
+                } else {
+                    countFrequencies(it.parameterStyleName,mapFrequenciesRtePtActionsStyleName)
+                }
             }
 
-            if(DEBUG_MODE){
+            publicMessages.add("${ctx.getString("nmb_coursepoints")} ${reducedToLimit.size}")
+            // TODO Stick to some given order
+            mapFrequenciesRtePtActions.keys.forEach {
+                publicMessages.add("$it : ${mapFrequenciesRtePtActions[it]}")
+            }
+            mapFrequenciesRtePtActionsStyleName.keys.forEach {
+                publicMessages.add("$it : ${mapFrequenciesRtePtActionsStyleName[it]}")
+            }
+
+            if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
                 debugMessages.add("CP count: $countCP")
                 debugMessages.addAll(Dumps.banner())
@@ -295,5 +319,17 @@ event_type (1-1-ENUM): stop_disable_all (9)
             Thread.sleep(MIN_TIME_TAKEN - timeTaken)
         }
         return Result.Success(publicMessages, debugMessages, dir, filename)
+    }
+
+    private fun <K>countFrequencies(word: K, map: MutableMap<K, Int>){
+        if (!map.containsKey(word))
+            map[word] = 1
+        else {
+            var count = map[word]
+            if (count != null) {
+                count ++
+                map[word] = count
+            }
+        }
     }
 }

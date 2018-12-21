@@ -32,13 +32,13 @@ import org.jetbrains.anko.uiThread
 import radim.outfit.core.FilenameCharsFilter
 import radim.outfit.core.getFilename
 import radim.outfit.debugdumps.writeTextFile
-import radim.outfit.mocks.getTrackRandomNullsNoCP
 import java.lang.RuntimeException
 
 const val LOG_TAG = "MAIN"
 const val REQUEST_CODE_OPEN_DIRECTORY = 9999
 const val REQUEST_CODE_PERM_WRITE_EXTERNAL = 7777
 const val EXTRA_MESSAGE_FINISH = "start finish gracefully activity to explain what happened"
+const val EXTRA_MESSAGE_VIEW_RESULTS = "start view results activity with ViewResultParcel extra"
 
 // error codes:
 // 1 - 7
@@ -232,7 +232,23 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
                 }
             }
         }
-        // TODO do something public about result
+
+        when (result) {
+            is Result.Success -> {
+                val resultsParcel: ViewResultsParcel = ViewResultsParcel(
+                        getString("stats_label"),
+                        result.publicMessage,
+                        result.logFileDir.absolutePath + File.separatorChar + result.filename
+                )
+                val intent = Intent(this, ViewResultsActivity::class.java).apply {
+                    putExtra(EXTRA_MESSAGE_VIEW_RESULTS, resultsParcel)
+                }
+                startActivity(intent)
+            }
+            is Result.Fail -> {
+                failGracefully(result.errorMessage.toString())
+            }
+        }
     }
 
     private fun disableExecutive() {
@@ -240,6 +256,7 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
         btnExport.isEnabled = false
         progressBar.visibility = ProgressBar.VISIBLE
     }
+
     private fun enableExecutive() {
         // enable executive UI
         btnExport.isEnabled = true
@@ -335,10 +352,10 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
     private fun setAppStorageRoot() {
 
         // if root is stored and exists set it
-        if(sharedPreferences.contains(this.getString("last_seen_root"))){
+        if (sharedPreferences.contains(this.getString("last_seen_root"))) {
             val lastSeenRoot = File(sharedPreferences.getString(this.getString("last_seen_root"),
                     locusInfo().rootDirExport))
-            if(lastSeenRoot.isDirectory){
+            if (lastSeenRoot.isDirectory) {
                 setRoot(lastSeenRoot, exportListener, sharedPreferences, getString("last_seen_root"))
                 return
             }
@@ -410,3 +427,4 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
         this.finish()
     }
 }
+

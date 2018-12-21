@@ -50,5 +50,15 @@
     <string name="last_seen_speed_units" translatable="false">units_in_speed_picker-id_of_the_widget</string>
     <string name="last_seen_root" translatable="false">last_seen_root_directory</string>
 
+    <!-- public messages  - Encode-->
+    <string name="course_name">Course name:</string>
+    <string name="fit_file_dir">Directory:</string>
+    <string name="filename">Filename:</string>
+    <string name="exported">What is exported:</string>
+
+    <!-- ViewResultsActivity -->
+    <string name="btn_connectiq">Use ConnectIQ</string>
+
+    <string name="nmb_coursepoints">Number of coursepoints:</string>
 
 </resources>
