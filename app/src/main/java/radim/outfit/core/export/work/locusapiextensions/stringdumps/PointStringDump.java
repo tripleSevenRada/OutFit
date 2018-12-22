@@ -16,6 +16,11 @@ public class PointStringDump {
         dump.add("---------------getId()   " + point.getId());
         dump.add("---------------getName()   " + point.getName());
         dump.add("---------------getTimeCreated() " + point.getTimeCreated());
+        dump.add("---------------getParameterRteAction() " + point.getParameterRteAction());
+        dump.add("---------------getParameterDescription() " + point.getParameterDescription());
+        dump.add("---------------getParameterStyleName() " + point.getParameterStyleName());
+        dump.add("---------------getParameterSource() " + point.getParameterSource());
+        dump.add("---------------getParamRteIndex() " + point.getParamRteIndex());
         return dump;
     }
 }

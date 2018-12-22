@@ -47,7 +47,7 @@ fun AppCompatActivity.getString(name: String): String {
     return resources.getString(resources.getIdentifier(name, "string", packageName))
 }
 
-const val DEBUG_MODE = false
+const val DEBUG_MODE = true
 
 class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesProvider {
 

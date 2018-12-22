@@ -207,11 +207,10 @@ event_type (1-1-ENUM): start (0)
                 debugMessages.add(mapNonNullIndicesToTmstmp.toString())
                 debugMessages.addAll(Dumps.banner())
             }
-            val mapFrequenciesRtePtActions = mutableMapOf<String, Int>()
-            val mapFrequenciesRtePtActionsStyleName = mutableMapOf<String, Int>()
 
-
+            val mapCoursePointsTypesToFrequencies = mutableMapOf<CoursePoint, Int>()
             var countCP = 0
+
             reducedToLimit.forEach {
                 val coursePointMesg = getCoursepointMesg(
                         it,
@@ -222,23 +221,17 @@ event_type (1-1-ENUM): start (0)
                 if (coursePointMesg != null) {
                     encoder.write(coursePointMesg)
                     countCP++
+                    countFrequencies(coursePointMesg.type, mapCoursePointsTypesToFrequencies)
                     if (DEBUG_MODE) debugMessages.addAll(Dumps.coursePointMessageDumpLine(coursePointMesg))
-                }
-
-                if(!it.parameterRteAction.textId.equals("pass_place")) {
-                    countFrequencies(it.parameterRteAction.textId, mapFrequenciesRtePtActions)
-                } else {
-                    countFrequencies(it.parameterStyleName,mapFrequenciesRtePtActionsStyleName)
                 }
             }
 
             publicMessages.add("${ctx.getString("nmb_coursepoints")} ${reducedToLimit.size}")
-            // TODO Stick to some given order
-            mapFrequenciesRtePtActions.keys.forEach {
-                publicMessages.add("$it : ${mapFrequenciesRtePtActions[it]}")
-            }
-            mapFrequenciesRtePtActionsStyleName.keys.forEach {
-                publicMessages.add("$it : ${mapFrequenciesRtePtActionsStyleName[it]}")
+
+            coursePointsDisplayOrder.forEach {
+                if (mapCoursePointsTypesToFrequencies.keys.contains(it)) {
+                    publicMessages.add("$it : ${mapCoursePointsTypesToFrequencies[it]}")
+                }
             }
 
             if (DEBUG_MODE) {
@@ -321,13 +314,13 @@ event_type (1-1-ENUM): stop_disable_all (9)
         return Result.Success(publicMessages, debugMessages, dir, filename)
     }
 
-    private fun <K>countFrequencies(word: K, map: MutableMap<K, Int>){
+    private fun <K> countFrequencies(word: K, map: MutableMap<K, Int>) {
         if (!map.containsKey(word))
             map[word] = 1
         else {
             var count = map[word]
             if (count != null) {
-                count ++
+                count++
                 map[word] = count
             }
         }

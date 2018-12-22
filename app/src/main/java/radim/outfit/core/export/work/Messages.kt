@@ -168,6 +168,7 @@ internal fun getCoursepointMesg(wp: Point,
     val cp = CoursePointMesg()
     cp.localNum = 5
     val indexOfTrackpoint = wp.paramRteIndex
+    if(indexOfTrackpoint == -1) return null
     val tmstmp: Long? = mapNonNullIndicesToTmstmp[indexOfTrackpoint]
     val dst: Float? = mapNonNullIndicesToDist[indexOfTrackpoint]
     tmstmp ?: return null

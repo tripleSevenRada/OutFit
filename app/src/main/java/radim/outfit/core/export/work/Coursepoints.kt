@@ -2,6 +2,8 @@ package radim.outfit.core.export.work
 
 import com.garmin.fit.CoursePoint
 import locus.api.objects.enums.PointRteAction
+import locus.api.objects.extra.Point
+import locus.api.objects.extra.Track
 
 const val COURSEPOINTS_LIMIT = 100
 
@@ -28,7 +30,37 @@ val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.PASS_PLACE to CoursePoint.GENERIC
 )
 
-// low importance low priority
+val coursePointsDisplayOrder: List<CoursePoint> = listOf(
+        CoursePoint.GENERIC,
+        CoursePoint.SUMMIT,
+        CoursePoint.VALLEY,
+        CoursePoint.WATER,
+        CoursePoint.FOOD,
+        CoursePoint.DANGER,
+        CoursePoint.LEFT,
+        CoursePoint.RIGHT,
+        CoursePoint.STRAIGHT,
+        CoursePoint.FIRST_AID,
+        CoursePoint.FOURTH_CATEGORY,
+        CoursePoint.THIRD_CATEGORY,
+        CoursePoint.SECOND_CATEGORY,
+        CoursePoint.FIRST_CATEGORY,
+        CoursePoint.HORS_CATEGORY,
+        CoursePoint.SPRINT,
+        CoursePoint.LEFT_FORK,
+        CoursePoint.RIGHT_FORK,
+        CoursePoint.MIDDLE_FORK,
+        CoursePoint.SLIGHT_LEFT,
+        CoursePoint.SHARP_LEFT,
+        CoursePoint.SLIGHT_RIGHT,
+        CoursePoint.SHARP_RIGHT,
+        CoursePoint.U_TURN,
+        CoursePoint.SEGMENT_START,
+        CoursePoint.SEGMENT_END,
+        CoursePoint.INVALID
+)
+
+// low value low priority
 val routePointActionsPrioritized: Map<Int, List<PointRteAction>> = mapOf(
         1 to listOf(PointRteAction.MERGE),
         2 to listOf(PointRteAction.RAMP_STRAIGHT),
@@ -45,3 +77,28 @@ val routePointActionsPrioritized: Map<Int, List<PointRteAction>> = mapOf(
         13 to listOf(PointRteAction.PASS_PLACE)
 )
 
+const val MAX_DISTANCE_TO_CLIP_WP_TO_COURSE = 200.0F
+
+class ClipWaypointsToTrack(val track: Track){
+
+    fun getSortedListOfIndicesCloseEnough(waypoint: Point): List<Int>{
+        val list = mutableListOf<Int>()
+        val listDistInd = mutableListOf<ComparIndexDistance>()
+        var dist: Float
+        for(i in track.points.indices){
+            if(track.points[i] == null)continue
+            dist = waypoint.location.distanceTo(track.points[i])
+            if (dist < MAX_DISTANCE_TO_CLIP_WP_TO_COURSE)
+                listDistInd.add(ComparIndexDistance(i, dist))
+        }
+        with(listDistInd){sort(); forEach { list.add(it.index) }}
+        return list
+    }
+    
+    data class ComparIndexDistance(val index: Int, val distance: Float): Comparable<ComparIndexDistance>{
+        override fun compareTo(other: ComparIndexDistance): Int = this.distance.compareTo(other.distance)
+    }
+    data class ComparWaypointIndex(val waypoint: Point, val index:Int): Comparable<ComparWaypointIndex>{
+        override fun compareTo(other: ComparWaypointIndex): Int = this.index.compareTo(other.index)
+    }
+}
