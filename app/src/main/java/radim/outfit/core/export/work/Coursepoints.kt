@@ -84,6 +84,8 @@ class AttachWaypointsToTrack(val track: Track) {
 
     // try to assign (trackpoints) indices to waypoints with PointRteAction.UNDEFINED
     // that lay close enough to track
+    var debugMesseges = mutableListOf<String>()
+        private set
 
     fun rebuild(waypoints: List<Point>): List<Point> {
 
@@ -130,8 +132,7 @@ class AttachWaypointsToTrack(val track: Track) {
         }
     }
 
-
-    private fun getSortedListOfIndicesCloseEnough(waypoint: Point): List<Int> {
+    private fun getSortedListOfIndicesCloseEnough(waypoint: Point): List<Int>{
         val list = mutableListOf<Int>()
         val listDistInd = mutableListOf<ComparIndexDistance>()
         var dist: Float
@@ -145,10 +146,9 @@ class AttachWaypointsToTrack(val track: Track) {
         return list
     }
 
-    data class ComparIndexDistance(val index: Int, val distance: Float) : Comparable<ComparIndexDistance> {
+    data class ComparIndexDistance(val index: Int, val distance: Float): Comparable<ComparIndexDistance>{
         override fun compareTo(other: ComparIndexDistance): Int = this.distance.compareTo(other.distance)
     }
-
     data class ComparWaypointIndex(val waypoint: Point, val index: Int) : Comparable<ComparWaypointIndex> {
         override fun compareTo(other: ComparWaypointIndex): Int = this.index.compareTo(other.index)
     }
