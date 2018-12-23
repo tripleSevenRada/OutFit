@@ -94,7 +94,7 @@ class ClipWaypointsToTrack(val track: Track){
         with(listDistInd){sort(); forEach { list.add(it.index) }}
         return list
     }
-    
+
     data class ComparIndexDistance(val index: Int, val distance: Float): Comparable<ComparIndexDistance>{
         override fun compareTo(other: ComparIndexDistance): Int = this.distance.compareTo(other.distance)
     }
