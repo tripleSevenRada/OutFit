@@ -81,6 +81,9 @@ const val MAX_DISTANCE_TO_CLIP_WP_TO_COURSE = 200.0F
 
 class ClipWaypointsToTrack(val track: Track){
 
+    var debugMesseges = mutableListOf<String>()
+        private set
+
     fun getSortedListOfIndicesCloseEnough(waypoint: Point): List<Int>{
         val list = mutableListOf<Int>()
         val listDistInd = mutableListOf<ComparIndexDistance>()
