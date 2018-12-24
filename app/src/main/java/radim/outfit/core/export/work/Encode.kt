@@ -203,7 +203,7 @@ event_type (1-1-ENUM): start (0)
             if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
                 debugMessages.add("++++++++++++++++++++++AttachWaypointsToTrack")
-                debugMessages.addAll(waypointsRebuilder.debugMesseges)
+                debugMessages.addAll(waypointsRebuilder.debugMessages)
             }
             val unsupportedRid = ridUnsupportedRtePtActions(waypointsRebuilt)
             val reducedToLimit = reduceWayPointsSizeTo(unsupportedRid, COURSEPOINTS_LIMIT)
