@@ -3,6 +3,7 @@ package radim.outfit.core.export.work.locusapiextensions
 import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
 import locus.api.objects.utils.LocationCompute
+import radim.outfit.core.export.work.WaypointSimplified
 import radim.outfit.core.export.work.routePointActionsPrioritized
 import radim.outfit.core.export.work.routePointActionsToCoursePoints
 
@@ -111,17 +112,17 @@ fun <V> mapNonNullIndicesToValues(track: Track, values: List<V>): Map<Int,V>{
     return indicesToNonNullValues
 }
 
-fun ridUnsupportedRtePtActions(waypoints: List<Point>): List<Point>{
-    return waypoints.filter { routePointActionsToCoursePoints.keys.contains(it.parameterRteAction) }
+fun ridUnsupportedRtePtActions(waypoints: List<WaypointSimplified>): List<WaypointSimplified>{
+    return waypoints.filter { routePointActionsToCoursePoints.keys.contains(it.rteAction) }
 }
 
-fun reduceWayPointsSizeTo(points: List<Point>, limit: Int): List<Point>{
+fun reduceWayPointsSizeTo(points: List<WaypointSimplified>, limit: Int): List<WaypointSimplified>{
     var toReduce = points.toMutableList()
     val range = IntRange(1, routePointActionsPrioritized.size - 1) // allways keep all PASS_PLACE waypoints here 
     for (i in range){
         if (toReduce.size <= limit) break
         val rteActionsToRid = routePointActionsPrioritized[i] ?: listOf()
-        toReduce = toReduce.filter { ! rteActionsToRid.contains(it.parameterRteAction) }.toMutableList()    
+        toReduce = toReduce.filter { ! rteActionsToRid.contains(it.rteAction) }.toMutableList()
     }
     // now reduce even PASS_PLACE if necessary
     if (toReduce.size <= limit) return toReduce

@@ -156,18 +156,18 @@ distance (4-1-UINT32): 0.00 m (0)
 name (6-14-STRING): "Generic Point"
 */
 
-internal fun getCoursepointMesg(wp: Point,
+internal fun getCoursepointMesg(wp: WaypointSimplified,
                                 mapNonNullIndicesToTmstmp: Map<Int, Long>,
                                 mapNonNullIndicesToDist: Map<Int, Float>,
                                 track: Track,
                                 ctx: AppCompatActivity): CoursePointMesg? {
-    val typeInLocus: PointRteAction? = wp.parameterRteAction
+    val typeInLocus: PointRteAction? = wp.rteAction
     typeInLocus ?: return null
     // unsupported should be already filtered out by caller!
     if (!routePointActionsToCoursePoints.keys.contains(typeInLocus)) return null
     val cp = CoursePointMesg()
     cp.localNum = 5
-    val indexOfTrackpoint = wp.paramRteIndex
+    val indexOfTrackpoint = wp.rteIndex
     if(indexOfTrackpoint == -1) return null
     val tmstmp: Long? = mapNonNullIndicesToTmstmp[indexOfTrackpoint]
     val dst: Float? = mapNonNullIndicesToDist[indexOfTrackpoint]
@@ -183,18 +183,18 @@ internal fun getCoursepointMesg(wp: Point,
         // NON - PASS_PLACE PointRteAction
         // we know mapping exists, otherwise null would be returned already
         cp.type = routePointActionsToCoursePoints[typeInLocus]
-        cp.name = wp.parameterRteAction.textId ?: ""
+        cp.name = wp.rteAction.textId ?: ""
     } else {
         // PASS_PLACE PointRteAction
-        if (wp.parameterStyleName.equals("Summit")) {
+        if (wp.styleName.equals("Summit")) {
             cp.type = CoursePoint.SUMMIT
-            cp.name = ctx.getString("summit_cp_name")
-        } else if (wp.parameterStyleName.equals("Dropoff")) {
+            cp.name = "Summit"
+        } else if (wp.styleName.equals("Dropoff")) {
             cp.type = CoursePoint.VALLEY
-            cp.name = ctx.getString("valley_cp_name")
+            cp.name =  "Valley"
         } else {
             cp.type = CoursePoint.GENERIC
-            val cpName: String? = wp.parameterStyleName
+            val cpName: String? = wp.styleName
             cp.name = if(cpName.isNullOrEmpty()) "poi"
             else if (cpName.length > 14) {
                 cpName.substring(0, 14)

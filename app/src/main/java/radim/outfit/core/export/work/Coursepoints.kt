@@ -84,72 +84,104 @@ class AttachWaypointsToTrack(val track: Track) {
 
     // try to assign (trackpoints) indices to waypoints with PointRteAction.UNDEFINED
     // that lay close enough to track
+
     var debugMesseges = mutableListOf<String>()
         private set
+    private var tag = "AttachWaypoints"
 
-    fun rebuild(waypoints: List<Point>): List<Point> {
+    fun rebuild(wpts: List<Point>, debug: Boolean): List<WaypointSimplified> {
 
-        val mutableWaypoints = waypoints.toMutableList()
+        val waypoints = wpts.toMutableList() // IS POINT
         val indicesTaken = mutableSetOf<Int>()
-        val waypointsUndefined = mutableListOf<Point>()
-        val attachedWaypoints = mutableListOf<Point>()
-        val attachedWaypointsSortable = mutableListOf<ComparWaypointIndex>()
-        val mapWaypointsToListOfIndices = mutableMapOf<Point, List<Int>>()
+        val waypointsUndefined = mutableListOf<Point>() // IS POINT
+        val waypointsSimplified = mutableListOf<WaypointSimplified>()
+        val waypointsToListOfIndices = mutableMapOf<Point, List<Int>>()
+
+        if (debug) debugMesseges.add("Size of all waypoints received in rebuild() ${waypoints.size}")
 
         // move all PointRteAction.UNDEFINED waypoints to waypointsUndefined
-        mutableWaypoints.forEach {
+        waypoints.forEach {
             if (it.parameterRteAction == PointRteAction.UNDEFINED)
                 waypointsUndefined.add(it)
         }
-        waypointsUndefined.forEach { mutableWaypoints.remove(it) }
+        waypointsUndefined.forEach { waypoints.remove(it) }
+        
+        // copy waypoints to waypointsSimplified
+        waypoints.forEach {
+            if (it.parameterStyleName == null) it.parameterStyleName = "poi"
+            waypointsSimplified.add(WaypointSimplified(it))
+        }
+
+        if (debug) debugMesseges.add("Size of waypoints after UNDEFINED removed ${waypoints.size}")
+        if (debug) debugMesseges.add("Size of waypointsUndefined removed from waypoints ${waypointsUndefined.size}")
 
         // mark trackpoints indices of mutableWaypoints as taken
-        mutableWaypoints.forEach {
-            if (it.paramRteIndex == -1) Log.w("AttachWaypoints", "rebuild-unexpected -1")
+        waypoints.forEach {
+            if (it.paramRteIndex == -1) {
+                Log.w(tag, "rebuild - unexpected -1 from it.paramRteIndex")
+                if (debug) debugMesseges.add("rebuild - unexpected -1 from it.paramRteIndex")
+
+            }
             indicesTaken.add(it.paramRteIndex)
         }
+
         // now try to attach waypointsUndefined to not yet taken route indices
         waypointsUndefined.forEach {
-            mapWaypointsToListOfIndices.put(it, getSortedListOfIndicesCloseEnough(it))
+            waypointsToListOfIndices.put(it, getSortedListOfIndicesCloseEnough(it))
         }
-        mapWaypointsToListOfIndices.keys.forEach {
+
+        waypointsToListOfIndices.keys.forEach {
             val waypoint = it
-            val listIndicesCloseEnough = mapWaypointsToListOfIndices[waypoint]
+            val listIndicesCloseEnough = waypointsToListOfIndices[waypoint]
             var indexAssigned = false
             listIndicesCloseEnough?.forEach {
-                if (!indexAssigned && !indicesTaken.contains(it)) {
+                if (!indexAssigned &&
+                        track.points[it] != null &&
+                        !indicesTaken.contains(it)) {
                     indicesTaken.add(it)
-                    // build new waypoint, add it to attachedWaypoints
-                    //TODO
-                    val attachedWaypoint = Point()
-                    val comparWaypointIndex = ComparWaypointIndex(attachedWaypoint, it)
-                    attachedWaypointsSortable.add(comparWaypointIndex)
-                    //TODO
-
+                    // build new simplified waypoint, add it to attachedWaypoints
+                    val attachedWaypoint = WaypointSimplified(
+                            it,
+                            waypoint.parameterStyleName ?: "poi",
+                            PointRteAction.PASS_PLACE
+                    )
+                    waypointsSimplified.add(attachedWaypoint)
+                    if (debug) debugMesseges.add("Attached new simplified waypoint: $attachedWaypoint")
                     indexAssigned = true
                 }
             }
         }
+        waypointsSimplified.sort()
+        if (debug) debugMesseges.add("Sorted rebuilt simplified waypoints")
+        if (debug) {
+            waypointsSimplified.forEach { debugMesseges.add(it.toString()) }
+        }
+        return waypointsSimplified // rebuild
     }
 
-    private fun getSortedListOfIndicesCloseEnough(waypoint: Point): List<Int>{
+    private fun getSortedListOfIndicesCloseEnough(waypoint: Point): List<Int> {
         val list = mutableListOf<Int>()
-        val listDistInd = mutableListOf<ComparIndexDistance>()
+        val listDistInd = mutableListOf<IndexDistance>()
         var dist: Float
         for (i in track.points.indices) {
             if (track.points[i] == null) continue
             dist = waypoint.location.distanceTo(track.points[i])
             if (dist < MAX_DISTANCE_TO_CLIP_WP_TO_COURSE)
-                listDistInd.add(ComparIndexDistance(i, dist))
+                listDistInd.add(IndexDistance(i, dist))
         }
         with(listDistInd) { sort(); forEach { list.add(it.index) } }
         return list
     }
+}
 
-    data class ComparIndexDistance(val index: Int, val distance: Float): Comparable<ComparIndexDistance>{
-        override fun compareTo(other: ComparIndexDistance): Int = this.distance.compareTo(other.distance)
-    }
-    data class ComparWaypointIndex(val waypoint: Point, val index: Int) : Comparable<ComparWaypointIndex> {
-        override fun compareTo(other: ComparWaypointIndex): Int = this.index.compareTo(other.index)
-    }
+data class WaypointSimplified(val rteIndex: Int,
+                              val styleName: String,
+                              val rteAction: PointRteAction) : Comparable<WaypointSimplified> {
+    constructor(point: Point) : this(point.paramRteIndex, point.parameterStyleName, point.parameterRteAction)
+
+    override fun compareTo(other: WaypointSimplified): Int = this.rteIndex.compareTo(other.rteIndex)
+}
+
+data class IndexDistance(val index: Int, val distance: Float) : Comparable<IndexDistance> {
+    override fun compareTo(other: IndexDistance): Int = this.distance.compareTo(other.distance)
 }

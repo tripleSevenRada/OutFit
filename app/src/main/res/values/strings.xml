@@ -41,10 +41,6 @@
     <string name="ok">CONFIRM</string>
 
     <!-- shared preferences -->
-    <string name="summit_cp_name">Summit</string>
-    <string name="valley_cp_name">Valley</string>
-
-    <!-- shared preferences -->
     <string name="main_activity_preferences" translatable="false">radim.outfit.MainActivity</string>
     <string name="last_seen_speed_value" translatable="false">value_in_speed_picker</string>
     <string name="last_seen_speed_units" translatable="false">units_in_speed_picker-id_of_the_widget</string>
@@ -58,7 +54,6 @@
 
     <!-- ViewResultsActivity -->
     <string name="btn_connectiq">Use ConnectIQ</string>
-
     <string name="nmb_coursepoints">Number of coursepoints:</string>
 
 </resources>

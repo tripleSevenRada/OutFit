@@ -197,7 +197,15 @@ event_type (1-1-ENUM): start (0)
             }
 
             // WAYPOINTS START
-            val unsupportedRid = ridUnsupportedRtePtActions(track.waypoints)
+
+            val waypointsRebuilder = AttachWaypointsToTrack(track)
+            val waypointsRebuilt = waypointsRebuilder.rebuild(track.waypoints, DEBUG_MODE)
+            if (DEBUG_MODE) {
+                debugMessages.addAll(Dumps.banner())
+                debugMessages.add("++++++++++++++++++++++AttachWaypointsToTrack")
+                debugMessages.addAll(waypointsRebuilder.debugMesseges)
+            }
+            val unsupportedRid = ridUnsupportedRtePtActions(waypointsRebuilt)
             val reducedToLimit = reduceWayPointsSizeTo(unsupportedRid, COURSEPOINTS_LIMIT)
             val mapNonNullIndicesToTmstmp = mapNonNullPointsIndicesToTimestamps(track, timeBundle)
             val mapNonNullIndicesToDist = mapNonNullPointsIndicesToDistances(track, distancesNonNullPoints)
@@ -295,12 +303,14 @@ event_type (1-1-ENUM): stop_disable_all (9)
 
         } catch (e: Exception) { //FitRuntimeException
             errorMessages.add("${e.localizedMessage} - 1")
+            e.printStackTrace()
             return Result.Fail(debugMessages, errorMessages, dir, filename, e)
         } finally {
             try {
                 encoder.close()
             } catch (e: Exception) { //FitRuntimeException
                 errorMessages.add("${e.localizedMessage} - 2")
+                e.printStackTrace()
                 return Result.Fail(debugMessages, errorMessages, dir, filename, e)
             }
         }
