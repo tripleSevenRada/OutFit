@@ -4,10 +4,8 @@ import android.support.v7.app.AppCompatActivity
 import com.garmin.fit.*
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Location
-import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
 import radim.outfit.core.export.work.locusapiextensions.*
-import radim.outfit.getString
 import java.util.*
 
 internal fun getFileIdMesg(): FileIdMesg {
@@ -159,8 +157,7 @@ name (6-14-STRING): "Generic Point"
 internal fun getCoursepointMesg(wp: WaypointSimplified,
                                 mapNonNullIndicesToTmstmp: Map<Int, Long>,
                                 mapNonNullIndicesToDist: Map<Int, Float>,
-                                track: Track,
-                                ctx: AppCompatActivity): CoursePointMesg? {
+                                track: Track): CoursePointMesg? {
     val typeInLocus: PointRteAction? = wp.rteAction
     typeInLocus ?: return null
     // unsupported should be already filtered out by caller!
@@ -183,18 +180,18 @@ internal fun getCoursepointMesg(wp: WaypointSimplified,
         // NON - PASS_PLACE PointRteAction
         // we know mapping exists, otherwise null would be returned already
         cp.type = routePointActionsToCoursePoints[typeInLocus]
-        cp.name = wp.rteAction.textId ?: ""
+        cp.name = wp.name
     } else {
         // PASS_PLACE PointRteAction
-        if (wp.styleName.equals("Summit")) {
+        if (wp.name.equals("Summit")) {
             cp.type = CoursePoint.SUMMIT
             cp.name = "Summit"
-        } else if (wp.styleName.equals("Dropoff")) {
+        } else if (wp.name.equals("Dropoff")) {
             cp.type = CoursePoint.VALLEY
             cp.name =  "Valley"
         } else {
             cp.type = CoursePoint.GENERIC
-            val cpName: String? = wp.styleName
+            val cpName: String? = wp.name
             cp.name = if(cpName.isNullOrEmpty()) "poi"
             else if (cpName.length > 14) {
                 cpName.substring(0, 14)

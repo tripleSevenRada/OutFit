@@ -224,8 +224,7 @@ event_type (1-1-ENUM): start (0)
                         it,
                         mapNonNullIndicesToTmstmp,
                         mapNonNullIndicesToDist,
-                        track,
-                        ctx)
+                        track)
                 if (coursePointMesg != null) {
                     encoder.write(coursePointMesg)
                     countCP++

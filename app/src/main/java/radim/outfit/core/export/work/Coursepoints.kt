@@ -108,7 +108,6 @@ class AttachWaypointsToTrack(val track: Track) {
 
         // copy waypoints to waypointsSimplified
         waypoints.forEach {
-            if (it.parameterStyleName == null) it.parameterStyleName = "poi"
             waypointsSimplified.add(WaypointSimplified(it))
         }
 
@@ -142,7 +141,7 @@ class AttachWaypointsToTrack(val track: Track) {
                     // build new simplified waypoint, add it to attachedWaypoints
                     val attachedWaypoint = WaypointSimplified(
                             it,
-                            waypoint.parameterStyleName ?: "poi",
+                            getWaypointName(waypoint),
                             PointRteAction.PASS_PLACE
                     )
                     waypointsSimplified.add(attachedWaypoint)
@@ -174,10 +173,36 @@ class AttachWaypointsToTrack(val track: Track) {
     }
 }
 
+fun getWaypointName(waypoint: Point): String {
+// waypoint.parameterRteAction != PointRteAction.PASS_PLACE
+// waypoint.parameterRteAction != PointRteAction.UNDEFINED
+    return if (waypoint.parameterRteAction != null &&
+            waypoint.parameterRteAction != PointRteAction.PASS_PLACE &&
+            waypoint.parameterRteAction != PointRteAction.UNDEFINED
+    ) {
+        waypoint.parameterRteAction.textId ?: "poi"
+// waypoint.parameterRteAction == PointRteAction.PASS_PLACE
+    } else if (
+            waypoint.parameterRteAction != null &&
+            waypoint.parameterRteAction == PointRteAction.PASS_PLACE
+    ) {
+        if (waypoint.parameterStyleName.isNullOrEmpty()) "poi"
+        else waypoint.parameterStyleName
+// waypoint.parameterRteAction == PointRteAction.UNDEFINED
+    } else if (
+            waypoint.parameterRteAction != null &&
+            waypoint.parameterRteAction == PointRteAction.UNDEFINED
+    ) {
+        if (waypoint.name.isNullOrEmpty()) "poi"
+        else waypoint.name
+    } else "poi"
+}
+
 data class WaypointSimplified(val rteIndex: Int,
-                              val styleName: String,
+                              val name: String,
                               val rteAction: PointRteAction) : Comparable<WaypointSimplified> {
-    constructor(point: Point) : this(point.paramRteIndex, point.parameterStyleName, point.parameterRteAction)
+    constructor(point: Point) : this(point.paramRteIndex, getWaypointName(point), point.parameterRteAction)
+
     override fun compareTo(other: WaypointSimplified): Int = this.rteIndex.compareTo(other.rteIndex)
 }
 
