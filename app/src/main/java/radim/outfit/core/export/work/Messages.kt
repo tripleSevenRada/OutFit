@@ -179,8 +179,8 @@ internal fun getCoursepointMesg(wp: WaypointSimplified,
     cp.positionLat = p.latitude.toSemiCircles()
     cp.positionLong = p.longitude.toSemiCircles()
     cp.distance = dst
-    cp.type = if (wp.coursePointEnumForced == null) routePointActionsToCoursePoints[typeInLocus]
-    else wp.coursePointEnumForced
+    cp.type = if (wp.coursepointEnumForced == null) routePointActionsToCoursePoints[typeInLocus]
+    else wp.coursepointEnumForced
     cp.name = assertStringLength(wp.name, COURSEPOINTS_NAME_MAX_LENGTH)
     return cp
 }

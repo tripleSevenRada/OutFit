@@ -1,9 +1,7 @@
 package radim.outfit.core.export.work.locusapiextensions
 
-import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
 import locus.api.objects.utils.LocationCompute
-import radim.outfit.core.export.work.WaypointSimplified
 import radim.outfit.core.export.work.routePointActionsPrioritized
 import radim.outfit.core.export.work.routePointActionsToCoursePoints
 

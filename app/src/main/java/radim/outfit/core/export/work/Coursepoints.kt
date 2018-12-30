@@ -5,6 +5,9 @@ import com.garmin.fit.CoursePoint
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
+import radim.outfit.core.export.work.locusapiextensions.WaypointSimplified
+import radim.outfit.core.export.work.locusapiextensions.getCoursepointEnumForced
+import radim.outfit.core.export.work.locusapiextensions.getWaypointName
 
 const val COURSEPOINTS_LIMIT = 100
 const val COURSEPOINTS_NAME_MAX_LENGTH = 14
@@ -30,6 +33,11 @@ val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.RAMP_STRAIGHT to CoursePoint.MIDDLE_FORK,
         PointRteAction.MERGE to CoursePoint.STRAIGHT,
         PointRteAction.PASS_PLACE to CoursePoint.GENERIC
+)
+
+val parameterStyleNameToCoursePoints: Map<String,CoursePoint> = mapOf(
+        "Summit" to CoursePoint.SUMMIT,
+        "Dropoff" to CoursePoint.VALLEY
 )
 
 val coursePointsDisplayOrder: List<CoursePoint> = listOf(
@@ -90,13 +98,13 @@ class AttachWaypointsToTrack(val track: Track) {
         private set
     private var tag = "AttachWaypoints"
 
+    // https://drive.google.com/open?id=1PEPjcHli7wXzy4iCc9TiGRuv7SIGzL8j
     fun rebuild(wpts: List<Point>, debug: Boolean): List<WaypointSimplified> {
 
         val waypoints = wpts.toMutableList() // IS POINT
         val indicesTaken = mutableSetOf<Int>()
         val waypointsUndefined = mutableListOf<Point>() // IS POINT
         val waypointsSimplified = mutableListOf<WaypointSimplified>()
-        val waypointsToListOfIndices = mutableMapOf<Point, List<Int>>()
 
         if (debug) debugMessages.add("Size of all waypoints received in rebuild() ${waypoints.size}")
 
@@ -108,8 +116,9 @@ class AttachWaypointsToTrack(val track: Track) {
         waypointsUndefined.forEach { waypoints.remove(it) }
 
         // copy waypoints to waypointsSimplified
-        //TODO for PASS_PLACE check styleName and decide about forced coursepoint enum
         waypoints.forEach {
+            // constructor calls this(point.paramRteIndex, getWaypointName(point),
+            // point.parameterRteAction, getCoursepointEnumForced(point))
             waypointsSimplified.add(WaypointSimplified(it))
         }
 
@@ -128,37 +137,22 @@ class AttachWaypointsToTrack(val track: Track) {
         }
 
         // now try to attach waypointsUndefined to not yet taken route indices
-        waypointsUndefined.forEach {
-            waypointsToListOfIndices.put(it, getSortedListOfIndicesCloseEnough(it))
-        }
-
-        waypointsToListOfIndices.keys.forEach {
-            val waypoint = it
-            val listIndicesCloseEnough = waypointsToListOfIndices[waypoint]
+        for (i in waypointsUndefined.indices) {
+            val waypoint = waypointsUndefined[i]
+            val listIndicesCloseEnough = getSortedListOfIndicesCloseEnough(waypoint)
             var indexAssigned = false
-            listIndicesCloseEnough?.forEach {
+            listIndicesCloseEnough.forEach {
                 if (!indexAssigned &&
                         track.points[it] != null &&
                         !indicesTaken.contains(it)) {
                     indicesTaken.add(it)
 
                     // build new simplified waypoint, add it to attachedWaypoints
-                    val styleName: String = waypoint.parameterStyleName ?: ""
-                    var forcedCoursepointEnum: CoursePoint? = when (styleName){
-                        "Summit" -> CoursePoint.SUMMIT
-                        "Dropoff" -> CoursePoint.VALLEY
-                        else -> null
-                    }
-
-                    if (forcedCoursepointEnum == null &&
-                            (waypoint.parameterRteAction == PointRteAction.PASS_PLACE) ||
-                            (waypoint.parameterRteAction == PointRteAction.UNDEFINED))
-                        forcedCoursepointEnum = CoursePoint.GENERIC
                     val attachedWaypoint = WaypointSimplified(
                             it,
-                            getWaypointName(waypoint),
+                            waypoint.getWaypointName(),
                             PointRteAction.PASS_PLACE,
-                            forcedCoursepointEnum
+                            waypoint.getCoursepointEnumForced()
                     )
                     waypointsSimplified.add(attachedWaypoint)
 
@@ -189,34 +183,6 @@ class AttachWaypointsToTrack(val track: Track) {
         with(listDistInd) { sort(); forEach { list.add(it.index) } }
         return list
     }
-}
-
-fun getWaypointName(waypoint: Point): String {
-    return if (waypoint.parameterRteAction != null &&
-            waypoint.parameterRteAction != PointRteAction.PASS_PLACE &&
-            waypoint.parameterRteAction != PointRteAction.UNDEFINED
-    ) {
-        if (waypoint.name.isNullOrEmpty()) {
-            waypoint.parameterRteAction.textId ?: "poi"
-        } else {
-            waypoint.name
-        }
-    } else if (
-            waypoint.parameterRteAction != null) {
-        if (waypoint.name.isNullOrEmpty()) {
-            if (waypoint.parameterStyleName.isNullOrEmpty()) "poi"
-            else waypoint.parameterStyleName
-        } else waypoint.name
-    } else "poi"
-}
-
-data class WaypointSimplified(val rteIndex: Int,
-                              val name: String,
-                              val rteAction: PointRteAction,
-                              val coursePointEnumForced: CoursePoint?) : Comparable<WaypointSimplified> {
-    constructor(point: Point) : this(point.paramRteIndex, getWaypointName(point), point.parameterRteAction, null)
-
-    override fun compareTo(other: WaypointSimplified): Int = this.rteIndex.compareTo(other.rteIndex)
 }
 
 data class IndexDistance(val index: Int, val distance: Float) : Comparable<IndexDistance> {
