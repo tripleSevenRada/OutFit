@@ -20,12 +20,12 @@
     <string name="default_filename">outfit_export</string>
 
     <!-- MainActivity.kt toast messages-->
-    <string name="permission_needed">Permission is needed.</string>
+    <string name="permission_needed">Permission is needed</string>
     <string name="locus_not_installed">Locus is not installed!</string>
     <string name="required_version_missing">Locus is probably too old!</string>
-    <string name="locus_not_running">Locus is not running.</string>
-    <string name="logs_written">Debug logs written.</string>
-    <string name="logs_write_error">Debug logs write error.</string>
+    <string name="locus_not_running">Locus is not running</string>
+    <string name="logs_written">Debug logs written</string>
+    <string name="logs_write_error">Debug logs write error</string>
 
     <!-- Stats.kt-->
     <string name="name_stats">Name:</string>
@@ -38,7 +38,7 @@
     <string name="kmh" translatable="false">km/h</string>
     <string name="mph" translatable="false">mph</string>
 
-    <string name="ok">CONFIRM</string>
+    <string name="ok">OK</string>
 
     <!-- shared preferences -->
     <string name="main_activity_preferences" translatable="false">radim.outfit.MainActivity</string>
@@ -48,12 +48,16 @@
 
     <!-- public messages  - Encode-->
     <string name="course_name">Course name:</string>
-    <string name="fit_file_dir">Directory:</string>
+    <string name="fit_file_dir">Folder:</string>
     <string name="filename">Filename:</string>
-    <string name="exported">What is exported:</string>
+    <string name="exported">What\'s been exported:</string>
 
     <!-- ViewResultsActivity -->
     <string name="btn_connectiq">Use ConnectIQ</string>
+    <string name="nmb_trackpoints">Number of trackpoints:</string>
     <string name="nmb_coursepoints">Number of coursepoints:</string>
+
+    <!-- Locus dir pick-->
+    <string name="pick_dir_message">Select export folder</string>
 
 </resources>

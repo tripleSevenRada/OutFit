@@ -1,14 +1,14 @@
 package radim.outfit.core.export.work
 
-import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import com.garmin.fit.*
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Location
-import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
 import radim.outfit.core.export.work.locusapiextensions.*
-import radim.outfit.getString
 import java.util.*
+
+const val COURSENAME_MAX_LENGTH = 12
 
 internal fun getFileIdMesg(): FileIdMesg {
     /*
@@ -42,13 +42,10 @@ internal fun getCourseMesg(track: Track, filename: String): CourseMesg {
      */
     val courseMesg = CourseMesg()
     courseMesg.localNum = 1
-    courseMesg.name = if (track.name != null && track.name.isNotEmpty()) {
-        if(track.name.length > 12) track.name.subSequence(0, 12).toString()
-        else track.name
+    courseMesg.name = if (!track.name.isNullOrEmpty()) {
+        assertStringLength(track.name, COURSENAME_MAX_LENGTH)
     } else {
-        val stripped = filename.subSequence(0, filename.lastIndexOf("."))
-        if(stripped.length > 12) stripped.subSequence(0, 12).toString()
-        else stripped.toString()
+        assertStringLength(filename.substring(0, filename.lastIndexOf(".")), COURSENAME_MAX_LENGTH)
     }
     courseMesg.sport = Sport.GENERIC
     // courseMesg.capabilities = CourseCapabilities.NAVIGATION // Not required
@@ -159,8 +156,8 @@ name (6-14-STRING): "Generic Point"
 internal fun getCoursepointMesg(wp: WaypointSimplified,
                                 mapNonNullIndicesToTmstmp: Map<Int, Long>,
                                 mapNonNullIndicesToDist: Map<Int, Float>,
-                                track: Track,
-                                ctx: AppCompatActivity): CoursePointMesg? {
+                                track: Track): CoursePointMesg? {
+    val tag = "getCPMesg"
     val typeInLocus: PointRteAction? = wp.rteAction
     typeInLocus ?: return null
     // unsupported should be already filtered out by caller!
@@ -168,40 +165,30 @@ internal fun getCoursepointMesg(wp: WaypointSimplified,
     val cp = CoursePointMesg()
     cp.localNum = 5
     val indexOfTrackpoint = wp.rteIndex
-    if(indexOfTrackpoint == -1) return null
+    if (indexOfTrackpoint == -1) {
+        Log.e(tag, "unexpected wp.rteIndex == -1")
+        return null
+    }
     val tmstmp: Long? = mapNonNullIndicesToTmstmp[indexOfTrackpoint]
     val dst: Float? = mapNonNullIndicesToDist[indexOfTrackpoint]
     tmstmp ?: return null
-    dst?: return null
+    dst ?: return null
     cp.timestamp = DateTime((tmstmp - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
     val p: Location? = track.getPoint(indexOfTrackpoint)
     p ?: return null
     cp.positionLat = p.latitude.toSemiCircles()
     cp.positionLong = p.longitude.toSemiCircles()
     cp.distance = dst
-    if (typeInLocus != PointRteAction.PASS_PLACE) {
-        // NON - PASS_PLACE PointRteAction
-        // we know mapping exists, otherwise null would be returned already
-        cp.type = routePointActionsToCoursePoints[typeInLocus]
-        cp.name = wp.rteAction.textId ?: ""
-    } else {
-        // PASS_PLACE PointRteAction
-        if (wp.styleName.equals("Summit")) {
-            cp.type = CoursePoint.SUMMIT
-            cp.name = "Summit"
-        } else if (wp.styleName.equals("Dropoff")) {
-            cp.type = CoursePoint.VALLEY
-            cp.name =  "Valley"
-        } else {
-            cp.type = CoursePoint.GENERIC
-            val cpName: String? = wp.styleName
-            cp.name = if(cpName.isNullOrEmpty()) "poi"
-            else if (cpName.length > 14) {
-                cpName.substring(0, 14)
-            } else {
-                cpName
-            }
-        }
-    }
+    cp.type = if (wp.coursePointEnumForced == null) routePointActionsToCoursePoints[typeInLocus]
+    else wp.coursePointEnumForced
+    cp.name = assertStringLength(wp.name, COURSEPOINTS_NAME_MAX_LENGTH)
     return cp
+}
+
+internal fun assertStringLength(value: String, max: Int): String {
+    return if (value.length > max) {
+        value.substring(0, max)
+    } else {
+        value
+    }
 }

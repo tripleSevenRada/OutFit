@@ -224,8 +224,7 @@ event_type (1-1-ENUM): start (0)
                         it,
                         mapNonNullIndicesToTmstmp,
                         mapNonNullIndicesToDist,
-                        track,
-                        ctx)
+                        track)
                 if (coursePointMesg != null) {
                     encoder.write(coursePointMesg)
                     countCP++
@@ -234,6 +233,7 @@ event_type (1-1-ENUM): start (0)
                 }
             }
 
+            val indexToInsertTrackpointsInfo = publicMessages.size
             publicMessages.add("${ctx.getString("nmb_coursepoints")} ${reducedToLimit.size}")
 
             coursePointsDisplayOrder.forEach {
@@ -271,6 +271,7 @@ event_type (1-1-ENUM): start (0)
                 encoder.write(recordMesg)
                 index++
             }
+            publicMessages.add(indexToInsertTrackpointsInfo, "${ctx.getString("nmb_trackpoints")} ${track.points.size}")
             // RECORDS END
 
             // sanity check

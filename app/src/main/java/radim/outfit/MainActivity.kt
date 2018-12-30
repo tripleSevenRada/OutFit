@@ -1,6 +1,8 @@
 package radim.outfit
 
 import android.Manifest
+import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.os.Bundle
 import android.view.View
@@ -11,8 +13,6 @@ import android.util.Log
 import locus.api.android.utils.LocusUtils
 import locus.api.android.utils.exceptions.RequiredVersionMissingException
 import locus.api.objects.extra.Track
-import net.rdrei.android.dirchooser.DirectoryChooserActivity
-import net.rdrei.android.dirchooser.DirectoryChooserConfig
 import java.io.File
 import android.content.pm.PackageManager
 import android.support.v4.content.ContextCompat
@@ -235,7 +235,7 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
 
         when (result) {
             is Result.Success -> {
-                val resultsParcel: ViewResultsParcel = ViewResultsParcel(
+                val resultsParcel = ViewResultsParcel(
                         getString("stats_label"),
                         result.publicMessage,
                         result.logFileDir.absolutePath + File.separatorChar + result.filename
@@ -265,40 +265,34 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
 
     //  CALLBACKS END
 
-    //https://github.com/passy/Android-DirectoryChooser/issues/65
     fun directoryPick(@Suppress("UNUSED_PARAMETER") v: View) {
-        if (!permWriteIsGranted()) toast(getString("permission_needed"), Toast.LENGTH_SHORT)
-        val rootPath = getRoot(exportListener)?.path
-                ?: Environment.getExternalStoragePublicDirectory(
-                        Environment.DIRECTORY_DOCUMENTS).path
-        val chooserIntent = Intent(this, DirectoryChooserActivity::class.java)
-        Log.i(LOG_TAG, "calling DirectoryChooserActivity with root: $rootPath")
-
-        val config = DirectoryChooserConfig.builder()
-                .newDirectoryName(getString(R.string.new_directory_name))
-                .allowReadOnlyDirectory(false)
-                .allowNewDirectoryNameModification(true)
-                .initialDirectory(rootPath)
-                .build()
-
-        chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config)
-        startActivityForResult(chooserIntent, REQUEST_CODE_OPEN_DIRECTORY)
+        val message: String = getString("pick_dir_message")
+        try {
+            ActionTools.actionPickDir(this, REQUEST_CODE_OPEN_DIRECTORY, message)
+        } catch (e: ActivityNotFoundException) {
+            e.printStackTrace()
+            failGracefully(e.localizedMessage)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE_OPEN_DIRECTORY) {
-            if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
-                try {
-                    handleDirectoryChoice(data!!
-                            .getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR))
-                } catch (e: Exception) {
-                    failGracefully(" Error 7")
-                    return
+        if (requestCode == REQUEST_CODE_OPEN_DIRECTORY &&
+                resultCode == Activity.RESULT_OK) {
+            try {
+                val fileUri = data!!.data
+                val exportDir: String? = fileUri!!.path
+                if (! exportDir.isNullOrEmpty()) {
+                    handleDirectoryChoice(exportDir)
+                } else {
+                    Log.w(LOG_TAG, " exportDir = null or empty")
                 }
-            } else {
-                Log.w(LOG_TAG, "Nothing selected")
+            } catch (e: Exception) {
+                failGracefully(" Error 7")
+                return
             }
+        } else {
+            Log.w(LOG_TAG, "Nothing selected")
         }
     }
 

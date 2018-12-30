@@ -113,7 +113,10 @@ public class Dumps {
             data.add("NULL");
             return data;
         }
-        data.add("CP: "  + message.getName() + ", "+ message.getPositionLat() + ", "+ message.getPositionLong() + ", " + message.getDistance() + ", " + message.getTimestamp().toString());
+        data.add("CP: "  + message.getName() + ", "
+                + message.getType() + ", "
+                + message.getPositionLat() + ", "+ message.getPositionLong() + ", "
+                + message.getDistance() + ", " + message.getTimestamp().toString());
         return data;
     }
 
