@@ -7,6 +7,7 @@ import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
 
 const val COURSEPOINTS_LIMIT = 100
+const val COURSEPOINTS_NAME_MAX_LENGTH = 14
 
 val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.LEFT_SLIGHT to CoursePoint.SLIGHT_LEFT,
@@ -107,6 +108,7 @@ class AttachWaypointsToTrack(val track: Track) {
         waypointsUndefined.forEach { waypoints.remove(it) }
 
         // copy waypoints to waypointsSimplified
+        //TODO for PASS_PLACE check styleName and decide about forced coursepoint enum
         waypoints.forEach {
             waypointsSimplified.add(WaypointSimplified(it))
         }
@@ -114,10 +116,11 @@ class AttachWaypointsToTrack(val track: Track) {
         if (debug) debugMessages.add("Size of waypoints after UNDEFINED removed ${waypoints.size}")
         if (debug) debugMessages.add("Size of waypointsUndefined removed from waypoints ${waypointsUndefined.size}")
 
-        // mark trackpoints indices of mutableWaypoints as taken
+        // mark trackpoints indices of waypoints as taken
         waypoints.forEach {
             if (it.paramRteIndex == -1) {
                 Log.w(tag, "rebuild - unexpected -1 from it.paramRteIndex")
+
                 if (debug) debugMessages.add("rebuild - unexpected -1 from it.paramRteIndex")
 
             }
@@ -138,14 +141,29 @@ class AttachWaypointsToTrack(val track: Track) {
                         track.points[it] != null &&
                         !indicesTaken.contains(it)) {
                     indicesTaken.add(it)
+
                     // build new simplified waypoint, add it to attachedWaypoints
+                    val styleName: String = waypoint.parameterStyleName ?: ""
+                    var forcedCoursepointEnum: CoursePoint? = when (styleName){
+                        "Summit" -> CoursePoint.SUMMIT
+                        "Dropoff" -> CoursePoint.VALLEY
+                        else -> null
+                    }
+
+                    if (forcedCoursepointEnum == null &&
+                            (waypoint.parameterRteAction == PointRteAction.PASS_PLACE) ||
+                            (waypoint.parameterRteAction == PointRteAction.UNDEFINED))
+                        forcedCoursepointEnum = CoursePoint.GENERIC
                     val attachedWaypoint = WaypointSimplified(
                             it,
                             getWaypointName(waypoint),
-                            PointRteAction.PASS_PLACE
+                            PointRteAction.PASS_PLACE,
+                            forcedCoursepointEnum
                     )
                     waypointsSimplified.add(attachedWaypoint)
+
                     if (debug) debugMessages.add("Attached new simplified waypoint: $attachedWaypoint")
+
                     indexAssigned = true
                 }
             }
@@ -174,34 +192,29 @@ class AttachWaypointsToTrack(val track: Track) {
 }
 
 fun getWaypointName(waypoint: Point): String {
-// waypoint.parameterRteAction != PointRteAction.PASS_PLACE
-// waypoint.parameterRteAction != PointRteAction.UNDEFINED
     return if (waypoint.parameterRteAction != null &&
             waypoint.parameterRteAction != PointRteAction.PASS_PLACE &&
             waypoint.parameterRteAction != PointRteAction.UNDEFINED
     ) {
-        waypoint.parameterRteAction.textId ?: "poi"
-// waypoint.parameterRteAction == PointRteAction.PASS_PLACE
+        if (waypoint.name.isNullOrEmpty()) {
+            waypoint.parameterRteAction.textId ?: "poi"
+        } else {
+            waypoint.name
+        }
     } else if (
-            waypoint.parameterRteAction != null &&
-            waypoint.parameterRteAction == PointRteAction.PASS_PLACE
-    ) {
-        if (waypoint.parameterStyleName.isNullOrEmpty()) "poi"
-        else waypoint.parameterStyleName
-// waypoint.parameterRteAction == PointRteAction.UNDEFINED
-    } else if (
-            waypoint.parameterRteAction != null &&
-            waypoint.parameterRteAction == PointRteAction.UNDEFINED
-    ) {
-        if (waypoint.name.isNullOrEmpty()) "poi"
-        else waypoint.name
+            waypoint.parameterRteAction != null) {
+        if (waypoint.name.isNullOrEmpty()) {
+            if (waypoint.parameterStyleName.isNullOrEmpty()) "poi"
+            else waypoint.parameterStyleName
+        } else waypoint.name
     } else "poi"
 }
 
 data class WaypointSimplified(val rteIndex: Int,
                               val name: String,
-                              val rteAction: PointRteAction) : Comparable<WaypointSimplified> {
-    constructor(point: Point) : this(point.paramRteIndex, getWaypointName(point), point.parameterRteAction)
+                              val rteAction: PointRteAction,
+                              val coursePointEnumForced: CoursePoint?) : Comparable<WaypointSimplified> {
+    constructor(point: Point) : this(point.paramRteIndex, getWaypointName(point), point.parameterRteAction, null)
 
     override fun compareTo(other: WaypointSimplified): Int = this.rteIndex.compareTo(other.rteIndex)
 }

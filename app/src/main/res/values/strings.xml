@@ -54,6 +54,7 @@
 
     <!-- ViewResultsActivity -->
     <string name="btn_connectiq">Use ConnectIQ</string>
+    <string name="nmb_trackpoints">Number of trackpoints:</string>
     <string name="nmb_coursepoints">Number of coursepoints:</string>
 
     <!-- Locus dir pick-->

@@ -233,6 +233,7 @@ event_type (1-1-ENUM): start (0)
                 }
             }
 
+            val indexToInsertTrackpointsInfo = publicMessages.size
             publicMessages.add("${ctx.getString("nmb_coursepoints")} ${reducedToLimit.size}")
 
             coursePointsDisplayOrder.forEach {
@@ -270,6 +271,7 @@ event_type (1-1-ENUM): start (0)
                 encoder.write(recordMesg)
                 index++
             }
+            publicMessages.add(indexToInsertTrackpointsInfo, "${ctx.getString("nmb_trackpoints")} ${track.points.size}")
             // RECORDS END
 
             // sanity check
