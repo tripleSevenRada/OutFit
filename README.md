@@ -9,9 +9,6 @@ https://github.com/asamm/locus-api
 * Garmin FIT SDK (fit.jar):
 https://www.thisisant.com/resources/fit
 
-* Android-DirectoryChooser:
-https://github.com/passy/Android-DirectoryChooser
-
 * Anko library:
 https://github.com/Kotlin/anko
 
