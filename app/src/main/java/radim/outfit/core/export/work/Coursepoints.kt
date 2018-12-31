@@ -34,10 +34,17 @@ val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.MERGE to CoursePoint.STRAIGHT,
         PointRteAction.PASS_PLACE to CoursePoint.GENERIC
 )
-
+// TODO add garmin set of styles when returning null is fixed in Locus API
 val parameterStyleNameToCoursePoints: Map<String,CoursePoint> = mapOf(
         "Summit" to CoursePoint.SUMMIT,
-        "Dropoff" to CoursePoint.VALLEY
+        "Dropoff" to CoursePoint.VALLEY,
+        "tourism-drinkingwater.png" to CoursePoint.WATER,
+        "restaurant-restaurant.png" to CoursePoint.FOOD,
+        "sport-firstaid.png" to CoursePoint.FIRST_AID,
+        "sport-hospital.png" to CoursePoint.FIRST_AID,
+        "sport-doctor.png" to CoursePoint.FIRST_AID,
+        "health-emergencyphone.png" to CoursePoint.FIRST_AID,
+        "transport-accident.png" to CoursePoint.DANGER
 )
 
 val coursePointsDisplayOrder: List<CoursePoint> = listOf(

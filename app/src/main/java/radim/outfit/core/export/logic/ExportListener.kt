@@ -4,13 +4,21 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.EditText
+import android.widget.Toast
 import locus.api.objects.extra.Track
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.export.work.locusapiextensions.isTimestamped
 import radim.outfit.core.getFilename
+import radim.outfit.getString
 import java.io.File
 
+interface PermInfoProvider{
+    fun permWriteIsGranted(): Boolean
+}
+interface Toaster{
+    fun toast(key: String, length: Int)
+}
 
 // error codes 8 - 14
 // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
@@ -21,7 +29,9 @@ class ExportListener(
         private val onFinishCallback: (Result) -> Unit,
         private val onStartCallback: () -> Unit,
         private val showSpeedPickerDialog: () -> Unit,
-        private val ctx: AppCompatActivity
+        private val ctx: AppCompatActivity,
+        private val permInfoProvider: PermInfoProvider,
+        private val toaster: Toaster
 ) : View.OnClickListener {
 
     private val tag = "ExportListener"
@@ -39,6 +49,11 @@ class ExportListener(
     }
 
     override fun onClick(v: View) {
+
+        if(!permInfoProvider.permWriteIsGranted()){
+            toaster.toast(ctx.getString("permission_needed"), Toast.LENGTH_LONG)
+            return
+        }
 
         if (!isDataNonNull()) return
         val track = exportPOJO.track
@@ -78,7 +93,7 @@ class ExportListener(
         }
     }
 
-    fun getFinalExportPOJO(): ExportPOJO {
+    private fun getFinalExportPOJO(): ExportPOJO {
         val mostRecentFilename = editTextFilename.text.toString()
         val mostRecentFilenameNotEmptyAsserted = getFilename(mostRecentFilename, defaultFilename)
         return mergeExportPOJOS(exportPOJO,

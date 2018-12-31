@@ -49,7 +49,11 @@ fun AppCompatActivity.getString(name: String): String {
 
 const val DEBUG_MODE = true
 
-class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesProvider {
+class MainActivity : AppCompatActivity(),
+        OkActionProvider,
+        LastSelectedValuesProvider,
+        PermInfoProvider,
+        Toaster{
 
     // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
     private val exportListener = ExportListener(
@@ -58,6 +62,8 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
             ::exportListenerCallback,
             ::disableExecutive,
             ::showSpeedPickerDialog,
+            this,
+            this,
             this
     )
 
@@ -266,6 +272,10 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
     //  CALLBACKS END
 
     fun directoryPick(@Suppress("UNUSED_PARAMETER") v: View) {
+        if(!permWriteIsGranted()){
+            toast(getString("permission_needed"), Toast.LENGTH_LONG)
+            return
+        }
         val message: String = getString("pick_dir_message")
         try {
             ActionTools.actionPickDir(this, REQUEST_CODE_OPEN_DIRECTORY, message)
@@ -344,15 +354,14 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
     }
 
     private fun setAppStorageRoot() {
-
         // if root is stored and exists set it
         if (sharedPreferences.contains(this.getString("last_seen_root"))) {
             val lastSeenRoot = File(sharedPreferences.getString(this.getString("last_seen_root"),
                     locusInfo().rootDirExport))
             if (lastSeenRoot.isDirectory) {
                 setRoot(lastSeenRoot, exportListener, sharedPreferences, getString("last_seen_root"))
-                return
-            }
+            } else Log.e(LOG_TAG, "lastSeenRootIsNotDir!")
+            return
         }
         val locusExportDir = File(locusInfo().rootDirExport)
         if (storageDirExists(locusExportDir)) {
@@ -372,7 +381,7 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
 
     // PERMISSION UTILS
 
-    private fun permWriteIsGranted(): Boolean {
+    override fun permWriteIsGranted(): Boolean {
         return ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
     }
@@ -404,7 +413,7 @@ class MainActivity : AppCompatActivity(), OkActionProvider, LastSelectedValuesPr
         }
     }
 
-    private fun toast(message: String, duration: Int) {
+    override fun toast(message: String, duration: Int) {
         val toast = Toast.makeText(applicationContext, message, duration)
         toast.show()
     }
