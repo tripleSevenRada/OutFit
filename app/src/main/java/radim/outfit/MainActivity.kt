@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity(),
         Log.i(LOG_TAG, "activeLocus.versionName: ${activeLocus.versionName}")
         Log.i(LOG_TAG, "activeLocus.versionCode: ${activeLocus.versionCode}")
         val info = locusInfo()
-        if (!info.isRunning) toast(getString("locus_not_running"), Toast.LENGTH_SHORT)
+        if (!info.isRunning) toast(getString("locus_not_running"), Toast.LENGTH_LONG)
 
         if (LocusUtils.isIntentTrackTools(this.intent)) {
             // event performed if user tap on your app icon in tools menu of 'Track'
