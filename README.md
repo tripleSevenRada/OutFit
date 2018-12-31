@@ -1,4 +1,4 @@
-# Outfit
+# OUT FIT
 Locus Add-on to export courses in .fit format.
 
 Dedendencies:
