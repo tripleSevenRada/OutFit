@@ -1,10 +1,10 @@
 package radim.outfit
 
 import locus.api.objects.enums.PointRteAction
-import locus.api.objects.extra.Point
 import org.junit.Test
 
 import org.junit.Assert.*
+import radim.outfit.core.export.work.locusapiextensions.WaypointSimplified
 import radim.outfit.core.export.work.locusapiextensions.reduceWayPointsSizeTo
 import radim.outfit.core.export.work.locusapiextensions.ridUnsupportedRtePtActions
 
@@ -16,42 +16,43 @@ import radim.outfit.core.export.work.locusapiextensions.ridUnsupportedRtePtActio
 class CoursepointsUnitTests {
     @Test
     fun testReduceToLimitSingleRteAction() {
-        val points = mutableListOf<Point>()
+        val points = mutableListOf<WaypointSimplified>()
         val limit = 100
         for(j in 0 until 20) {
             points.clear()
             for (i in 0 until limit + j) {
-                val p = Point()
-                p.parameterRteAction = PointRteAction.PASS_PLACE
+                val p = WaypointSimplified(-1,"name",
+                        PointRteAction.PASS_PLACE, null)
                 points.add(p)
             }
             println("points size before ${points.size}")
             val reduced = reduceWayPointsSizeTo(points,limit)
             assertEquals(limit, reduced.size)
+            val b = testCustomAssert(1,2,3)
         }
     }
     @Test
     fun testReduceToLimitMultiRteAction1() {
-        val points = mutableListOf<Point>()
+        val points = mutableListOf<WaypointSimplified>()
         val limit = 100
         repeat(19) {
-            val p = Point()
-            p.parameterRteAction = PointRteAction.PASS_PLACE
+            val p = WaypointSimplified(-1,"name",
+                    PointRteAction.PASS_PLACE, null)
             points.add(p)
         }
         repeat(33){
-            val p = Point()
-            p.parameterRteAction = PointRteAction.STAY_STRAIGHT
+            val p = WaypointSimplified(-1,"name",
+                    PointRteAction.STAY_STRAIGHT, null)
             points.add(p)
         }
         repeat(45){
-            val p = Point()
-            p.parameterRteAction = PointRteAction.RIGHT_SHARP
+            val p = WaypointSimplified(-1,"name",
+                    PointRteAction.RIGHT_SHARP, null)
             points.add(p)
         }
         repeat(45){
-            val p = Point()
-            p.parameterRteAction = PointRteAction.LEFT_SHARP
+            val p = WaypointSimplified(-1,"name",
+                    PointRteAction.LEFT_SHARP, null)
             points.add(p)
         }
         println("points size before ${points.size}")
@@ -61,26 +62,26 @@ class CoursepointsUnitTests {
     }
     @Test
     fun testReduceToLimitMultiRteAction2() {
-        val points = mutableListOf<Point>()
+        val points = mutableListOf<WaypointSimplified>()
         val limit = 100
         repeat(3) {
-            val p = Point()
-            p.parameterRteAction = PointRteAction.PASS_PLACE
+            val p = WaypointSimplified(-1,"name",
+                    PointRteAction.PASS_PLACE, null)
             points.add(p)
         }
         repeat(45){
-            val p = Point()
-            p.parameterRteAction = PointRteAction.RIGHT_SHARP
+            val p = WaypointSimplified(-1,"name",
+                    PointRteAction.RIGHT_SHARP, null)
             points.add(p)
         }
         repeat(45){
-            val p = Point()
-            p.parameterRteAction = PointRteAction.LEFT_SHARP
+            val p = WaypointSimplified(-1,"name",
+                    PointRteAction.LEFT_SHARP, null)
             points.add(p)
         }
         repeat(145){
-            val p = Point()
-            p.parameterRteAction = PointRteAction.STAY_STRAIGHT
+            val p = WaypointSimplified(-1,"name",
+                    PointRteAction.STAY_STRAIGHT, null)
             points.add(p)
         }
         println("points size before ${points.size}")
@@ -91,10 +92,10 @@ class CoursepointsUnitTests {
 
     @Test
     fun testRidUnsupported1(){
-        val points = mutableListOf<Point>()
+        val points = mutableListOf<WaypointSimplified>()
         repeat(3) {
-            val p = Point()
-            p.parameterRteAction = PointRteAction.ROUNDABOUT_EXIT_1
+            val p = WaypointSimplified(-1,"name",
+                    PointRteAction.ROUNDABOUT_EXIT_1, null)
             points.add(p)
         }
         val rid = ridUnsupportedRtePtActions(points)
@@ -103,15 +104,15 @@ class CoursepointsUnitTests {
 
     @Test
     fun testRidUnsupported2(){
-        val points = mutableListOf<Point>()
+        val points = mutableListOf<WaypointSimplified>()
         repeat(3) {
-            val p = Point()
-            p.parameterRteAction = PointRteAction.PASS_PLACE
+            val p = WaypointSimplified(-1,"name",
+                    PointRteAction.PASS_PLACE, null)
             points.add(p)
         }
         repeat(3) {
-            val p = Point()
-            p.parameterRteAction = PointRteAction.ROUNDABOUT_EXIT_1
+            val p = WaypointSimplified(-1,"name",
+                    PointRteAction.ROUNDABOUT_EXIT_1, null)
             points.add(p)
         }
         val rid = ridUnsupportedRtePtActions(points)

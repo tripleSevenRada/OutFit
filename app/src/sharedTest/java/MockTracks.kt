@@ -1,9 +1,7 @@
-package radim.outfit.mocks
+package radim.outfit
 
 import android.util.Log
-import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Location
-import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
 import locus.api.objects.extra.TrackStats
 

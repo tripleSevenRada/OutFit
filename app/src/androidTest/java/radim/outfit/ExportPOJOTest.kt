@@ -34,5 +34,7 @@ class ExportPOJOTest {
         val pojo4 = ExportPOJO(File("/doc"),"filename.fit", Track() )
         val pojo5 = mergeExportPOJOS(pojo1, pojo4)
         assertEquals(pojo4, pojo5)
+
+        val b = testCustomAssert(1,2,3)
     }
 }

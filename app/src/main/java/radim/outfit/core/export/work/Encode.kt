@@ -11,7 +11,11 @@ import radim.outfit.debugdumps.FitSDKDebugDumps.Dumps
 import java.io.File
 import com.garmin.fit.DateTime
 import radim.outfit.DEBUG_MODE
+import radim.outfit.core.FILENAME_RESERVED_CHARS
+import radim.outfit.core.FilenameCharsFilter
+import radim.outfit.debugasserts.*
 import radim.outfit.getString
+import java.lang.RuntimeException
 
 const val MIN_TIME_TAKEN = 8
 const val MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989 = 631065600000L
@@ -42,8 +46,12 @@ class Encoder {
 
         val outputFile = File(dir.absolutePath + File.separatorChar + filename)
         lateinit var encoder: FileEncoder
+        lateinit var filterBundle: MessagesStringFilterBundle
         try {
             encoder = FileEncoder(outputFile, Fit.ProtocolVersion.V1_0)
+            filterBundle = MessagesStringFilterBundle(FilenameCharsFilter(),
+                    FILENAME_RESERVED_CHARS,
+                    COURSE_AND_COURSEPOINTS_REPLACEMENT_CHAR)
 
             // The course file should, at a minimum, contain the file_id, lap, record, and course FIT messages.
             // It may optionally contain the course_point messages.
@@ -64,7 +72,7 @@ class Encoder {
             encoder.write(fileIdMesg)
 
             // 'Course message'
-            val courseMesg = getCourseMesg(track, filename)
+            val courseMesg = getCourseMesg(track, filename, filterBundle)
             encoder.write(courseMesg)
             with(publicMessages) {
                 add("${ctx.getString("course_name")} ${courseMesg.name}")
@@ -110,10 +118,27 @@ state "isFullyTimestamped" as stamped {
             }
 
             val distancesNonNullPoints = assignPointDistancesToNonNullPoints(track)
+
+            if (DEBUG_MODE) {
+                if (!assertValuesIncreasingOrEqual(distancesNonNullPoints)) {
+                    throw RuntimeException("assertValuesIncreasingOrEqual - distancesNonNullPoints")
+                }
+            }
+
             val timestampsNonNullPoints = if (trackIsFullyTimestamped) {
+                if (DEBUG_MODE) {
+                    if (!assertTimestampsIncreasingOrEqualFullyTimestampedTrack(track))
+                        throw RuntimeException("assertTimestampsIncreasingOrEqualFullyTimestampedTrack")
+                }
                 listOf()
             } else {
-                assignPointTimestampsToNonNullPoints(track, distancesNonNullPoints, speedIfNotInTrack)
+                val timestamps = assignPointTimestampsToNonNullPoints(track, distancesNonNullPoints, speedIfNotInTrack)
+                if (DEBUG_MODE) {
+                    if (!assertValuesIncreasingOrEqual(timestamps)) {
+                        throw RuntimeException("assertValuesIncreasingOrEqual - timestamps")
+                    }
+                }
+                timestamps
             }
 
             if (DEBUG_MODE) {
@@ -209,6 +234,7 @@ event_type (1-1-ENUM): start (0)
             val reducedToLimit = reduceWayPointsSizeTo(unsupportedRid, COURSEPOINTS_LIMIT)
             val mapNonNullIndicesToTmstmp = mapNonNullPointsIndicesToTimestamps(track, timeBundle)
             val mapNonNullIndicesToDist = mapNonNullPointsIndicesToDistances(track, distancesNonNullPoints)
+
             if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
                 debugMessages.add("++++++++++++++++++++++mapNonNullIndicesToTmstmp")
@@ -219,12 +245,24 @@ event_type (1-1-ENUM): start (0)
             val mapCoursePointsTypesToFrequencies = mutableMapOf<CoursePoint, Int>()
             var countCP = 0
 
+            if (DEBUG_MODE) {
+                // SANITY CHECKS
+                reducedToLimit.forEach {
+                    if (!it.hasProperName() ||
+                            !it.hasValidRteIndex(track))
+                        throw RuntimeException("proper name or rteIndex: name: >${it.name}< rteIndex: ${it.rteIndex}")
+                }
+                if (!assertWaypointsAreLinkedToTrackpointsOneToOneIncreasing(reducedToLimit))
+                    throw RuntimeException("assertWaypointsAreLinkedToTrackpointsOneToOneIncreasing")
+            }
+
             reducedToLimit.forEach {
                 val coursePointMesg = getCoursepointMesg(
                         it,
                         mapNonNullIndicesToTmstmp,
                         mapNonNullIndicesToDist,
-                        track)
+                        track,
+                        filterBundle)
                 if (coursePointMesg != null) {
                     encoder.write(coursePointMesg)
                     countCP++
@@ -319,7 +357,7 @@ event_type (1-1-ENUM): stop_disable_all (9)
         val timeTaken = System.currentTimeMillis() - start
         Log.i("Encode", "time taken: $timeTaken")
         if (timeTaken < MIN_TIME_TAKEN) {
-            // TODO interupted?
+            // TODO interrupted?
             Thread.sleep(MIN_TIME_TAKEN - timeTaken)
         }
         return Result.Success(publicMessages, debugMessages, dir, filename)

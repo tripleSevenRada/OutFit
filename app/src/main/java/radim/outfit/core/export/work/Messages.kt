@@ -5,6 +5,9 @@ import com.garmin.fit.*
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Location
 import locus.api.objects.extra.Track
+import radim.outfit.core.FILENAME_REPLACEMENT_CHAR
+import radim.outfit.core.FILENAME_RESERVED_CHARS
+import radim.outfit.core.FilenameCharsFilter
 import radim.outfit.core.export.work.locusapiextensions.*
 import java.util.*
 
@@ -35,7 +38,7 @@ number (5-1-UINT16): 1
     return fileIdMesg
 }
 
-internal fun getCourseMesg(track: Track, filename: String): CourseMesg {
+internal fun getCourseMesg(track: Track, filename: String, filterBundle: MessagesStringFilterBundle): CourseMesg {
     /*
     name (5-13-STRING): "kostelecRoad"
     sport (4-1-ENUM): cycling (2)
@@ -43,9 +46,12 @@ internal fun getCourseMesg(track: Track, filename: String): CourseMesg {
     val courseMesg = CourseMesg()
     courseMesg.localNum = 1
     courseMesg.name = if (!track.name.isNullOrEmpty()) {
-        assertStringLength(track.name, COURSENAME_MAX_LENGTH)
+        val lengthAsserted = assertStringLength(track.name, COURSENAME_MAX_LENGTH)
+        replaceReserved(lengthAsserted, filterBundle)
     } else {
-        assertStringLength(filename.substring(0, filename.lastIndexOf(".")), COURSENAME_MAX_LENGTH)
+        val lengthAsserted = assertStringLength(
+                filename.substring(0, filename.lastIndexOf(".")), COURSENAME_MAX_LENGTH)
+        replaceReserved(lengthAsserted, filterBundle)
     }
     courseMesg.sport = Sport.GENERIC
     // courseMesg.capabilities = CourseCapabilities.NAVIGATION // Not required
@@ -156,7 +162,8 @@ name (6-14-STRING): "Generic Point"
 internal fun getCoursepointMesg(wp: WaypointSimplified,
                                 mapNonNullIndicesToTmstmp: Map<Int, Long>,
                                 mapNonNullIndicesToDist: Map<Int, Float>,
-                                track: Track): CoursePointMesg? {
+                                track: Track,
+                                filterBundle: MessagesStringFilterBundle): CoursePointMesg? {
     val tag = "getCPMesg"
     val typeInLocus: PointRteAction? = wp.rteAction
     typeInLocus ?: return null
@@ -181,7 +188,8 @@ internal fun getCoursepointMesg(wp: WaypointSimplified,
     cp.distance = dst
     cp.type = if (wp.coursepointEnumForced == null) routePointActionsToCoursePoints[typeInLocus]
     else wp.coursepointEnumForced
-    cp.name = assertStringLength(wp.name, COURSEPOINTS_NAME_MAX_LENGTH)
+    val lengthAsserted = assertStringLength(wp.name, COURSEPOINTS_NAME_MAX_LENGTH)
+    cp.name = replaceReserved(lengthAsserted, filterBundle)
     return cp
 }
 
@@ -192,3 +200,12 @@ internal fun assertStringLength(value: String, max: Int): String {
         value
     }
 }
+
+internal fun replaceReserved(value: String, filterBundle: MessagesStringFilterBundle): String {
+    return filterBundle.filter.replaceReservedChars(
+            value, filterBundle.reserved, filterBundle.replacementChar).toString()
+}
+
+data class MessagesStringFilterBundle(val filter: FilenameCharsFilter,
+                                      val reserved: Set<Char>,
+                                      val replacementChar: Char)

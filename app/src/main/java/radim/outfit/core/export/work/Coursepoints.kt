@@ -11,6 +11,7 @@ import radim.outfit.core.export.work.locusapiextensions.getWaypointName
 
 const val COURSEPOINTS_LIMIT = 100
 const val COURSEPOINTS_NAME_MAX_LENGTH = 14
+const val COURSE_AND_COURSEPOINTS_REPLACEMENT_CHAR = '-'
 
 val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.LEFT_SLIGHT to CoursePoint.SLIGHT_LEFT,

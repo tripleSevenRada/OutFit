@@ -413,8 +413,8 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    override fun toast(message: String, duration: Int) {
-        val toast = Toast.makeText(applicationContext, message, duration)
+    override fun toast(key: String, length: Int) {
+        val toast = Toast.makeText(applicationContext, key, length)
         toast.show()
     }
 
