@@ -8,6 +8,7 @@ class ViewResultsParcel: Parcelable{
     var title: String?
     var messages: List<String?>
     var fitFileAbsPath: String?
+    var parentDir: String?
 
     private constructor(inParcel: Parcel){
         this.title = inParcel.readString()
@@ -18,12 +19,17 @@ class ViewResultsParcel: Parcelable{
         }
         messages = messagesLocally
         fitFileAbsPath = inParcel.readString()
+        parentDir = inParcel.readString()
     }
 
-    constructor(title: String, messages: List<String>, fitFilePath: String){
+    constructor(title: String,
+                messages: List<String>,
+                fitFilePath: String,
+                parentDir: String){
         this.title = title
         this.messages = messages
         this.fitFileAbsPath = fitFilePath
+        this.parentDir = parentDir
     }
 
     override fun writeToParcel(p0: Parcel?, p1: Int) {
@@ -31,6 +37,7 @@ class ViewResultsParcel: Parcelable{
         p0?.writeInt(messages.size)
         messages.forEach { p0?.writeString(it) }
         p0?.writeString(fitFileAbsPath)
+        p0?.writeString(parentDir)
     }
 
     override fun describeContents(): Int  = messages.size

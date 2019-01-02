@@ -4,7 +4,7 @@ import android.util.Log
 import locus.api.objects.extra.Track
 import radim.outfit.core.export.work.locusapiextensions.WaypointSimplified
 
-const val LOG_TAG = "CUSTOM_ASSERTS"
+const val LOG_TAG_C_ASSERTS = "CUSTOM_ASSERTS"
 
 fun assertWaypointsAreLinkedToTrackpointsOneToOneIncreasing(waypoints: List<WaypointSimplified>): Boolean {
     val indicesTaken = mutableSetOf<Int>()
@@ -25,7 +25,7 @@ fun assertTimestampsIncreasingOrEqualFullyTimestampedTrack(track: Track): Boolea
 
         if (track.points[i].time < last) return false
         if (track.points[i].time == last)
-            Log.w(LOG_TAG, "equal timestamps! - FullyTimestampedTrack")
+            Log.w(LOG_TAG_C_ASSERTS, "equal timestamps! - FullyTimestampedTrack")
         last = track.points[i].time
     }
     return true
@@ -38,13 +38,13 @@ fun <T : Comparable<T>> assertValuesIncreasingOrEqual(values: List<T>): Boolean 
         for (i in values.indices) {
             if (values[i] < last) return false
             if (values[i] == last && i != 0) {
-                // Log.w(LOG_TAG, "i: $i of ${values.size} -- Equal values!
+                // Log.w(LOG_TAG_F_UTILS, "i: $i of ${values.size} -- Equal values!
                 // Type: ${last.javaClass}, last: $last now: ${values[i]}")
                 equal++
             }
             last = values[i]
         }
-        Log.w(LOG_TAG,"Equal values: $equal out of ${values.size}")
+        if (equal > 0) Log.w(LOG_TAG_C_ASSERTS, "Equal values: $equal out of ${values.size}")
     }
     return true
 }

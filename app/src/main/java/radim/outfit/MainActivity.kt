@@ -34,7 +34,7 @@ import radim.outfit.core.getFilename
 import radim.outfit.debugdumps.writeTextFile
 import java.lang.RuntimeException
 
-const val LOG_TAG = "MAIN"
+const val LOG_TAG_MAIN = "MAIN"
 const val REQUEST_CODE_OPEN_DIRECTORY = 9999
 const val REQUEST_CODE_PERM_WRITE_EXTERNAL = 7777
 const val EXTRA_MESSAGE_FINISH = "start finish gracefully activity to explain what happened"
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity(),
         OkActionProvider,
         LastSelectedValuesProvider,
         PermInfoProvider,
-        Toaster{
+        Toaster {
 
     // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
     private val exportListener = ExportListener(
@@ -74,6 +74,8 @@ class MainActivity : AppCompatActivity(),
     }
 
     private lateinit var sharedPreferences: SharedPreferences
+
+    private val fail = FailGracefullyLauncher()
 
     // SpeedPickerFragment interfaces impl START
     override fun getOkAction(): (Float) -> Unit = exportListener.getOkAction()
@@ -124,19 +126,19 @@ class MainActivity : AppCompatActivity(),
 
         val activeLocus = LocusUtils.getActiveVersion(this)
         if (activeLocus == null) {
-            failGracefully(this.getString("locus_not_installed") + " Error 1")
+            fail.failGracefully(this, this.getString("locus_not_installed") + " Error 1")
             return
         }
 
         try {
             ActionTools.getLocusInfo(this, activeLocus)
         } catch (e: RequiredVersionMissingException) {
-            failGracefully(this.getString("required_version_missing - ") + e.localizedMessage + " Error 2")
+            fail.failGracefully(this, this.getString("required_version_missing - ") + e.localizedMessage + " Error 2")
             return
         }
 
         if (!isExternalStorageWritable()) {
-            failGracefully("isExternalStorageWritable() == false" + " Error 3")
+            fail.failGracefully(this, "isExternalStorageWritable() == false" + " Error 3")
             return
         }
 
@@ -152,8 +154,8 @@ class MainActivity : AppCompatActivity(),
             requestPermWrite()
         }
 
-        Log.i(LOG_TAG, "activeLocus.versionName: ${activeLocus.versionName}")
-        Log.i(LOG_TAG, "activeLocus.versionCode: ${activeLocus.versionCode}")
+        Log.i(LOG_TAG_MAIN, "activeLocus.versionName: ${activeLocus.versionName}")
+        Log.i(LOG_TAG_MAIN, "activeLocus.versionCode: ${activeLocus.versionCode}")
         val info = locusInfo()
         if (!info.isRunning) toast(getString("locus_not_running"), Toast.LENGTH_LONG)
 
@@ -176,9 +178,9 @@ class MainActivity : AppCompatActivity(),
                 //track = getTrackNullStartNoCP()
                 //track = getTrackRandomNullsNoCP()
             } catch (e: RequiredVersionMissingException) {
-                failGracefully(act.getString("required_version_missing") + " " + e.localizedMessage + " Error 4")
+                fail.failGracefully(act, act.getString("required_version_missing") + " " + e.localizedMessage + " Error 4")
             } catch (e: Exception) {
-                failGracefully(e.localizedMessage + " Error 5")
+                fail.failGracefully(act, e.localizedMessage + " Error 5")
             }
             uiThread {
                 if (track != null && track.points != null && track.points.size > 0) {
@@ -190,7 +192,7 @@ class MainActivity : AppCompatActivity(),
                     setFilename(filename, exportListener)
                     enableExecutive()
                 } else {
-                    failGracefully(" null - Error 6")
+                    fail.failGracefully(act, " null - Error 6")
                 }
             }
         }
@@ -210,20 +212,20 @@ class MainActivity : AppCompatActivity(),
                 try {
                     when (result) {
                         is Result.Success -> {
-                            writeTextFile(File(result.logFileDir.absolutePath +
+                            writeTextFile(File(result.fileDir.absolutePath +
                                     File.separatorChar +
                                     result.filename +
                                     ".DEBUG_MODE.dump"
                             ), result.debugMessage)
                         }
                         is Result.Fail -> {
-                            if (result.logFileDir != null && result.logFileDir.exists() && result.filename != null) {
-                                val rootPath = result.logFileDir.absolutePath + File.separatorChar + result.filename
+                            if (result.fileDir != null && result.fileDir.exists() && result.filename != null) {
+                                val rootPath = result.fileDir.absolutePath + File.separatorChar + result.filename
                                 writeTextFile(File("$rootPath.DEBUG_MODE.dump"), result.debugMessage)
                                 writeTextFile(File("$rootPath.error.dump"), result.errorMessage)
                             } else {
                                 savedOK = false
-                                Log.e(LOG_TAG, result.errorMessage.toString())
+                                Log.e(LOG_TAG_MAIN, result.errorMessage.toString())
                             }
                         }
                     }
@@ -234,7 +236,6 @@ class MainActivity : AppCompatActivity(),
                 uiThread {
                     if (savedOK) toast(getString("logs_written"), Toast.LENGTH_SHORT)
                     else toast(getString("logs_write_error"), Toast.LENGTH_SHORT)
-                    if (result is Result.Fail) failGracefully(result.errorMessage.toString())
                 }
             }
         }
@@ -244,7 +245,8 @@ class MainActivity : AppCompatActivity(),
                 val resultsParcel = ViewResultsParcel(
                         getString("stats_label"),
                         result.publicMessage,
-                        result.logFileDir.absolutePath + File.separatorChar + result.filename
+                        result.fileDir.absolutePath + File.separatorChar + result.filename,
+                        result.fileDir.absolutePath
                 )
                 val intent = Intent(this, ViewResultsActivity::class.java).apply {
                     putExtra(EXTRA_MESSAGE_VIEW_RESULTS, resultsParcel)
@@ -252,7 +254,7 @@ class MainActivity : AppCompatActivity(),
                 startActivity(intent)
             }
             is Result.Fail -> {
-                failGracefully(result.errorMessage.toString())
+                fail.failGracefully(this, result.errorMessage.toString())
             }
         }
     }
@@ -272,7 +274,7 @@ class MainActivity : AppCompatActivity(),
     //  CALLBACKS END
 
     fun directoryPick(@Suppress("UNUSED_PARAMETER") v: View) {
-        if(!permWriteIsGranted()){
+        if (!permWriteIsGranted()) {
             toast(getString("permission_needed"), Toast.LENGTH_LONG)
             return
         }
@@ -281,7 +283,7 @@ class MainActivity : AppCompatActivity(),
             ActionTools.actionPickDir(this, REQUEST_CODE_OPEN_DIRECTORY, message)
         } catch (e: ActivityNotFoundException) {
             e.printStackTrace()
-            failGracefully(e.localizedMessage)
+            fail.failGracefully(this, e.localizedMessage)
         }
     }
 
@@ -292,30 +294,30 @@ class MainActivity : AppCompatActivity(),
             try {
                 val fileUri = data!!.data
                 val exportDir: String? = fileUri!!.path
-                if (! exportDir.isNullOrEmpty()) {
+                if (!exportDir.isNullOrEmpty()) {
                     handleDirectoryChoice(exportDir)
                 } else {
-                    Log.w(LOG_TAG, " exportDir = null or empty")
+                    Log.w(LOG_TAG_MAIN, " exportDir = null or empty")
                 }
             } catch (e: Exception) {
-                failGracefully(" Error 7")
+                fail.failGracefully(this, " Error 7")
                 return
             }
         } else {
-            Log.w(LOG_TAG, "Nothing selected")
+            Log.w(LOG_TAG_MAIN, "Nothing selected")
         }
     }
 
     private fun handleDirectoryChoice(selectedDir: String) {
-        Log.i(LOG_TAG, "SELECTED_DIR: $selectedDir")
+        Log.i(LOG_TAG_MAIN, "SELECTED_DIR: $selectedDir")
         val newRoot: File? = File(selectedDir)
         if (storageDirExists(newRoot)) {
             setRoot(newRoot, exportListener, sharedPreferences, getString("last_seen_root"))
             setTvRootDir()
-            Log.i(LOG_TAG, "new root: ${getRoot(exportListener)}")
+            Log.i(LOG_TAG_MAIN, "new root: ${getRoot(exportListener)}")
         } else {
             setTvRootDir()
-            Log.e(LOG_TAG, "storageDirExists(newRoot) == false - should never happen")
+            Log.e(LOG_TAG_MAIN, "storageDirExists(newRoot) == false - should never happen")
         }
     }
 
@@ -360,7 +362,7 @@ class MainActivity : AppCompatActivity(),
                     locusInfo().rootDirExport))
             if (lastSeenRoot.isDirectory) {
                 setRoot(lastSeenRoot, exportListener, sharedPreferences, getString("last_seen_root"))
-            } else Log.e(LOG_TAG, "lastSeenRootIsNotDir!")
+            } else Log.e(LOG_TAG_MAIN, "lastSeenRootIsNotDir!")
             return
         }
         val locusExportDir = File(locusInfo().rootDirExport)
@@ -371,9 +373,9 @@ class MainActivity : AppCompatActivity(),
                     Environment.DIRECTORY_DOCUMENTS), this.getString("app_name"))
             val created: Boolean = appExportRoot.mkdirs()
             if (created) {
-                Log.i(LOG_TAG, "setAppStorageRoot() - directory created")
+                Log.i(LOG_TAG_MAIN, "setAppStorageRoot() - directory created")
             } else {
-                Log.i(LOG_TAG, "setAppStorageRoot() - directory not created")
+                Log.i(LOG_TAG_MAIN, "setAppStorageRoot() - directory not created")
             }
             setRoot(appExportRoot, exportListener, sharedPreferences, getString("last_seen_root"))
         }
@@ -416,18 +418,6 @@ class MainActivity : AppCompatActivity(),
     override fun toast(key: String, length: Int) {
         val toast = Toast.makeText(applicationContext, key, length)
         toast.show()
-    }
-
-    private fun getFinnishIntent(message: String): Intent {
-        return Intent(this, FinishGracefully::class.java).apply {
-            putExtra(EXTRA_MESSAGE_FINISH, message)
-        }
-    }
-
-    private fun failGracefully(message: String) {
-        val intent = getFinnishIntent(message)
-        startActivity(intent)
-        this.finish()
     }
 }
 
