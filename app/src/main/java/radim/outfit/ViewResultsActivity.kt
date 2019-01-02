@@ -7,29 +7,32 @@ import android.util.Log
 import android.widget.ProgressBar
 import kotlinx.android.synthetic.main.activity_view_results.*
 import kotlinx.android.synthetic.main.content_stats.*
+import radim.outfit.core.connectiq.getListOfFitFiles
+import java.io.File
 import java.lang.StringBuilder
 
 class ViewResultsActivity : AppCompatActivity() {
 
     private val tag = "VIEW_RESULTS"
-    private var parcel: ViewResultsParcel? = null
+    private lateinit var parcel: ViewResultsParcel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.i(tag,"onCreate")
         setContentView(R.layout.activity_view_results)
-        parcel = if(intent.hasExtra(EXTRA_MESSAGE_VIEW_RESULTS))
-            intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
-        else null
+        if(intent.hasExtra(EXTRA_MESSAGE_VIEW_RESULTS))
+            parcel = intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
 
         tvViewResultsLabel.text = getString("stats_label")
 
         val messagesAsStringBuilder = StringBuilder()
-        parcel?.messages?.forEach { with(messagesAsStringBuilder){append(it); append("\n")} }
-        tvViewResults.text = messagesAsStringBuilder.toString()
-        Log.i(tag,"path to parent dir: " + parcel?.parentDir)
-        Log.i(tag,"path to .fit: " + parcel?.fitFileAbsPath)
 
+        if(::parcel.isInitialized) {
+            parcel.messages.forEach { with(messagesAsStringBuilder) { append(it); append("\n") } }
+            tvViewResults.text = messagesAsStringBuilder.toString()
+            Log.i(tag, "path to parent dir: " + parcel.parentDir)
+            Log.i(tag, "path to .fit: " + parcel.fitFileAbsPath)
+        }
         progressBarView.visibility = ProgressBar.INVISIBLE
     }
 
@@ -37,6 +40,10 @@ class ViewResultsActivity : AppCompatActivity() {
         super.onStart()
         Log.i(tag,"onStart")
 
+        if (::parcel.isInitialized) {
+            val fitFiles = getListOfFitFiles(File(parcel.parentDir))
+            fitFiles.forEach { Log.i(tag, ".fit file to serve: ${it.absolutePath}") }
+        }
     }
 
     override fun onResume() {
