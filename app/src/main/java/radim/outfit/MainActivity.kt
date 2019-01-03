@@ -114,6 +114,7 @@ class MainActivity : AppCompatActivity(),
 
         sharedPreferences = this.getSharedPreferences(
                 getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
+
         with(sharedPreferences.edit()) {
             if (!sharedPreferences.contains(getString("last_seen_speed_value"))) {
                 putInt(getString("last_seen_speed_value"), SPEED_DEFAULT)
@@ -121,6 +122,8 @@ class MainActivity : AppCompatActivity(),
             if (!sharedPreferences.contains(getString("last_seen_speed_units"))) {
                 putInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
             }
+            if (!sharedPreferences.contains(CIRC_BUFF_POINTER_KEY))
+                initCircularBuffer(this)
             apply()
         }
 
@@ -245,8 +248,7 @@ class MainActivity : AppCompatActivity(),
                 val resultsParcel = ViewResultsParcel(
                         getString("stats_label"),
                         result.publicMessage,
-                        result.fileDir.absolutePath + File.separatorChar + result.filename,
-                        result.fileDir.absolutePath
+                        result.fileDir.absolutePath // TODO put dir to serve from - internal storage
                 )
                 val intent = Intent(this, ViewResultsActivity::class.java).apply {
                     putExtra(EXTRA_MESSAGE_VIEW_RESULTS, resultsParcel)

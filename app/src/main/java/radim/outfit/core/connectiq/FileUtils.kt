@@ -5,7 +5,7 @@ import java.io.File
 
 const val LOG_TAG_F_UTILS = "FILE_UTILS"
 
-fun getListOfFitFiles(dir: File): List<File> {
+fun getListOfFitFilesRecursively(dir: File): List<File> {
     val files = mutableListOf<File>()
     if (dir.isDirectory) {
         dir.walk().forEach {
