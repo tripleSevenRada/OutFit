@@ -15,7 +15,7 @@ fun initCircularBuffer(prefsEdit: SharedPreferences.Editor) {
             putString("$CIRC_BUFF_KEY_PREFIX$i", "")
         }
         putInt(CIRC_BUFF_POINTER_KEY, 0)
-        // apply() calls caller of this method
+        // caller of this method calls apply()
     }
 }
 
@@ -27,6 +27,9 @@ fun writeToCircularBuffer(value: String, prefs: SharedPreferences) {
         putString("$CIRC_BUFF_KEY_PREFIX$pointer", value)
         putInt(CIRC_BUFF_POINTER_KEY, movedPointer)
         apply()
+        // apply() commits its changes to the in-memory SharedPreferences
+        // immediately but starts an asynchronous commit to disk and
+        // you won't be notified of any failures.
     }
 }
 

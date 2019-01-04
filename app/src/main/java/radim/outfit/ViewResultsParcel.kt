@@ -5,27 +5,36 @@ import android.os.Parcelable
 
 class ViewResultsParcel : Parcelable {
 
-    var title: String?
-    var messages: List<String?>
-    var parentDir: String?
+    var title: String
+    var messages: List<String>
+    var parentDir: String
+    var buffer: Array<String>
 
     private constructor(inParcel: Parcel) {
-        this.title = inParcel.readString()
+        this.title = inParcel.readString()?: ""
         val nmb = inParcel.readInt()
-        val messagesLocally = mutableListOf<String?>()
+        val messagesLocally = mutableListOf<String>()
         repeat(nmb) {
-            messagesLocally.add(inParcel.readString())
+            messagesLocally.add(inParcel.readString()?:"")
         }
         messages = messagesLocally
-        parentDir = inParcel.readString()
+        parentDir = inParcel.readString()?:""
+        val bufferSize = inParcel.readInt()
+        val buffer = Array(bufferSize){""}
+        for(i in buffer.indices){
+            buffer[i] = inParcel.readString()?: ""
+        }
+        this.buffer = buffer
     }
 
     constructor(title: String,
                 messages: List<String>,
-                parentDir: String) {
+                parentDir: String,
+                buffer: Array<String>) {
         this.title = title
         this.messages = messages
         this.parentDir = parentDir
+        this.buffer = buffer
     }
 
     override fun writeToParcel(p0: Parcel?, p1: Int) {
@@ -33,6 +42,10 @@ class ViewResultsParcel : Parcelable {
         p0?.writeInt(messages.size)
         messages.forEach { p0?.writeString(it) }
         p0?.writeString(parentDir)
+        p0?.writeInt(buffer.size)
+        for  (i in buffer.indices){
+            p0?.writeString(buffer[i])
+        }
     }
 
     override fun describeContents(): Int = messages.size

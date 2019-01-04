@@ -22,13 +22,14 @@ class ViewResultsActivity : AppCompatActivity() {
 
         tvViewResultsLabel.text = getString("stats_label")
 
-
-        val messagesAsStringBuilder = StringBuilder()
-        parcel.messages.forEach { with(messagesAsStringBuilder) { append(it); append("\n") } }
-        tvViewResults.text = messagesAsStringBuilder.toString()
-
+        if(::parcel.isInitialized) {
+            val messagesAsStringBuilder = StringBuilder()
+            parcel.messages.forEach { with(messagesAsStringBuilder) { append(it); append("\n") } }
+            tvViewResults.text = messagesAsStringBuilder.toString()
+        }
         if (DEBUG_MODE && ::parcel.isInitialized) {
             Log.i(tag, "path to parent dir to serve from: " + parcel.parentDir)
+            parcel.buffer.forEach { Log.i(tag, "Circular buffer of exports: $it") }
         }
         progressBarView.visibility = ProgressBar.INVISIBLE
     }

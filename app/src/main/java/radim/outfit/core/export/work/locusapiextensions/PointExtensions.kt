@@ -5,23 +5,25 @@ import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Point
 import radim.outfit.core.export.work.parameterStyleNameToCoursePoints
 
+const val PARAMETER_STYLE_NAME_FALLBACK = "poi"
+
 fun Point.getWaypointName(): String {
     return if (parameterRteAction != null &&
             parameterRteAction != PointRteAction.PASS_PLACE &&
             parameterRteAction != PointRteAction.UNDEFINED
     ) {
         if (name.isNullOrEmpty()) {
-            parameterRteAction.textId ?: "poi"
+            parameterRteAction.textId ?: PARAMETER_STYLE_NAME_FALLBACK
         } else {
             name
         }
     } else if (
             parameterRteAction != null) {
         if (name.isNullOrEmpty()) {
-            if (parameterStyleName.isNullOrEmpty()) "poi"
+            if (parameterStyleName.isNullOrEmpty()) PARAMETER_STYLE_NAME_FALLBACK
             else parameterStyleName
         } else name
-    } else "poi"
+    } else PARAMETER_STYLE_NAME_FALLBACK
 }
 
 fun Point.getCoursepointEnumForced(): CoursePoint?{

@@ -245,11 +245,20 @@ class MainActivity : AppCompatActivity(),
 
         when (result) {
             is Result.Success -> {
+
+                val exportedFilePath = "${result.fileDir}${File.separator}${result.filename}"
+                writeToCircularBuffer(exportedFilePath, sharedPreferences)
+
+                val circularBuffer = readCircularBuffer(sharedPreferences)
+                if(DEBUG_MODE) circularBuffer.forEach { Log.i("CIRC_BUFFER", it) }
+
                 val resultsParcel = ViewResultsParcel(
                         getString("stats_label"),
                         result.publicMessage,
-                        result.fileDir.absolutePath // TODO put dir to serve from - internal storage
+                        result.fileDir.absolutePath,
+                        circularBuffer
                 )
+
                 val intent = Intent(this, ViewResultsActivity::class.java).apply {
                     putExtra(EXTRA_MESSAGE_VIEW_RESULTS, resultsParcel)
                 }
