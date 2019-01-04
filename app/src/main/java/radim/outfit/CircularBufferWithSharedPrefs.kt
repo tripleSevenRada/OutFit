@@ -31,7 +31,7 @@ fun writeToCircularBuffer(value: String, prefs: SharedPreferences) {
 }
 
 fun readCircularBuffer(prefs: SharedPreferences): Array<String> {
-    val buffer = Array(CIRC_BUFF_SIZE) { _ -> "" }
+    val buffer = Array(CIRC_BUFF_SIZE) { "" }
     val pointer = prefs.getInt(CIRC_BUFF_POINTER_KEY, 0)
     var bufferIndex = 0
     // read left side of the buffer
@@ -43,7 +43,5 @@ fun readCircularBuffer(prefs: SharedPreferences): Array<String> {
         buffer[bufferIndex] = prefs.getString("$CIRC_BUFF_KEY_PREFIX$i", "") ?: ""
         bufferIndex++
     }
-
-
     return buffer
 }
