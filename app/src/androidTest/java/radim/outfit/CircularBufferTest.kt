@@ -8,7 +8,7 @@ import android.util.Log
 import org.junit.Test
 import org.junit.runner.RunWith
 
-// import org.junit.Assert.*
+import org.junit.Assert.*
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -21,15 +21,73 @@ class CircularBufferTest {
     private val appContext = InstrumentationRegistry.getTargetContext()
     private val sharedPreferences = appContext.getSharedPreferences("radim.outfit.MainActivity",
             Context.MODE_PRIVATE)
+
     @Test
     fun initCB() {
         initCircularBuffer(sharedPreferences.edit())
     }
+
     @Test
-    fun writeAndRead(){
-        for(i in 1..23) {
+    fun writeAndRead() {
+        for (i in 1..23) {
             writeToCircularBuffer("v$i", sharedPreferences)
             printArray(readCircularBuffer(sharedPreferences))
         }
+    }
+
+    @Test
+    fun testRidEmpty1() {
+        val array = arrayOf("a", "", "")
+        val expected = arrayOf("a")
+        val actual = array.ridEmpty()
+        assertEquals(actual, expected)
+    }
+
+    @Test
+    fun testRidEmpty2() {
+        val array = arrayOf("", "a", "")
+        val expected = arrayOf("a")
+        val actual = array.ridEmpty()
+        assertEquals(actual, expected)
+    }
+
+    @Test
+    fun testRidEmpty3() {
+        val array = arrayOf("", "", "a")
+        val expected = arrayOf("a")
+        val actual = array.ridEmpty()
+        assertEquals(actual, expected)
+    }
+
+    @Test
+    fun testRidDuplicities1() {
+        val array = arrayOf("a", "a", "a")
+        val expected = arrayOf("a")
+        val actual = array.ridDuplicities()
+        assertEquals(actual, expected)
+    }
+
+    @Test
+    fun testRidDuplicities2() {
+        val array = arrayOf("a", "b", "a")
+        val expected = arrayOf("a","b")
+        val actual = array.ridDuplicities()
+        assertEquals(actual, expected)
+    }
+
+    @Test
+    fun testRidDuplicities3() {
+        val array = arrayOf("a", "b", "c")
+        val expected = arrayOf("a","b","c")
+        val actual = array.ridDuplicities()
+        assertEquals(actual, expected)
+    }
+
+    @Test
+    fun testRidDuplicities4() {
+        val array = arrayOf("", "", "")
+        val expected = arrayOf("")
+        val actual = array.ridDuplicities()
+        assertEquals(actual, expected)
     }
 }

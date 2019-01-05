@@ -48,3 +48,17 @@ fun readCircularBuffer(prefs: SharedPreferences): Array<String> {
     }
     return buffer
 }
+
+fun Array<String>.ridDuplicities(): Array<String>{
+    val bufferSet = mutableSetOf<String>()
+    val noDuplicities = mutableListOf<String>()
+    this.forEach {
+        if(!bufferSet.contains(it)){
+            bufferSet.add(it)
+            noDuplicities.add(it)
+        }
+    }
+    return noDuplicities.toTypedArray()
+}
+
+fun Array<String>.ridEmpty(): Array<String> = this.filter { ! it.isEmpty() }.toTypedArray()

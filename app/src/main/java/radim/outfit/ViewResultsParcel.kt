@@ -7,8 +7,8 @@ class ViewResultsParcel : Parcelable {
 
     var title: String
     var messages: List<String>
-    var parentDir: String
-    var buffer: Array<String>
+    var buffer: Array<String> // circular buffer of last buffer.size exports. May contain empty strings or
+    // duplicates both in terms of filenames and complete paths
 
     private constructor(inParcel: Parcel) {
         this.title = inParcel.readString()?: ""
@@ -18,7 +18,6 @@ class ViewResultsParcel : Parcelable {
             messagesLocally.add(inParcel.readString()?:"")
         }
         messages = messagesLocally
-        parentDir = inParcel.readString()?:""
         val bufferSize = inParcel.readInt()
         val buffer = Array(bufferSize){""}
         for(i in buffer.indices){
@@ -29,11 +28,9 @@ class ViewResultsParcel : Parcelable {
 
     constructor(title: String,
                 messages: List<String>,
-                parentDir: String,
                 buffer: Array<String>) {
         this.title = title
         this.messages = messages
-        this.parentDir = parentDir
         this.buffer = buffer
     }
 
@@ -41,7 +38,6 @@ class ViewResultsParcel : Parcelable {
         p0?.writeString(title)
         p0?.writeInt(messages.size)
         messages.forEach { p0?.writeString(it) }
-        p0?.writeString(parentDir)
         p0?.writeInt(buffer.size)
         for  (i in buffer.indices){
             p0?.writeString(buffer[i])
@@ -56,7 +52,6 @@ class ViewResultsParcel : Parcelable {
             override fun createFromParcel(inParcel: Parcel): ViewResultsParcel {
                 return ViewResultsParcel(inParcel)
             }
-
             override fun newArray(size: Int): Array<ViewResultsParcel?> {
                 return arrayOfNulls(size)
             }

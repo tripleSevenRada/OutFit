@@ -60,4 +60,25 @@
     <!-- Locus dir pick-->
     <string name="pick_dir_message">Select export folder</string>
 
+    <!--
+install_needed_title — Dialog title for when Garmin Connect Mobile needs to be installed.
+install_needed_message — Dialog message for when Garmin Connect Mobile needs to be installed.
+install_needed_yes — Button text for user to confirm they want to visit the Google Play Store to install Garmin Connect Mobile.
+install_needed_cancel — Button text for user to cancel the dialog and not install Garmin Connect Mobile.
+upgrade_needed_title — Dialog title for when Garmin Connect Mobile needs to be upgraded to a version that supports the SDK.
+upgrade_needed_message — Dialog message for when Garmin Connect Mobile needs to be upgraded to a version that supports the SDK.
+upgrade_needed_yes — Button text for user to confirm they want to visit the Google Play Store to upgrade Garmin Connect Mobile.
+upgrade_needed_cancel — Button text for a user to cancel the dialog and not upgrade Garmin Connect Mobile.
+ -->
+
+
+    <string name="install_needed_title">Install needed.</string>
+    <string name="install_needed_message">Connect IQ platform depends on Garmin Connect Mobile. Install?</string>
+    <string name="install_needed_yes">Install</string>
+    <string name="install_needed_cancel">Cancel</string>
+    <string name="upgrade_needed_title">Upgrade needed.</string>
+    <string name="upgrade_needed_message">Garmin Connect Mobile is not up-to-date. Upgrade?</string>
+    <string name="upgrade_needed_yes">Upgrade</string>
+    <string name="upgrade_needed_cancel">Cancel</string>
+
 </resources>

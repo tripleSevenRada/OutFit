@@ -39,7 +39,6 @@ class Encoder {
         val publicMessages = mutableListOf<String>()
         val debugMessages = mutableListOf<String>()
         val errorMessages = mutableListOf<String>()
-        publicMessages.add("${ctx.getString("fit_file_dir")} $dir")
         publicMessages.add("${ctx.getString("filename")} $filename")
         debugMessages.add("Debug:")
         errorMessages.add("Error:")

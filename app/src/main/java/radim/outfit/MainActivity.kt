@@ -251,12 +251,12 @@ class MainActivity : AppCompatActivity(),
 
                 val circularBuffer = readCircularBuffer(sharedPreferences)
                 if(DEBUG_MODE) circularBuffer.forEach { Log.i("CIRC_BUFFER", it) }
+                val circularBufferReduced = circularBuffer.ridEmpty().ridDuplicities()
 
                 val resultsParcel = ViewResultsParcel(
                         getString("stats_label"),
                         result.publicMessage,
-                        result.fileDir.absolutePath,
-                        circularBuffer
+                        circularBufferReduced
                 )
 
                 val intent = Intent(this, ViewResultsActivity::class.java).apply {

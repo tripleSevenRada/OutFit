@@ -48,7 +48,7 @@ class ExportListener(
         this.defaultFilename = filename
     }
 
-    override fun onClick(v: View) {
+    override fun onClick(v: View?) {
         if (!isDataNonNull()) return
         val track = exportPOJO.track
         track ?: return
