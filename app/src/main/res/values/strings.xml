@@ -28,8 +28,8 @@
     <string name="logs_write_error">Debug logs write error</string>
 
     <!-- Stats.kt-->
-    <string name="name_stats">Name:</string>
-    <string name="length_stats">Length:</string>
+    <string name="name_stats">Track name:</string>
+    <string name="length_stats">Track length:</string>
     <string name="nmb_points_stats">Number of points:</string>
     <string name="nmb_waypoints_stats">Number of waypoints:</string>
 

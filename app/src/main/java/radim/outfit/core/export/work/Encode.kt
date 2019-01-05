@@ -75,6 +75,7 @@ class Encoder {
             encoder.write(courseMesg)
             with(publicMessages) {
                 add("${ctx.getString("course_name")} ${courseMesg.name}")
+                add("")
                 add(ctx.getString("exported"))
             }
             /*
