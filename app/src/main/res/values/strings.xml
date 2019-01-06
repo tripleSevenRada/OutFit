@@ -39,6 +39,8 @@
     <string name="mph" translatable="false">mph</string>
 
     <string name="ok">OK</string>
+    <string name="yes">YES</string>
+    <string name="no">NO</string>
 
     <!-- shared preferences -->
     <string name="main_activity_preferences" translatable="false">radim.outfit.MainActivity</string>
@@ -48,9 +50,10 @@
 
     <!-- public messages  - Encode-->
     <string name="course_name">Course name:</string>
-    <string name="fit_file_dir">Folder:</string>
     <string name="filename">Filename:</string>
     <string name="exported">What\'s been exported:</string>
+    <string name="course_has_elevation_yes">This course has elevation data.</string>
+    <string name="course_has_elevation_no">This course has no elevation data.</string>
 
     <!-- ViewResultsActivity -->
     <string name="btn_connectiq">Use ConnectIQ</string>

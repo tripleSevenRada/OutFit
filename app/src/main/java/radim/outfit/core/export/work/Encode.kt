@@ -75,7 +75,6 @@ class Encoder {
             encoder.write(courseMesg)
             with(publicMessages) {
                 add("${ctx.getString("course_name")} ${courseMesg.name}")
-                add("")
                 add(ctx.getString("exported"))
             }
             /*
@@ -279,6 +278,8 @@ event_type (1-1-ENUM): start (0)
                     publicMessages.add("$it : ${mapCoursePointsTypesToFrequencies[it]}")
                 }
             }
+            publicMessages.add(if (trackHasAltitude) ctx.getString("course_has_elevation_yes")
+            else ctx.getString("course_has_elevation_no"))
 
             if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
