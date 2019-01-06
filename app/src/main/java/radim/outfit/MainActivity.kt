@@ -19,6 +19,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_export.*
@@ -31,6 +32,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.FilenameCharsFilter
 import radim.outfit.core.getFilename
+import radim.outfit.core.statusobjects.ExportStatusKeeper
 import radim.outfit.debugdumps.writeTextFile
 import java.lang.RuntimeException
 
@@ -110,7 +112,10 @@ class MainActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        progressBar.visibility = ProgressBar.INVISIBLE
+        val statsTv: TextView = findViewById(R.id.tvStatsLabel)
+        statsTv.text = this.toString()
+
+        Log.w(LOG_TAG_MAIN, "export in progress: ${ExportStatusKeeper.isInProgress}" )
 
         sharedPreferences = this.getSharedPreferences(
                 getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
@@ -204,9 +209,8 @@ class MainActivity : AppCompatActivity(),
     //  CALLBACKS START
 
     private fun exportListenerCallback(result: Result) {
-        // enable executive UI
-        btnExport.isEnabled = true
-        progressBar.visibility = ProgressBar.INVISIBLE
+
+        enableExecutive()
 
         if (DEBUG_MODE) {
             //fire and forget writing log file
@@ -272,11 +276,13 @@ class MainActivity : AppCompatActivity(),
 
     private fun disableExecutive() {
         // disable executive UI
+        Log.i(LOG_TAG_MAIN, "DISABLE_Executive")
         btnExport.isEnabled = false
         progressBar.visibility = ProgressBar.VISIBLE
     }
 
     private fun enableExecutive() {
+        Log.i(LOG_TAG_MAIN, "ENABLE_Executive")
         // enable executive UI
         btnExport.isEnabled = true
         progressBar.visibility = ProgressBar.INVISIBLE

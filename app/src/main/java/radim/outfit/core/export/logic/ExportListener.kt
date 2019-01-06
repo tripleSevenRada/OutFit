@@ -10,6 +10,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.export.work.locusapiextensions.isTimestamped
 import radim.outfit.core.getFilename
+import radim.outfit.core.statusobjects.ExportStatusKeeper
 import radim.outfit.getString
 import java.io.File
 
@@ -57,6 +58,8 @@ class ExportListener(
             return
         }
 
+        ExportStatusKeeper.isInProgress = true
+
         // https://medium.com/coding-blocks/making-asynctask-obsolete-with-kotlin-5fe1d944d69
         // https://antonioleiva.com/anko-background-kotlin-android/
 
@@ -73,6 +76,7 @@ class ExportListener(
         }
     }
 
+    // SpeedPickerDialog (Fragment)
     fun getOkAction(): (Float) -> Unit = ::executeAsync
 
     private fun executeAsync(speedMperS: Float) {
@@ -86,6 +90,7 @@ class ExportListener(
                     speedMperS,
                     ctx)
             uiThread {
+                ExportStatusKeeper.isInProgress = false
                 onFinishCallback(result)
             }
         }

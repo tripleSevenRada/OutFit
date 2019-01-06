@@ -31,7 +31,7 @@ val FILENAME_RESERVED_CHARS = setOf(' ', '#', '%', '&', '{', '}', '$', '@', ':',
 
 class FilenameCharsFilter : InputFilter {
     /*
-    This method is called when the buffer is going to replace the range dstart … dend
+    This method is called when the buffer is isInProgress to replace the range dstart … dend
     of dest with the new text from the range start … end of source. Return the CharSequence
     that you would like to have placed there instead, including an empty string if appropriate,
     or null to accept the original replacement. Be careful to not to reject 0-length replacements,
