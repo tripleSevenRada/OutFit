@@ -17,7 +17,7 @@ import radim.outfit.debugasserts.*
 import radim.outfit.getString
 import java.lang.RuntimeException
 
-const val MIN_TIME_TAKEN = 80
+const val MIN_TIME_TAKEN = 8
 const val MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989 = 631065600000L
 
 // Error messages 1 - 2

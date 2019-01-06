@@ -28,7 +28,6 @@ class CoursepointsUnitTests {
             println("points size before ${points.size}")
             val reduced = reduceWayPointsSizeTo(points,limit)
             assertEquals(limit, reduced.size)
-            val b = testCustomAssert(1,2,3)
         }
     }
     @Test

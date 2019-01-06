@@ -33,6 +33,8 @@ import org.jetbrains.anko.uiThread
 import radim.outfit.core.FilenameCharsFilter
 import radim.outfit.core.getFilename
 import radim.outfit.core.statusobjects.ExportStatusKeeper
+import radim.outfit.core.timer.SimpleTimer
+import radim.outfit.core.timer.Timer
 import radim.outfit.debugdumps.writeTextFile
 import java.lang.RuntimeException
 
@@ -108,14 +110,26 @@ class MainActivity : AppCompatActivity(),
     }
     // SpeedPickerFragment interfaces impl END
 
+    inner class TimerCallback : Timer.TimerCallback {
+        override fun tick(): Boolean {
+            return if (!ExportStatusKeeper.isInProgress) {
+                enableExecutive()
+                false
+            } else true
+        }
+    }
+
+    private val simpleTimer: SimpleTimer = SimpleTimer(200, TimerCallback())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val statsTv: TextView = findViewById(R.id.tvStatsLabel)
-        statsTv.text = this.toString()
-
-        Log.w(LOG_TAG_MAIN, "export in progress: ${ExportStatusKeeper.isInProgress}" )
+        Log.i(LOG_TAG_MAIN, "export in progress: ${ExportStatusKeeper.isInProgress}")
+        if (ExportStatusKeeper.isInProgress) {
+            disableExecutive()
+            simpleTimer.start()
+        } else enableExecutive()
 
         sharedPreferences = this.getSharedPreferences(
                 getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
@@ -254,7 +268,7 @@ class MainActivity : AppCompatActivity(),
                 writeToCircularBuffer(exportedFilePath, sharedPreferences)
 
                 val circularBuffer = readCircularBuffer(sharedPreferences)
-                if(DEBUG_MODE) circularBuffer.forEach { Log.i("CIRC_BUFFER", it) }
+                if (DEBUG_MODE) circularBuffer.forEach { Log.i("CIRC_BUFFER", it) }
                 val circularBufferReduced = circularBuffer.ridEmpty().ridDuplicities()
 
                 val resultsParcel = ViewResultsParcel(
@@ -283,9 +297,11 @@ class MainActivity : AppCompatActivity(),
 
     private fun enableExecutive() {
         Log.i(LOG_TAG_MAIN, "ENABLE_Executive")
-        // enable executive UI
-        btnExport.isEnabled = true
-        progressBar.visibility = ProgressBar.INVISIBLE
+        // enable executive UI if export is not running
+        if (!ExportStatusKeeper.isInProgress) {
+            btnExport.isEnabled = true
+            progressBar.visibility = ProgressBar.INVISIBLE
+        }
     }
 
     //  CALLBACKS END
