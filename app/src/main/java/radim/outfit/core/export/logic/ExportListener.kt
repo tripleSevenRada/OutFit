@@ -41,7 +41,7 @@ class ExportListener(
     private lateinit var defaultFilename: String
 
     @Throws(java.lang.RuntimeException::class)
-    fun attachView(v: View) {
+    fun attachView(v: View?) {
         if (v is EditText) editTextFilename = v else throw RuntimeException("EditTextOnly")
     }
 
@@ -50,7 +50,7 @@ class ExportListener(
     }
 
     override fun onClick(v: View?) {
-        if (!isDataNonNull()) return
+        if (!dataIsValid()) return
         val track = exportPOJO.track
         track ?: return
         if(!permInfoProvider.permWriteIsGranted()){
@@ -80,7 +80,7 @@ class ExportListener(
     fun getOkAction(): (Float) -> Unit = ::executeAsync
 
     private fun executeAsync(speedMperS: Float) {
-        if (!isDataNonNull()) return
+        if (!dataIsValid()) return
         val finalExportPojo = getFinalExportPOJO()
         onStartCallback()
         doAsync {
@@ -105,7 +105,7 @@ class ExportListener(
                         exportPOJO.track))
     }
 
-    private fun isDataNonNull(): Boolean {
+    private fun dataIsValid(): Boolean {
         val track = exportPOJO.track
         track ?: return false
         val dir = exportPOJO.file

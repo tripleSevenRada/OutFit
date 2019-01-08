@@ -2,6 +2,7 @@ package radim.outfit
 
 import android.Manifest
 import android.app.Activity
+import android.arch.lifecycle.ViewModelProviders
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.os.Bundle
@@ -34,6 +35,7 @@ import radim.outfit.core.getFilename
 import radim.outfit.core.statusobjects.ExportStatus
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
+import radim.outfit.core.viewmodels.MainActivityViewModel
 import radim.outfit.debugdumps.writeTextFile
 import java.lang.RuntimeException
 
@@ -122,11 +124,19 @@ class MainActivity : AppCompatActivity(),
 
     private val simpleTimer: SimpleTimer = SimpleTimer(200, TimerCallback())
 
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         tvStats?.text = tvStatsFiller // do not flick or "inflate" visibly
+
+        val viewModel =
+                ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
+
 
         Log.i(LOG_TAG_MAIN, "export in progress: ${ExportStatus.isInProgress}")
         if (ExportStatus.isInProgress) {
@@ -169,7 +179,7 @@ class MainActivity : AppCompatActivity(),
 
         etFilename?.filters = arrayOf(FilenameCharsFilter())
         btnExport?.setOnClickListener(exportListener)
-        etFilename?: exportListener.attachView(etFilename)
+        if(etFilename != null) exportListener.attachView(etFilename)
         exportListener.attachDefaultFilename(this.getString("default_filename"))
 
         if (permWriteIsGranted()) {
