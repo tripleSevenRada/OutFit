@@ -4,11 +4,13 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.ProgressBar
+import fi.iki.elonen.NanoHTTPD
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_view_results.*
 import kotlinx.android.synthetic.main.content_connectiq.*
 import kotlinx.android.synthetic.main.content_stats.*
 import radim.outfit.core.connectiq.ConnectIQButtonListener
+import radim.outfit.core.nanohttpd.LocalHostServer
 import java.lang.StringBuilder
 
 const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-from"
@@ -21,7 +23,8 @@ class ViewResultsActivity : AppCompatActivity() {
     private val connectIQ = ConnectIQButtonListener(
             this,
             ::enableExecutive,
-            ::disableExecutive)
+            ::disableExecutive,
+            ::startBoundNanoHTTPD)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,13 +44,18 @@ class ViewResultsActivity : AppCompatActivity() {
         if (DEBUG_MODE && ::parcel.isInitialized) {
             parcel.buffer.forEach { Log.i(tag, "Circular buffer of exports: $it") }
         }
-
-        //tests
-
-
-
-
         progressBarView.visibility = ProgressBar.INVISIBLE
+    }
+
+    private var server: LocalHostServer? = null
+    private fun startBoundNanoHTTPD(){
+        Log.i(tag, "startBoundNanoHTTPD")
+        try {
+            server = LocalHostServer(9090)
+            server?.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
+        } catch (e: Exception){
+            Log.e(tag, "startBoundNanoHTTPD - ERROR")
+        }
     }
 
     override fun onStart() {
@@ -73,6 +81,12 @@ class ViewResultsActivity : AppCompatActivity() {
         Log.i(tag, "onStop")
         connectIQ.unregisterForDeviceEvents()
         connectIQ.shutdown()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i(tag, "onDestroy")
+        server?.stop()
     }
 
     // CALLBACKS START

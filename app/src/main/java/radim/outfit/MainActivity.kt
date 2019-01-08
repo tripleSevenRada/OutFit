@@ -19,7 +19,6 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_export.*
@@ -32,7 +31,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.FilenameCharsFilter
 import radim.outfit.core.getFilename
-import radim.outfit.core.statusobjects.ExportStatusKeeper
+import radim.outfit.core.statusobjects.ExportStatus
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
 import radim.outfit.debugdumps.writeTextFile
@@ -112,7 +111,7 @@ class MainActivity : AppCompatActivity(),
 
     inner class TimerCallback : Timer.TimerCallback {
         override fun tick(): Boolean {
-            return if (!ExportStatusKeeper.isInProgress) {
+            return if (!ExportStatus.isInProgress) {
                 enableExecutive()
                 false
             } else true
@@ -125,8 +124,8 @@ class MainActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Log.i(LOG_TAG_MAIN, "export in progress: ${ExportStatusKeeper.isInProgress}")
-        if (ExportStatusKeeper.isInProgress) {
+        Log.i(LOG_TAG_MAIN, "export in progress: ${ExportStatus.isInProgress}")
+        if (ExportStatus.isInProgress) {
             disableExecutive()
             simpleTimer.start()
         } else enableExecutive()
@@ -240,7 +239,13 @@ class MainActivity : AppCompatActivity(),
                             ), result.debugMessage)
                         }
                         is Result.Fail -> {
-                            if (result.fileDir != null && result.fileDir.exists() && result.filename != null) {
+                            if (result.fileDir != null &&
+                                    try {
+                                        result.fileDir.exists()
+                                    } catch (e: Exception) {
+                                        false
+                                    } &&
+                                    result.filename != null) {
                                 val rootPath = result.fileDir.absolutePath + File.separatorChar + result.filename
                                 writeTextFile(File("$rootPath.DEBUG_MODE.dump"), result.debugMessage)
                                 writeTextFile(File("$rootPath.error.dump"), result.errorMessage)
@@ -289,16 +294,16 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun disableExecutive() {
+        if (DEBUG_MODE) Log.i(LOG_TAG_MAIN, "DISABLE_Executive; Activity: $this")
         // disable executive UI
-        Log.i(LOG_TAG_MAIN, "DISABLE_Executive")
         btnExport.isEnabled = false
         progressBar.visibility = ProgressBar.VISIBLE
     }
 
     private fun enableExecutive() {
-        Log.i(LOG_TAG_MAIN, "ENABLE_Executive")
+        if (DEBUG_MODE) Log.i(LOG_TAG_MAIN, "ENABLE_Executive; Activity: $this")
         // enable executive UI if export is not running
-        if (!ExportStatusKeeper.isInProgress) {
+        if (!ExportStatus.isInProgress) {
             btnExport.isEnabled = true
             progressBar.visibility = ProgressBar.INVISIBLE
         }
@@ -384,16 +389,23 @@ class MainActivity : AppCompatActivity(),
         return Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED
     }
 
-    private fun storageDirExists(file: File?): Boolean {
-        return (file != null && file.isDirectory)
-    }
+    private fun storageDirExists(file: File?): Boolean =
+            try {
+                (file != null && file.isDirectory)
+            } catch (e: Exception) {
+                false
+            }
 
     private fun setAppStorageRoot() {
         // if root is stored and exists set it
         if (sharedPreferences.contains(this.getString("last_seen_root"))) {
             val lastSeenRoot = File(sharedPreferences.getString(this.getString("last_seen_root"),
                     locusInfo().rootDirExport))
-            if (lastSeenRoot.isDirectory) {
+            if (try {
+                        lastSeenRoot.isDirectory
+                    } catch (e: Exception) {
+                        false
+                    }) {
                 setRoot(lastSeenRoot, exportListener, sharedPreferences, getString("last_seen_root"))
             } else Log.e(LOG_TAG_MAIN, "lastSeenRootIsNotDir!")
             return

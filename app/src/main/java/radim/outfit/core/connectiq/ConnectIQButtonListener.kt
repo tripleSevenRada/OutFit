@@ -10,7 +10,8 @@ import radim.outfit.DEBUG_MODE
 class ConnectIQButtonListener(
         private val ctx: AppCompatActivity,
         private val enableExecutiveUICallback: () -> Unit,
-        private val disableExecutiveUICallback: () -> Unit
+        private val disableExecutiveUICallback: () -> Unit,
+        private val startNano: () -> Unit
 ) : View.OnClickListener {
 
     private val tag = "ConnIQList"
@@ -23,6 +24,7 @@ class ConnectIQButtonListener(
     private var connectIQIsBeingInitialized = false
 
     override fun onClick(v: View?) {
+        startNano()
         if (!connectIQIsInitialized &&
                 !connectIQIsBeingInitialized) {
             connectIQIsBeingInitialized = true

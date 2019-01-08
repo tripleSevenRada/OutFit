@@ -1,5 +1,5 @@
 package radim.outfit.core.statusobjects
 
-object ExportStatusKeeper{
+object ExportStatus{
     var isInProgress: Boolean = false
 }

@@ -10,7 +10,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.export.work.locusapiextensions.isTimestamped
 import radim.outfit.core.getFilename
-import radim.outfit.core.statusobjects.ExportStatusKeeper
+import radim.outfit.core.statusobjects.ExportStatus
 import radim.outfit.getString
 import java.io.File
 
@@ -58,7 +58,7 @@ class ExportListener(
             return
         }
 
-        ExportStatusKeeper.isInProgress = true
+        ExportStatus.isInProgress = true
 
         // https://medium.com/coding-blocks/making-asynctask-obsolete-with-kotlin-5fe1d944d69
         // https://antonioleiva.com/anko-background-kotlin-android/
@@ -90,7 +90,7 @@ class ExportListener(
                     speedMperS,
                     ctx)
             uiThread {
-                ExportStatusKeeper.isInProgress = false
+                ExportStatus.isInProgress = false
                 onFinishCallback(result)
             }
         }
@@ -113,7 +113,7 @@ class ExportListener(
             callBackResultError("9 - trackPOJO.file = null")
             return false
         }
-        if (!dir.exists() || !dir.isDirectory) {
+        if (try{!dir.isDirectory} catch (e: Exception){false}) {
             callBackResultError("10 - trackPOJO.file non existent or non directory")
             return false
         }
