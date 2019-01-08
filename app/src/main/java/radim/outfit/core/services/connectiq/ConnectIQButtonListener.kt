@@ -1,4 +1,4 @@
-package radim.outfit.core.connectiq
+package radim.outfit.core.services.connectiq
 
 import android.support.v7.app.AppCompatActivity
 import android.util.Log

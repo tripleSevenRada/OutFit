@@ -1,4 +1,4 @@
-package radim.outfit.core.connectiq
+package radim.outfit.core.services
 
 import android.util.Log
 import java.io.File

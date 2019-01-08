@@ -9,8 +9,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_view_results.*
 import kotlinx.android.synthetic.main.content_connectiq.*
 import kotlinx.android.synthetic.main.content_stats.*
-import radim.outfit.core.connectiq.ConnectIQButtonListener
-import radim.outfit.core.nanohttpd.LocalHostServer
+import radim.outfit.core.services.services.connectiq.ConnectIQButtonListener
+import radim.outfit.core.services.services.nanohttpd.LocalHostServer
 import java.lang.StringBuilder
 
 const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-from"

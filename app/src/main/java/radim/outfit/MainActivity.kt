@@ -58,6 +58,8 @@ class MainActivity : AppCompatActivity(),
         PermInfoProvider,
         Toaster {
 
+    private val tvStatsFiller = " \n \n \n "
+
     // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
     private val exportListener = ExportListener(
             ExportFunction(),
@@ -124,6 +126,8 @@ class MainActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        tvStats?.text = tvStatsFiller // do not flick or "inflate" visibly
+
         Log.i(LOG_TAG_MAIN, "export in progress: ${ExportStatus.isInProgress}")
         if (ExportStatus.isInProgress) {
             disableExecutive()
@@ -163,9 +167,9 @@ class MainActivity : AppCompatActivity(),
             return
         }
 
-        etFilename.filters = arrayOf(FilenameCharsFilter())
-        btnExport.setOnClickListener(exportListener)
-        exportListener.attachView(etFilename)
+        etFilename?.filters = arrayOf(FilenameCharsFilter())
+        btnExport?.setOnClickListener(exportListener)
+        etFilename?: exportListener.attachView(etFilename)
         exportListener.attachDefaultFilename(this.getString("default_filename"))
 
         if (permWriteIsGranted()) {
@@ -206,9 +210,9 @@ class MainActivity : AppCompatActivity(),
             uiThread {
                 if (track != null && track.points != null && track.points.size > 0) {
                     // do work
-                    tvStats.text = Stats().basicInfo(track, act)
+                    tvStats?.text = Stats().basicInfo(track, act)
                     val filename = getFilename(track.name, getString("default_filename"))
-                    etFilename.setText(filename)
+                    etFilename?.setText(filename)
                     setTrack(track, exportListener)
                     setFilename(filename, exportListener)
                     enableExecutive()
@@ -296,16 +300,16 @@ class MainActivity : AppCompatActivity(),
     private fun disableExecutive() {
         if (DEBUG_MODE) Log.i(LOG_TAG_MAIN, "DISABLE_Executive; Activity: $this")
         // disable executive UI
-        btnExport.isEnabled = false
-        progressBar.visibility = ProgressBar.VISIBLE
+        btnExport?.isEnabled = false
+        progressBar?.visibility = ProgressBar.VISIBLE
     }
 
     private fun enableExecutive() {
         if (DEBUG_MODE) Log.i(LOG_TAG_MAIN, "ENABLE_Executive; Activity: $this")
         // enable executive UI if export is not running
         if (!ExportStatus.isInProgress) {
-            btnExport.isEnabled = true
-            progressBar.visibility = ProgressBar.INVISIBLE
+            btnExport?.isEnabled = true
+            progressBar?.visibility = ProgressBar.INVISIBLE
         }
     }
 
@@ -362,11 +366,11 @@ class MainActivity : AppCompatActivity(),
     private fun setTvRootDir() {
         val text: String? = getRoot(exportListener)?.path
         if (text != null) {
-            tvRootDir.setTextColor(this.getColor(R.color.imitateButtons))
-            tvRootDir.text = text
+            tvRootDir?.setTextColor(this.getColor(R.color.imitateButtons))
+            tvRootDir?.text = text
         } else {
-            tvRootDir.setTextColor(this.getColor(R.color.colorAccent))
-            tvRootDir.text = this.getString("not_set")
+            tvRootDir?.setTextColor(this.getColor(R.color.colorAccent))
+            tvRootDir?.text = this.getString("not_set")
         }
     }
 
