@@ -4,15 +4,20 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.ProgressBar
-import fi.iki.elonen.NanoHTTPD
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_view_results.*
 import kotlinx.android.synthetic.main.content_connectiq.*
 import kotlinx.android.synthetic.main.content_stats.*
 import radim.outfit.core.services.connectiq.ConnectIQButtonListener
-import radim.outfit.core.services.nanohttpd.LocalHostServer
 
 import java.lang.StringBuilder
+import android.os.IBinder
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import kotlinx.android.synthetic.main.activity_view_results.*
+import radim.outfit.core.services.nanohttpd.NanoHttpdService
+
 
 const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-from"
 
@@ -21,7 +26,7 @@ class ViewResultsActivity : AppCompatActivity() {
     private val tag = "VIEW_RESULTS"
     private lateinit var parcel: ViewResultsParcel
 
-    private val connectIQ = ConnectIQButtonListener(
+    private val connectIQbuttonListener = ConnectIQButtonListener(
             this,
             ::enableExecutive,
             ::disableExecutive,
@@ -35,7 +40,7 @@ class ViewResultsActivity : AppCompatActivity() {
             parcel = intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
 
         tvViewResultsLabel.text = getString("stats_label")
-        btnConnectIQ.setOnClickListener (connectIQ)
+        btnConnectIQ.setOnClickListener (connectIQbuttonListener)
 
         if(::parcel.isInitialized) {
             val messagesAsStringBuilder = StringBuilder()
@@ -45,15 +50,17 @@ class ViewResultsActivity : AppCompatActivity() {
         if (DEBUG_MODE && ::parcel.isInitialized) {
             parcel.buffer.forEach { Log.i(tag, "Circular buffer of exports: $it") }
         }
-        progressBarView.visibility = ProgressBar.INVISIBLE
+        enableExecutive()
     }
 
-    private var server: LocalHostServer? = null
     private fun startBoundNanoHTTPD(){
         Log.i(tag, "startBoundNanoHTTPD")
         try {
-            server = LocalHostServer(9090)
-            server?.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
+            val startNanoIntent = Intent(this, NanoHttpdService::class.java)
+            startService(startNanoIntent)
+            bindService(startNanoIntent, nanoHttpdServiceConnection, Context.BIND_AUTO_CREATE)
+            //server = LocalHostServer(9090)
+            //server?.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
         } catch (e: Exception){
             Log.e(tag, "startBoundNanoHTTPD - ERROR")
         }
@@ -80,22 +87,33 @@ class ViewResultsActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         Log.i(tag, "onStop")
-        connectIQ.unregisterForDeviceEvents()
-        connectIQ.shutdown()
+        connectIQbuttonListener.unregisterForDeviceEvents()
+        connectIQbuttonListener.shutdown()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.i(tag, "onDestroy")
-        server?.stop()
+        unbindService(nanoHttpdServiceConnection)
     }
 
     // CALLBACKS START
 
     // ENABLE / DISABLE EXECUTIVE UI
-    private fun enableExecutive() = run { btnConnectIQ.isEnabled = true; progressBar.visibility = ProgressBar.VISIBLE }
-    private fun disableExecutive() = run { btnConnectIQ.isEnabled = false; progressBar.visibility = ProgressBar.INVISIBLE }
+    private fun enableExecutive() { btnConnectIQ.isEnabled = true; progressBarView.visibility = ProgressBar.INVISIBLE }
+    private fun disableExecutive() { btnConnectIQ.isEnabled = false; progressBarView.visibility = ProgressBar.VISIBLE }
 
     // CALLBACKS END
+
+    private var nanoHttpdBoundService: NanoHttpdService? = null
+
+    private val nanoHttpdServiceConnection = object : ServiceConnection {
+        override fun onServiceDisconnected(name: ComponentName) {
+        }
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            val binder = service as NanoHttpdService.NanoHttpdBinder
+            nanoHttpdBoundService = binder.getService()
+        }
+    }
 
 }

@@ -32,7 +32,6 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.FilenameCharsFilter
 import radim.outfit.core.getFilename
-import radim.outfit.core.statusobjects.ExportStatus
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
 import radim.outfit.core.viewmodels.MainActivityViewModel
@@ -62,27 +61,14 @@ class MainActivity : AppCompatActivity(),
 
     private val tvStatsFiller = " \n \n \n "
 
-    // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
-    private val exportListener = ExportListener(
-            ExportFunction(),
-            ExportPOJO(null, null, null),
-            ::exportListenerCallback,
-            ::disableExecutive,
-            ::showSpeedPickerDialog,
-            this,
-            this,
-            this
-    )
+    private lateinit var sharedPreferences: SharedPreferences
+    private val fail = FailGracefullyLauncher()
 
     private fun showSpeedPickerDialog() {
         val fm = supportFragmentManager
         val spf = SpeedPickerFragment()
         spf.show(fm, "speed_picker_fragment")
     }
-
-    private lateinit var sharedPreferences: SharedPreferences
-
-    private val fail = FailGracefullyLauncher()
 
     // SpeedPickerFragment interfaces impl START
     override fun getOkAction(): (Float) -> Unit = exportListener.getOkAction()
@@ -113,20 +99,22 @@ class MainActivity : AppCompatActivity(),
     }
     // SpeedPickerFragment interfaces impl END
 
-    inner class TimerCallback : Timer.TimerCallback {
+    inner class TimerCallback(private val viewModel: MainActivityViewModel) : Timer.TimerCallback {
         override fun tick(): Boolean {
-            return if (!ExportStatus.isInProgress) {
-                enableExecutive()
+            return if (!viewModel.exportInProgress) {
+                enableExecutive(viewModel)
                 false
             } else true
         }
     }
 
-    private val simpleTimer: SimpleTimer = SimpleTimer(200, TimerCallback())
+    private lateinit var simpleTimer: SimpleTimer
+    // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
+    private lateinit var exportListener: ExportListener
 
-    override fun onSaveInstanceState(outState: Bundle?) {
-        super.onSaveInstanceState(outState)
-    }
+    //override fun onSaveInstanceState(outState: Bundle?) {
+    //super.onSaveInstanceState(outState)
+    //}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,12 +125,24 @@ class MainActivity : AppCompatActivity(),
         val viewModel =
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
 
+        simpleTimer = SimpleTimer(400, TimerCallback(viewModel))
+        exportListener = ExportListener(
+                ExportFunction(),
+                ExportPOJO(null, null, null),
+                ::exportListenerCallback,
+                ::disableExecutive,
+                ::showSpeedPickerDialog,
+                this,
+                this,
+                this,
+                viewModel
+        )
 
-        Log.i(LOG_TAG_MAIN, "export in progress: ${ExportStatus.isInProgress}")
-        if (ExportStatus.isInProgress) {
+        Log.i(LOG_TAG_MAIN, "export in progress: ${viewModel.exportInProgress}")
+        if (viewModel.exportInProgress) {
             disableExecutive()
             simpleTimer.start()
-        } else enableExecutive()
+        } else enableExecutive(viewModel)
 
         sharedPreferences = this.getSharedPreferences(
                 getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
@@ -179,7 +179,7 @@ class MainActivity : AppCompatActivity(),
 
         etFilename?.filters = arrayOf(FilenameCharsFilter())
         btnExport?.setOnClickListener(exportListener)
-        if(etFilename != null) exportListener.attachView(etFilename)
+        if (etFilename != null) exportListener.attachView(etFilename)
         exportListener.attachDefaultFilename(this.getString("default_filename"))
 
         if (permWriteIsGranted()) {
@@ -196,48 +196,60 @@ class MainActivity : AppCompatActivity(),
 
         if (LocusUtils.isIntentTrackTools(this.intent)) {
             // event performed if user tap on your app icon in tools menu of 'Track'
-            handleIntentTrackToolsMenu(this, this.intent)
+            handleIntentTrackToolsMenu(this, this.intent, viewModel)
         }
     }
 
     // isIntentTrackTools(intent) = true
-    private fun handleIntentTrackToolsMenu(act: AppCompatActivity, intent: Intent) {
-        disableExecutive()
-        doAsync {
-            var track: Track? = null
-            try {
-                track = LocusUtils.handleIntentTrackTools(act, intent)
-                // or inject a mock
-                //track = getTrackOkNoCP()
-                //track = getTrackNullEndNoCP()
-                //track = getTrackNullStartNoCP()
-                //track = getTrackRandomNullsNoCP()
-            } catch (e: RequiredVersionMissingException) {
-                fail.failGracefully(act, act.getString("required_version_missing") + " " + e.localizedMessage + " Error 4")
-            } catch (e: Exception) {
-                fail.failGracefully(act, e.localizedMessage + " Error 5")
-            }
-            uiThread {
-                if (track != null && track.points != null && track.points.size > 0) {
-                    // do work
-                    tvStats?.text = Stats().basicInfo(track, act)
-                    val filename = getFilename(track.name, getString("default_filename"))
-                    etFilename?.setText(filename)
-                    setTrack(track, exportListener)
-                    setFilename(filename, exportListener)
-                    enableExecutive()
-                } else {
-                    fail.failGracefully(act, " null - Error 6")
+    private fun handleIntentTrackToolsMenu(act: AppCompatActivity,
+                                           intent: Intent,
+                                           viewModel: MainActivityViewModel) {
+        if(viewModel.track == null) {
+            disableExecutive()
+            doAsync {
+                var track: Track? = null
+                try {
+                    track = LocusUtils.handleIntentTrackTools(act, intent)
+                    // or inject a mock
+                    //track = getTrackOkNoCP()
+                    //track = getTrackNullEndNoCP()
+                    //track = getTrackNullStartNoCP()
+                    //track = getTrackRandomNullsNoCP()
+                } catch (e: RequiredVersionMissingException) {
+                    fail.failGracefully(act, act.getString("required_version_missing") + " " + e.localizedMessage + " Error 4")
+                } catch (e: Exception) {
+                    fail.failGracefully(act, e.localizedMessage + " Error 5")
+                }
+                uiThread {
+                    if (track != null && track.points != null && track.points.size > 0) {
+                        // do work
+                        trackInit(track, act, viewModel)
+                        viewModel.track = track
+                        enableExecutive(viewModel)
+                    } else {
+                        fail.failGracefully(act, " null - Error 6")
+                    }
                 }
             }
+        } else {
+            val track = viewModel.track
+            if(track != null) trackInit(track, act, viewModel)
         }
+    }
+
+    private fun trackInit(track: Track, act: AppCompatActivity, viewModel: MainActivityViewModel){
+        tvStats?.text = Stats().basicInfo(track, act)
+        val filename = getFilename(track.name, getString("default_filename"))
+        etFilename?.setText(filename)
+        setTrack(track, exportListener)
+        setFilename(filename, exportListener)
     }
 
     //  CALLBACKS START
 
-    private fun exportListenerCallback(result: Result) {
+    private fun exportListenerCallback(result: Result, viewModel: MainActivityViewModel) {
 
-        enableExecutive()
+        enableExecutive(viewModel)
 
         if (DEBUG_MODE) {
             //fire and forget writing log file
@@ -314,10 +326,10 @@ class MainActivity : AppCompatActivity(),
         progressBar?.visibility = ProgressBar.VISIBLE
     }
 
-    private fun enableExecutive() {
+    private fun enableExecutive(viewModel: MainActivityViewModel) {
         if (DEBUG_MODE) Log.i(LOG_TAG_MAIN, "ENABLE_Executive; Activity: $this")
         // enable executive UI if export is not running
-        if (!ExportStatus.isInProgress) {
+        if (!viewModel.exportInProgress) {
             btnExport?.isEnabled = true
             progressBar?.visibility = ProgressBar.INVISIBLE
         }

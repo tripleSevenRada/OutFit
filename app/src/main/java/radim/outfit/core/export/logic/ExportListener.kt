@@ -10,7 +10,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.export.work.locusapiextensions.isTimestamped
 import radim.outfit.core.getFilename
-import radim.outfit.core.statusobjects.ExportStatus
+import radim.outfit.core.viewmodels.MainActivityViewModel
 import radim.outfit.getString
 import java.io.File
 
@@ -27,12 +27,13 @@ interface Toaster{
 class ExportListener(
         private val execute: (File?, String?, Track?, Float, AppCompatActivity) -> Result,
         var exportPOJO: ExportPOJO,
-        private val onFinishCallback: (Result) -> Unit,
+        private val onFinishCallback: (Result, MainActivityViewModel) -> Unit,
         private val onStartCallback: () -> Unit,
         private val showSpeedPickerDialog: () -> Unit,
         private val ctx: AppCompatActivity,
         private val permInfoProvider: PermInfoProvider,
-        private val toaster: Toaster
+        private val toaster: Toaster,
+        private val viewModel: MainActivityViewModel
 ) : View.OnClickListener {
 
     private val tag = "ExportListener"
@@ -58,7 +59,7 @@ class ExportListener(
             return
         }
 
-        ExportStatus.isInProgress = true
+        viewModel.exportInProgress = true
 
         // https://medium.com/coding-blocks/making-asynctask-obsolete-with-kotlin-5fe1d944d69
         // https://antonioleiva.com/anko-background-kotlin-android/
@@ -90,8 +91,8 @@ class ExportListener(
                     speedMperS,
                     ctx)
             uiThread {
-                ExportStatus.isInProgress = false
-                onFinishCallback(result)
+                viewModel.exportInProgress = false
+                onFinishCallback(result, viewModel)
             }
         }
     }
@@ -139,6 +140,6 @@ class ExportListener(
     private fun callBackResultError(singleErrorMessage: String) {
         val debugMessage = listOf("debug:")
         val errorMessage = listOf("error:", singleErrorMessage)
-        onFinishCallback(Result.Fail(debugMessage, errorMessage))
+        onFinishCallback(Result.Fail(debugMessage, errorMessage), viewModel)
     }
 }

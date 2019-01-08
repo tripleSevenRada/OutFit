@@ -25,7 +25,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".FinishGracefully" />
-        <activity android:name=".ViewResultsActivity"></activity>
+        <activity android:name=".ViewResultsActivity" />
+
+        <service android:name="radim.outfit.core.services.nanohttpd.NanoHttpdService" />
+
     </application>
 
 </manifest>
