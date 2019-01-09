@@ -9,12 +9,11 @@ import com.garmin.android.connectiq.IQDevice
 class ConnectIQButtonListener(
         private val ctx: AppCompatActivity,
         private val enableExecutiveUICallback: () -> Unit,
-        private val disableExecutiveUICallback: () -> Unit,
-        private val startNano: () -> Unit
+        private val disableExecutiveUICallback: () -> Unit
 ) : View.OnClickListener {
 
     private val tag = "ConnIQList"
-    private val connectionType = ConnectIQ.IQConnectType.TETHERED
+    private val connectionType = ConnectIQ.IQConnectType.WIRELESS
     private val connectIQ: ConnectIQ = ConnectIQ.getInstance(ctx, connectionType)
     private val connectIQListener: ConnectIQ.ConnectIQListener = ConnectIQLifecycleListener()
     //val myApp = "9B0A09CFC89E4F7CA5E4AB21400EE424"//fb8c00180889407a913db58884cb3ec3
@@ -30,7 +29,6 @@ class ConnectIQButtonListener(
             Log.i(tag, "init")
             connectIQ.initialize(ctx, true, connectIQListener)
         }
-        startNano()
     }
 
     // connectIQListener

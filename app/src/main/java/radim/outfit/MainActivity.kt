@@ -206,6 +206,8 @@ class MainActivity : AppCompatActivity(),
                                            viewModel: MainActivityViewModel) {
         if(viewModel.track == null) {
             disableExecutive()
+            var doFail = false
+            var failMessage = ""
             doAsync {
                 var track: Track? = null
                 try {
@@ -216,14 +218,19 @@ class MainActivity : AppCompatActivity(),
                     //track = getTrackNullStartNoCP()
                     //track = getTrackRandomNullsNoCP()
                 } catch (e: RequiredVersionMissingException) {
-                    fail.failGracefully(act, act.getString("required_version_missing") + " " + e.localizedMessage + " Error 4")
+                    doFail = true
+                    failMessage = "${act.getString("required_version_missing")} ${e.localizedMessage} Error 4"
                 } catch (e: Exception) {
-                    fail.failGracefully(act, e.localizedMessage + " Error 5")
+                    doFail = true
+                    failMessage = "${e.localizedMessage} Error 5"
                 }
                 uiThread {
+                    if(doFail){
+                        fail.failGracefully(act, failMessage)
+                    }
                     if (track != null && track.points != null && track.points.size > 0) {
                         // do work
-                        trackInit(track, act, viewModel)
+                        trackInit(track, act)
                         viewModel.track = track
                         enableExecutive(viewModel)
                     } else {
@@ -233,11 +240,11 @@ class MainActivity : AppCompatActivity(),
             }
         } else {
             val track = viewModel.track
-            if(track != null) trackInit(track, act, viewModel)
+            if(track != null) trackInit(track, act)
         }
     }
 
-    private fun trackInit(track: Track, act: AppCompatActivity, viewModel: MainActivityViewModel){
+    private fun trackInit(track: Track, act: AppCompatActivity){
         tvStats?.text = Stats().basicInfo(track, act)
         val filename = getFilename(track.name, getString("default_filename"))
         etFilename?.setText(filename)

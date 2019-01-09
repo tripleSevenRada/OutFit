@@ -1,4 +1,4 @@
-package radim.outfit.core.services.nanohttpd
+package radim.outfit
 
 import fi.iki.elonen.NanoHTTPD
 
