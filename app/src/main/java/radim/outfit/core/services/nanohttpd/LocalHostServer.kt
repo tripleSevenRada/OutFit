@@ -10,6 +10,6 @@ class LocalHostServer(port: Int): NanoHTTPD(port) {
     private val MIME_HTML = "text/html"
 
     override fun serve(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {
-        return NanoHTTPD.newFixedLengthResponse("<html><body><h1>Hallo world OUT FIT here</h1></body></html>\n")
+        return NanoHTTPD.newFixedLengthResponse("<html><body><h1>Hallo world OUT FIT here</h1></body></html>")
     }
 }

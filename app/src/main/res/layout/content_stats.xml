@@ -7,11 +7,12 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/tvViewResultsLabel"
+        android:id="@+id/tvContentStatsLabel"
         style="@style/labelTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp"
+        android:text="@string/stats_label" />
 
     <ScrollView
         android:id="@+id/svContentStats"
@@ -19,7 +20,7 @@
         android:layout_height="match_parent" >
 
     <TextView
-        android:id="@+id/tvViewResults"
+        android:id="@+id/tvContentStatsData"
         style="@style/mainTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

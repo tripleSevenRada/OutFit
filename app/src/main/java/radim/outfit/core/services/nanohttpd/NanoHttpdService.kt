@@ -5,37 +5,48 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
+import fi.iki.elonen.NanoHTTPD
 
-class NanoHttpdService: Service(){
+class NanoHttpdService : Service() {
 
     private val tag = "NanoHttpdService"
+    private val binder = NanoHttpdBinder()
+    private lateinit var server: LocalHostServer
+    private var running = false
 
     override fun onCreate() {
-        Log.i(tag,"onCreate")
-        // The service is being created
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i(tag,"onStartCommand")
-        return START_NOT_STICKY
+        super.onCreate()
+        Log.i(tag, "onCreate")
+        server = LocalHostServer(2222)
     }
 
     override fun onBind(intent: Intent): IBinder? {
-        Log.i(tag,"onBind")
-        return NanoHttpdBinder()
+        Log.i(tag, "onBind")
+        if (!running && ::server.isInitialized) {
+            server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
+            running = true
+            Log.i(tag, "LOCALHOST START")
+        }
+        return binder
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        Log.i(tag, "onUnbind")
+        if (running && ::server.isInitialized) {
+            server.stop()
+            running = false
+            Log.i(tag, "LOCALHOST STOP")
+        }
+        return false
     }
 
     override fun onDestroy() {
-        Log.i(tag,"onDestroy()")
+        super.onDestroy()
+        Log.i(tag, "onDestroy")
     }
 
-    override fun stopService(name: Intent?): Boolean {
-        Log.i(tag,"stopService")
-        return true
-    }
-
-    inner class NanoHttpdBinder: Binder(){
-        fun getService():NanoHttpdService?{
+    inner class NanoHttpdBinder : Binder() {
+        fun getService(): NanoHttpdService {
             return this@NanoHttpdService
         }
     }

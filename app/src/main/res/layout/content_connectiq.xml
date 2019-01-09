@@ -5,11 +5,103 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btnConnectIQ"
-        style="@style/customButton"
-        android:layout_marginTop="16dp"
-        android:text="@string/btn_connectiq" />
+    <LinearLayout
+        android:id="@+id/llContentConnectIQInnerHorButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="100">
 
+        <ImageButton
+            android:id="@+id/btnContentConnectIQ"
+            android:layout_marginTop="16dp"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="64"
+            android:contentDescription="@string/imgbtn_connectiq_desc"
+            android:src="@drawable/connect_iq_logo_black"
+            android:scaleType="centerInside"/>
+
+        <Button
+            android:id="@+id/btnContentConnectIQShareCourse"
+            android:layout_marginTop="16dp"
+            style="@style/customButton"
+            android:layout_width="0dp"
+            android:layout_weight="36"
+            android:onClick="shareCourse"
+            android:text="@string/btn_share_course" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llContentConnectIQParentOfScrollViewsAndLabels"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="100">
+
+        <LinearLayout
+            android:id="@+id/llContentConnectIQScrollGroupDevices"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="32"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvContentConnectIQDevicesLabel"
+                style="@style/labelTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/connected_devices_label" />
+
+            <ScrollView
+                android:id="@+id/svContentConnectIQDevices"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/tvContentConnectIQDevicesData"
+                    style="@style/mainTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp" />
+
+            </ScrollView>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llContentConnectIQScrollGroupFiles"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="68"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvContentConnectIQFilesLabel"
+                style="@style/labelTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/served_files_label" />
+
+            <ScrollView
+                android:id="@+id/svContentConnectIQFiles"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/tvContentConnectIQFilesData"
+                    style="@style/mainTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp" />
+
+            </ScrollView>
+
+        </LinearLayout>
+
+    </LinearLayout>
 
 </LinearLayout>

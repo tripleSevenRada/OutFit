@@ -18,7 +18,7 @@
         android:layout_height="match_parent"
         android:baselineAligned="true"
         android:orientation="horizontal"
-        android:weightSum="80">
+        android:weightSum="100">
 
         <include
             layout="@layout/content_stats"
@@ -30,7 +30,7 @@
             layout="@layout/content_connectiq"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="40" />
+            android:layout_weight="60" />
 
     </LinearLayout>
 

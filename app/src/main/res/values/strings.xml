@@ -56,9 +56,12 @@
     <string name="course_has_elevation_no">This course has no elevation data.</string>
 
     <!-- ViewResultsActivity -->
-    <string name="btn_connectiq">Use ConnectIQ</string>
+    <string name="imgbtn_connectiq_desc">Start ConnectIQ</string>
+    <string name="btn_share_course">Share course</string>
     <string name="nmb_trackpoints">Number of trackpoints:</string>
     <string name="nmb_coursepoints">Number of coursepoints:</string>
+    <string name="connected_devices_label">Connected devices:</string>
+    <string name="served_files_label">Files served to them:</string>
 
     <!-- Locus dir pick-->
     <string name="pick_dir_message">Select export folder</string>

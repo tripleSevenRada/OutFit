@@ -1,11 +1,10 @@
-package radim.outfit.core.services.connectiq
+package radim.outfit
 
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import com.garmin.android.connectiq.ConnectIQ
 import com.garmin.android.connectiq.IQDevice
-import radim.outfit.DEBUG_MODE
 
 class ConnectIQButtonListener(
         private val ctx: AppCompatActivity,
@@ -24,13 +23,14 @@ class ConnectIQButtonListener(
     private var connectIQIsBeingInitialized = false
 
     override fun onClick(v: View?) {
-        startNano()
         if (!connectIQIsInitialized &&
                 !connectIQIsBeingInitialized) {
             connectIQIsBeingInitialized = true
             disableExecutiveUICallback
+            Log.i(tag, "init")
             connectIQ.initialize(ctx, true, connectIQListener)
         }
+        startNano()
     }
 
     // connectIQListener

@@ -18,19 +18,19 @@
         android:layout_height="match_parent"
         android:baselineAligned="true"
         android:orientation="vertical"
-        android:weightSum="80">
+        android:weightSum="100">
 
         <include
             layout="@layout/content_path"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="40" />
+            android:layout_weight="50" />
 
         <include
             layout="@layout/content_export"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="40" />
+            android:layout_weight="50" />
 
     </LinearLayout>
 
