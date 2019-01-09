@@ -27,6 +27,7 @@
             android:layout_marginTop="16dp"
             style="@style/customButton"
             android:layout_width="0dp"
+            android:layout_height="60dp"
             android:layout_weight="36"
             android:onClick="shareCourse"
             android:text="@string/btn_share_course" />

@@ -14,7 +14,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:theme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:label="@string/activity_main_label">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -25,10 +26,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".FinishGracefully" />
-        <activity android:name=".ViewResultsActivity" />
-
-        <service android:name="radim.outfit.core.services.nanohttpd.NanoHttpdService" />
-
+        <activity android:name=".ViewResultsActivity"
+            android:label="@string/activity_view_results_label"/>
     </application>
 
 </manifest>

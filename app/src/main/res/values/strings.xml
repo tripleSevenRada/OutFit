@@ -2,6 +2,7 @@
     <string name="app_name">OUT FIT</string>
 
     <!-- activity_main.xml -->
+    <string name="activity_main_label">OUT FIT - Export</string>
     <string name="btn_directory_picker">Select export folder</string>
     <string name="root_folder_label">Export folder:</string>
     <string name="stats_label">Stats:</string>
@@ -10,7 +11,7 @@
     <string name="filename_hint">filename</string>
     <string name="btn_export">Export</string>
 
-    <!-- activity_finish_gracefully.xml default filename no extension-->
+    <!-- activity_finish_gracefully.xml -->
     <string name="what_happened">What happened:</string>
 
     <!-- MainActivity.kt DirectoryChooserConfig-->
@@ -56,6 +57,7 @@
     <string name="course_has_elevation_no">This course has no elevation data.</string>
 
     <!-- ViewResultsActivity -->
+    <string name="activity_view_results_label">OUT FIT - Exported</string>
     <string name="imgbtn_connectiq_desc">Start ConnectIQ</string>
     <string name="btn_share_course">Share course</string>
     <string name="nmb_trackpoints">Number of trackpoints:</string>
@@ -78,13 +80,13 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
  -->
 
 
-    <string name="install_needed_title">Install needed.</string>
+    <string name="install_needed_title">Component missing.</string>
     <string name="install_needed_message">Connect IQ platform depends on Garmin Connect Mobile. Install?</string>
     <string name="install_needed_yes">Install</string>
     <string name="install_needed_cancel">Cancel</string>
-    <string name="upgrade_needed_title">Upgrade needed.</string>
-    <string name="upgrade_needed_message">Garmin Connect Mobile is not up-to-date. Upgrade?</string>
-    <string name="upgrade_needed_yes">Upgrade</string>
+    <string name="upgrade_needed_title">Component old.</string>
+    <string name="upgrade_needed_message">Garmin Connect Mobile is not up-to-date. Update?</string>
+    <string name="upgrade_needed_yes">Update</string>
     <string name="upgrade_needed_cancel">Cancel</string>
 
 </resources>
