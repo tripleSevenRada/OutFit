@@ -16,7 +16,7 @@
             android:id="@+id/btnContentConnectIQ"
             android:layout_marginTop="16dp"
             android:layout_width="0dp"
-            android:layout_height="60dp"
+            android:layout_height="64dp"
             android:layout_weight="64"
             android:contentDescription="@string/imgbtn_connectiq_desc"
             android:src="@drawable/connect_iq_logo_black"
@@ -27,10 +27,40 @@
             android:layout_marginTop="16dp"
             style="@style/customButton"
             android:layout_width="0dp"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:layout_weight="36"
             android:onClick="shareCourse"
             android:text="@string/btn_share_course" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/contentConnectIQIndicator"
+        android:layout_marginTop="2dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/contentConnectIQIndicatorView1"
+            android:layout_marginStart="4dp"
+            style="@style/contentConnectIQIndicator"/>
+
+        <View
+            android:id="@+id/contentConnectIQIndicatorView2"
+            style="@style/contentConnectIQIndicator"/>
+
+        <View
+            android:id="@+id/contentConnectIQIndicatorView3"
+            style="@style/contentConnectIQIndicator"/>
+
+        <View
+            android:id="@+id/contentConnectIQIndicatorView4"
+            style="@style/contentConnectIQIndicator"/>
+
+        <View
+            android:id="@+id/contentConnectIQIndicatorView5"
+            style="@style/contentConnectIQIndicator"/>
 
     </LinearLayout>
 
@@ -66,7 +96,9 @@
                     style="@style/mainTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp" />
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/connectIQBlue"
+                    android:text="MockMockMock"/>
 
             </ScrollView>
 

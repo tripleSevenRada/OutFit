@@ -67,4 +67,16 @@
 
     </style>
 
+    <style name="contentConnectIQIndicator">
+        <item name="android:background">@color/connectIQBlue</item>
+        <item name="android:layout_width">18dp</item>
+        <item name="android:layout_height">2dp</item>
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:layout_marginStart">0dp</item>
+        <item name="android:layout_marginEnd">0dp</item>
+    </style>
+
 </resources>

@@ -9,7 +9,8 @@ import com.garmin.android.connectiq.IQDevice
 class ConnectIQButtonListener(
         private val ctx: AppCompatActivity,
         private val enableExecutiveUICallback: () -> Unit,
-        private val disableExecutiveUICallback: () -> Unit
+        private val disableExecutiveUICallback: () -> Unit,
+        private val bindNanoHTTPD: () -> Unit
 ) : View.OnClickListener {
 
     private val tag = "ConnIQList"
@@ -43,6 +44,7 @@ class ConnectIQButtonListener(
 
         // Called when the SDK has been successfully initialized
         override fun onSdkReady() {
+            bindNanoHTTPD()
             connectIQIsInitialized = true
             connectIQIsBeingInitialized = false
             // Do any post initialization setup.

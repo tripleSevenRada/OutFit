@@ -32,7 +32,6 @@ fun getListOfExistingFiles(paths: Array<String>): List<File> {
         }
     } catch (e: Exception) {
         Log.e("FileUtils", e.localizedMessage)
-
     }
     return files
 }

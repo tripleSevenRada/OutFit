@@ -20,4 +20,9 @@
 
     <color name="blueBackground">#eceef8</color>
 
+    <color name="garminBlue">#007CC3</color>
+    <color name="connectIQBlue">#109AD7</color>
+    <color name="connectIQLightGray">#BBBDBF</color>
+    <color name="connectIQDarkGray">#494848</color>
+
 </resources>

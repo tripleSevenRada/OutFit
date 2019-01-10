@@ -25,14 +25,15 @@ class ViewResultsActivity : AppCompatActivity() {
 
     private val tag = "VIEW_RESULTS"
     private lateinit var parcel: ViewResultsParcel
-
     private lateinit var connectIQButtonListener: ConnectIQButtonListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_results)
 
-        System.out.println("_________________________________StartViewResults")
+        contentConnectIQIndicatorView2.visibility = View.INVISIBLE
+        
+        disableExecutive()
         btnContentConnectIQ.elevation = 6F
         btnContentConnectIQShareCourse.elevation = 6F
 
@@ -42,8 +43,8 @@ class ViewResultsActivity : AppCompatActivity() {
         connectIQButtonListener = ConnectIQButtonListener(
                 this,
                 ::enableExecutive,
-                ::disableExecutive)
-
+                ::disableExecutive,
+                ::bindNanoHTTPD)
         btnContentConnectIQ.setOnClickListener(connectIQButtonListener)
 
         if (::parcel.isInitialized) {
@@ -55,20 +56,17 @@ class ViewResultsActivity : AppCompatActivity() {
             parcel.buffer.forEach { Log.i(tag, "Circular buffer of exports: $it") }
         }
 
-        val viewModel =
-                ViewModelProviders.of(this).get(ViewResultsActivityViewModel::class.java)
+        val viewModel = ViewModelProviders.of(this).get(ViewResultsActivityViewModel::class.java)
+
+        val dirToServeFromPath = "${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"
 
         if(!viewModel.fileOperationsDone) {
-            disableExecutive()
             var dirToServeCreated = false
             var dataToServeReady = true
             doAsync {
                 // prepare dir for LocalHostServer to serve from
                 try {
-                    val internalStorageDir = filesDir
-                    if (internalStorageDir != null) {
-                        val dirToServeFromPath =
-                                "${internalStorageDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"
+                    if (filesDir != null) {
                         val dirToServeFromFile = File(dirToServeFromPath)
                         dirToServeCreated = dirToServeFromFile.mkdir()
                         if (!emptyTarget(dirToServeFromPath)) dataToServeReady = false
@@ -85,20 +83,17 @@ class ViewResultsActivity : AppCompatActivity() {
                         Log.i(tag, "dataToServeReady: $dataToServeReady")
                     }
                     if (dataToServeReady) {
+                    	val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
+                    	displayServedFiles(afterFiles)
+                    	viewModel.fileOperationsDone = true
                         enableExecutive()
-                        System.out.println("_________________________________ViewResults init done")
                     } else {
                         FailGracefullyLauncher().failGracefully(this@ViewResultsActivity, "file operations")
                     }
-                    val afterFiles = getListOfFitFilesRecursively(
-                            File("${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"))
-                    displayServedFiles(afterFiles)
-                    viewModel.fileOperationsDone = true
                 }
             }
         } else {
-            val afterFiles = getListOfFitFilesRecursively(
-                    File("${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"))
+            val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
             displayServedFiles(afterFiles)
             enableExecutive()
         }
@@ -106,10 +101,17 @@ class ViewResultsActivity : AppCompatActivity() {
 
     private fun displayServedFiles(files: List<File>) {
         val builder = StringBuilder()
-        for (file in files) {
-            with(builder) {
-                append(file.name)
-                append("\n")
+        var counter = 0
+        with(builder) {
+            while (counter < files.size) {
+                append(files[counter].name)
+                counter++
+                if (counter < files.size) {
+                    append("  |  ")
+                    append(files[counter].name)
+                    append("\n")
+                    counter++
+                }
             }
         }
         tvContentConnectIQFilesData.text = builder.toString()
@@ -118,6 +120,10 @@ class ViewResultsActivity : AppCompatActivity() {
     // NANO HTTPD START
 
     private fun bindNanoHTTPD() {
+
+    }
+
+    private fun unbindNanoHTTPD() {
 
     }
 
@@ -143,7 +149,7 @@ class ViewResultsActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         //Log.i(tag, "onStop")
-
+        unbindNanoHTTPD()
         // listener keeps track if connected or not
         connectIQButtonListener.unregisterForDeviceEvents()
         connectIQButtonListener.shutdown()

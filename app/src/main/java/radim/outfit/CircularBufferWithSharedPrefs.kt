@@ -23,6 +23,10 @@ fun writeToCircularBuffer(value: String, prefs: SharedPreferences) {
     val pointer = prefs.getInt(CIRC_BUFF_POINTER_KEY, 0)
     val movedPointer = if (pointer == (CIRC_BUFF_SIZE - 1)) 0
     else pointer + 1
+    val prevPointer = if(pointer > 0) pointer - 1
+    else (CIRC_BUFF_SIZE - 1)
+    val prevValue = prefs.getString("$CIRC_BUFF_KEY_PREFIX$prevPointer", "")
+    if(value == prevValue) return
     with(prefs.edit()) {
         putString("$CIRC_BUFF_KEY_PREFIX$pointer", value)
         putInt(CIRC_BUFF_POINTER_KEY, movedPointer)
