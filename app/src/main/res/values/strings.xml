@@ -69,6 +69,7 @@
 
     <!-- FileProvider / ViewResultActivity-->
     <string name="share_single">Share course</string>
+    <string name="share_error">Error sharing course</string>
 
     <!--
 install_needed_title — Dialog title for when Garmin Connect Mobile needs to be installed.

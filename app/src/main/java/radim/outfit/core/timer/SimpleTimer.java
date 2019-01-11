@@ -21,7 +21,6 @@ public class SimpleTimer implements Timer {
                 if (again) {
                     synchronized (mHandler) {
                         if (mRunning) {
-                            System.out.println("............................................tick");
                             mHandler.postDelayed(mPostRunnable, mTimeOut);
                         }
                     }

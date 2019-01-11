@@ -10,6 +10,7 @@ import android.util.Log
 import android.widget.ProgressBar
 import kotlinx.android.synthetic.main.content_stats.*
 import android.view.View
+import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_view_results.*
 import kotlinx.android.synthetic.main.content_connectiq.*
 import org.jetbrains.anko.doAsync
@@ -18,10 +19,11 @@ import radim.outfit.core.copyFilesIntoTarget
 import radim.outfit.core.emptyTarget
 import radim.outfit.core.getListOfExistingFiles
 import radim.outfit.core.getListOfFitFilesRecursively
+import radim.outfit.core.timer.SimpleTimer
+import radim.outfit.core.timer.Timer
 import radim.outfit.core.viewmodels.ViewResultsActivityViewModel
 import java.io.File
 import kotlin.text.StringBuilder
-import java.util.ArrayList
 
 const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-from" // plus xml resources - paths...
 
@@ -89,8 +91,9 @@ class ViewResultsActivity : AppCompatActivity() {
                     }
                     if (dataToServeReady) {
                         val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
-                        systemOutServedFiles(afterFiles)//TODO
+                        if (DEBUG_MODE) systemOutServedFiles(afterFiles)
                         viewModel.fileOperationsDone = true
+                        viewModel.bufferHead = if (afterFiles.isNotEmpty()) afterFiles[0] else null
                         enableExecutive()
                     } else {
                         FailGracefullyLauncher().failGracefully(this@ViewResultsActivity, "file operations")
@@ -98,8 +101,10 @@ class ViewResultsActivity : AppCompatActivity() {
                 }
             }
         } else {
-            val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
-            systemOutServedFiles(afterFiles)//TODO
+            if (DEBUG_MODE) {
+                val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
+                systemOutServedFiles(afterFiles)
+            }
             enableExecutive()
         }
     }
@@ -134,26 +139,29 @@ class ViewResultsActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        //Log.i(tag, "onPause")
+        Log.i(tag, "onPause")
     }
 
     override fun onStop() {
         super.onStop()
-        //Log.i(tag, "onStop")
+        Log.i(tag, "onStop")
         unbindNanoHTTPD()
         // listener keeps track if connected or not
         connectIQButtonListener.unregisterForDeviceEvents()
         connectIQButtonListener.shutdown()
+        if(::indicatorIQTimer.isInitialized) {
+            indicatorIQTimer.stop()
+            if(::indicatorIQTimerCallback.isInitialized) indicatorIQTimerCallback.restart(View.VISIBLE)
+        }
+        enableExecutive()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        //Log.i(tag, "onDestroy")
+        Log.i(tag, "onDestroy")
     }
 
     // CALLBACKS START
-
-    // ENABLE / DISABLE EXECUTIVE UI
     private fun enableExecutive() {
         btnCCIQ.isEnabled = true; btnCCIQShareCourse.isEnabled = true; progressBarView.visibility = ProgressBar.INVISIBLE
     }
@@ -162,57 +170,71 @@ class ViewResultsActivity : AppCompatActivity() {
         btnCCIQ.isEnabled = false; btnCCIQShareCourse.isEnabled = false; progressBarView.visibility = ProgressBar.VISIBLE
     }
 
-    private fun onStartCIQInit() = let { btnCCIQ.isEnabled = false; progressBarView.visibility =ProgressBar.VISIBLE }
-    private fun onFinnishCIQInit() = let { btnCCIQ.isEnabled = false; progressBarView.visibility =ProgressBar.INVISIBLE }
-
-
+    private fun onStartCIQInit(){
+        btnCCIQ.isEnabled = false
+        progressBarView.visibility = ProgressBar.VISIBLE
+    }
+    private fun onFinnishCIQInit(){
+        btnCCIQ.isEnabled = false
+        progressBarView.visibility = ProgressBar.INVISIBLE
+        indicatorIQTimerCallback = IndicatorIQTimerCallback()
+        indicatorIQTimer = SimpleTimer(200, indicatorIQTimerCallback)
+        indicatorIQTimer.start()
+    }
     // CALLBACKS END
 
+    // INDICATOR START
+    private lateinit var indicatorIQTimer: SimpleTimer
+    private lateinit var indicatorIQTimerCallback: IndicatorIQTimerCallback
+    inner class IndicatorIQTimerCallback: Timer.TimerCallback {
+        private val views = listOf<View>(
+                CCIQIndicatorView1,// 0
+                CCIQIndicatorView2,
+                CCIQIndicatorView3,
+                CCIQIndicatorView4,
+                CCIQIndicatorView5)// 4
+        private var pointer = 0
+        override fun tick(): Boolean {
+            if(pointer == 0) restart(View.INVISIBLE)
+            views[pointer].visibility = View.VISIBLE
+            pointer = getIncreasing(pointer)
+            //views[pointer].visibility = View.INVISIBLE
+            //views[getPrevious(pointer)].visibility = View.VISIBLE
+            //pointer = getNext(pointer)
+            return true
+        }
+        private fun getNext(pointer: Int): Int = if(pointer < (views.size - 1)) pointer + 1 else 0
+        private fun getPrevious(pointer: Int): Int = if(pointer > 0) pointer - 1 else (views.size - 1)
+        private fun getIncreasing(pointer: Int): Int = if(pointer < (views.size - 1)) pointer + 1 else 0
+        fun restart(visibilityRequired: Int) = let{for (i in 0 .. views.lastIndex)
+            views[i].visibility = visibilityRequired; pointer = 0}
+    }
+    // INDICATOR END
+
     fun shareCourse(v: View?) {
-        Log.i(tag, "shareCourse")
-        val dirToServeFrom = File(filesDir, NANOHTTPD_SERVE_FROM_DIR_NAME)
-        val uris = mutableListOf<Uri?>()
-        val fitFilesToServe = getListOfFitFilesRecursively(dirToServeFrom)
-        fitFilesToServe.forEach {
-            val fileUri: Uri? = try {
+        val viewModel = ViewModelProviders.of(this).get(ViewResultsActivityViewModel::class.java)
+        val fileToShare: File? = viewModel.bufferHead
+        val uriToShare: Uri? = if (fileToShare != null) {
+            try {
                 FileProvider.getUriForFile(
                         this@ViewResultsActivity,
                         "radim.outfit.fileprovider",
-                        it)
+                        fileToShare)
             } catch (e: IllegalArgumentException) {
-                Log.e("File Selector",
-                        "The selected file can't be shared: $it")
+                Log.e(tag, "The selected file can't be shared. ${e.localizedMessage}")
                 null
             }
-            if (fileUri != null) uris.add(fileUri)
-        }
-        //TODO Total commander
-        val launchIntent = Intent()
-        val urisAList = ArrayList<Uri?>()
-        if(uris[0] != null)urisAList.add(uris[0])
-        Log.i("uris", urisAList.toString())
-        launchIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        launchIntent.type = MIME_FIT
-        launchIntent.action = Intent.ACTION_SEND
-        launchIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, urisAList)
-        startActivity(Intent.createChooser(launchIntent, getString("share_single")))
-
-
-/*        Log.i("URIS", uris.toString())
-        if (uris.size > 1) {
-            val urisAList = ArrayList<Uri>(uris)
-            launchIntent.action = Intent.ACTION_SEND_MULTIPLE
-            launchIntent.type = MIME_FIT
-            launchIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, urisAList)
-            launchIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-            startActivity(Intent.createChooser(launchIntent, getString("share_multiple")))
-        } else if (uris.size == 1 && uris[0] != null) {
-            val urisAList = ArrayList<Uri>(uris)
-            launchIntent.action = Intent.ACTION_SEND
-            launchIntent.type = MIME_FIT
-            launchIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, urisAList)
-            launchIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        } else null
+        if (uriToShare != null) {
+            val launchIntent = Intent(Intent.ACTION_SEND)
+            with(launchIntent) {
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                type = MIME_FIT
+                putExtra(Intent.EXTRA_STREAM, uriToShare)
+            }
             startActivity(Intent.createChooser(launchIntent, getString("share_single")))
-        }*/
+        } else {
+            Toast.makeText(this, getString("share_error"), Toast.LENGTH_LONG).show()
+        }
     }
 }
