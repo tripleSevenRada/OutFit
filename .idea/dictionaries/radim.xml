@@ -2,12 +2,14 @@
   <dictionary name="radim">
     <words>
       <w>connectiq</w>
+      <w>fileprovider</w>
       <w>garmin</w>
       <w>httpd</w>
       <w>imgbtn</w>
       <w>nanohttpd</w>
       <w>parms</w>
       <w>pojo</w>
+      <w>radim</w>
       <w>waypoints</w>
     </words>
   </dictionary>

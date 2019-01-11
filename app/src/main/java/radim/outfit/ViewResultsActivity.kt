@@ -1,8 +1,11 @@
 package radim.outfit
 
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Intent
+import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.content.FileProvider
 import android.util.Log
 import android.widget.ProgressBar
 import kotlinx.android.synthetic.main.content_connectiq.*
@@ -18,8 +21,9 @@ import radim.outfit.core.getListOfFitFilesRecursively
 import radim.outfit.core.viewmodels.ViewResultsActivityViewModel
 import java.io.File
 import kotlin.text.StringBuilder
+import java.util.ArrayList
 
-const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-from"
+const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-from" // plus xml resources - paths...
 
 class ViewResultsActivity : AppCompatActivity() {
 
@@ -31,8 +35,8 @@ class ViewResultsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_results)
 
-        contentConnectIQIndicatorView2.visibility = View.INVISIBLE
-        
+        supportActionBar?.title = getString("activity_view_results_label")
+
         disableExecutive()
         btnContentConnectIQ.elevation = 6F
         btnContentConnectIQShareCourse.elevation = 6F
@@ -44,7 +48,8 @@ class ViewResultsActivity : AppCompatActivity() {
                 this,
                 ::enableExecutive,
                 ::disableExecutive,
-                ::bindNanoHTTPD)
+                ::bindNanoHTTPD,
+                ::disableConnectIQUI)
         btnContentConnectIQ.setOnClickListener(connectIQButtonListener)
 
         if (::parcel.isInitialized) {
@@ -60,7 +65,7 @@ class ViewResultsActivity : AppCompatActivity() {
 
         val dirToServeFromPath = "${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"
 
-        if(!viewModel.fileOperationsDone) {
+        if (!viewModel.fileOperationsDone) {
             var dirToServeCreated = false
             var dataToServeReady = true
             doAsync {
@@ -83,9 +88,9 @@ class ViewResultsActivity : AppCompatActivity() {
                         Log.i(tag, "dataToServeReady: $dataToServeReady")
                     }
                     if (dataToServeReady) {
-                    	val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
-                    	displayServedFiles(afterFiles)
-                    	viewModel.fileOperationsDone = true
+                        val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
+                        displayServedFiles(afterFiles)
+                        viewModel.fileOperationsDone = true
                         enableExecutive()
                     } else {
                         FailGracefullyLauncher().failGracefully(this@ViewResultsActivity, "file operations")
@@ -150,6 +155,7 @@ class ViewResultsActivity : AppCompatActivity() {
         super.onStop()
         //Log.i(tag, "onStop")
         unbindNanoHTTPD()
+        enableConnectIQUI()
         // listener keeps track if connected or not
         connectIQButtonListener.unregisterForDeviceEvents()
         connectIQButtonListener.shutdown()
@@ -171,10 +177,57 @@ class ViewResultsActivity : AppCompatActivity() {
         btnContentConnectIQShareCourse.isEnabled = false; btnContentConnectIQ.isEnabled = false; progressBarView.visibility = ProgressBar.VISIBLE
     }
 
+    private fun enableConnectIQUI() = let { btnContentConnectIQ.isEnabled = true }
+    private fun disableConnectIQUI() = let { btnContentConnectIQ.isEnabled = false }
+
+
     // CALLBACKS END
 
-    fun shareCourse(v: View?) {
-        //Log.i(tag, "shareCourse")
-    }
+    fun shareCourses(v: View?) {
+        Log.i(tag, "shareCourse")
+        val dirToServeFrom = File(filesDir, NANOHTTPD_SERVE_FROM_DIR_NAME)
+        val uris = mutableListOf<Uri?>()
+        val fitFilesToServe = getListOfFitFilesRecursively(dirToServeFrom)
+        fitFilesToServe.forEach {
+            val fileUri: Uri? = try {
+                FileProvider.getUriForFile(
+                        this@ViewResultsActivity,
+                        "radim.outfit.fileprovider",
+                        it)
+            } catch (e: IllegalArgumentException) {
+                Log.e("File Selector",
+                        "The selected file can't be shared: $it")
+                null
+            }
+            if (fileUri != null) uris.add(fileUri)
+        }
+        //TODO Total commander
+        val launchIntent = Intent()
+        val urisAList = ArrayList<Uri?>()
+        if(uris[0] != null)urisAList.add(uris[0])
+        Log.i("uris", urisAList.toString())
+        launchIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        launchIntent.type = MIME_FIT
+        launchIntent.action = Intent.ACTION_SEND
+        launchIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, urisAList)
+        startActivity(Intent.createChooser(launchIntent, getString("share_single")))
 
+
+/*        Log.i("URIS", uris.toString())
+        if (uris.size > 1) {
+            val urisAList = ArrayList<Uri>(uris)
+            launchIntent.action = Intent.ACTION_SEND_MULTIPLE
+            launchIntent.type = MIME_FIT
+            launchIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, urisAList)
+            launchIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            startActivity(Intent.createChooser(launchIntent, getString("share_multiple")))
+        } else if (uris.size == 1 && uris[0] != null) {
+            val urisAList = ArrayList<Uri>(uris)
+            launchIntent.action = Intent.ACTION_SEND
+            launchIntent.type = MIME_FIT
+            launchIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, urisAList)
+            launchIntent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            startActivity(Intent.createChooser(launchIntent, getString("share_single")))
+        }*/
+    }
 }

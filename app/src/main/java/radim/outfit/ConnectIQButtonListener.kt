@@ -10,7 +10,8 @@ class ConnectIQButtonListener(
         private val ctx: AppCompatActivity,
         private val enableExecutiveUICallback: () -> Unit,
         private val disableExecutiveUICallback: () -> Unit,
-        private val bindNanoHTTPD: () -> Unit
+        private val bindNanoHTTPD: () -> Unit,
+        private val disableConnectIQUI: () -> Unit
 ) : View.OnClickListener {
 
     private val tag = "ConnIQList"
@@ -26,7 +27,7 @@ class ConnectIQButtonListener(
         if (!connectIQIsInitialized &&
                 !connectIQIsBeingInitialized) {
             connectIQIsBeingInitialized = true
-            disableExecutiveUICallback
+            disableExecutiveUICallback()
             Log.i(tag, "init")
             connectIQ.initialize(ctx, true, connectIQListener)
         }
@@ -40,6 +41,7 @@ class ConnectIQButtonListener(
             // the IQSdkErrorStatus value for more information regarding the failure.
             val errorMessage = p0?.toString() ?: "ConnectIQ platform init error"
             Log.e(tag, "onInitializeError: $errorMessage")
+            FailGracefullyLauncher().failGracefully(ctx, errorMessage)
         }
 
         // Called when the SDK has been successfully initialized
@@ -63,7 +65,8 @@ class ConnectIQButtonListener(
                     if (it != null) connectIQ.registerForDeviceEvents(it, DeviceEventListener())
                 }
             }
-            enableExecutiveUICallback
+            enableExecutiveUICallback()
+            disableConnectIQUI()
         }
 
         // Called when the SDK has been shut down

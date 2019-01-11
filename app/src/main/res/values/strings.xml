@@ -57,9 +57,9 @@
     <string name="course_has_elevation_no">This course has no elevation data.</string>
 
     <!-- ViewResultsActivity -->
-    <string name="activity_view_results_label">OUT FIT - Exported</string>
+    <string name="activity_view_results_label">OUT FIT - Share</string>
     <string name="imgbtn_connectiq_desc">Start ConnectIQ</string>
-    <string name="btn_share_course">Share course</string>
+    <string name="btn_share_course">Share courses</string>
     <string name="nmb_trackpoints">Number of trackpoints:</string>
     <string name="nmb_coursepoints">Number of coursepoints:</string>
     <string name="connected_devices_label">Connected devices:</string>
@@ -67,6 +67,10 @@
 
     <!-- Locus dir pick-->
     <string name="pick_dir_message">Select export folder</string>
+
+    <!-- FileProvider / ViewResultActivity-->
+    <string name="share_single">Share single course</string>
+    <string name="share_multiple">Share multiple courses</string>
 
     <!--
 install_needed_title — Dialog title for when Garmin Connect Mobile needs to be installed.

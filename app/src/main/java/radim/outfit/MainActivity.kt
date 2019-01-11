@@ -120,6 +120,8 @@ class MainActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        supportActionBar?.title = getString("activity_main_label")
+
         tvStats?.text = tvStatsFiller // do not flick or "inflate" visibly
 
         val viewModel =
