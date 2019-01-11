@@ -1,4 +1,4 @@
-package radim.outfit
+package radim.outfit.core.share.work
 
 import android.content.SharedPreferences
 

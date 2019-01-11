@@ -3,12 +3,12 @@ package radim.outfit
 import android.content.Context
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4
-import android.util.Log
 
 import org.junit.Test
 import org.junit.runner.RunWith
 
 import org.junit.Assert.*
+import radim.outfit.core.share.work.*
 
 /**
  * Instrumented test, which will execute on an Android device.

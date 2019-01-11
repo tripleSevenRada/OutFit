@@ -11,8 +11,6 @@ import radim.outfit.debugdumps.FitSDKDebugDumps.Dumps
 import java.io.File
 import com.garmin.fit.DateTime
 import radim.outfit.DEBUG_MODE
-import radim.outfit.core.FILENAME_RESERVED_CHARS
-import radim.outfit.core.FilenameCharsFilter
 import radim.outfit.debugasserts.*
 import radim.outfit.getString
 import java.lang.RuntimeException

@@ -1,4 +1,4 @@
-package radim.outfit.core
+package radim.outfit.core.export.work
 
 import android.text.InputFilter
 import android.text.SpannableString

@@ -25,13 +25,14 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_export.*
 import kotlinx.android.synthetic.main.content_path.*
 import locus.api.android.utils.LocusInfo
-import radim.outfit.core.Stats
+import radim.outfit.core.export.work.Stats
 import radim.outfit.core.export.logic.*
 import locus.api.android.ActionTools
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import radim.outfit.core.FilenameCharsFilter
-import radim.outfit.core.getFilename
+import radim.outfit.core.export.work.FilenameCharsFilter
+import radim.outfit.core.export.work.getFilename
+import radim.outfit.core.share.work.*
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
 import radim.outfit.core.viewmodels.MainActivityViewModel

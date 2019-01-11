@@ -5,7 +5,6 @@ import com.garmin.fit.*
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Location
 import locus.api.objects.extra.Track
-import radim.outfit.core.FilenameCharsFilter
 import radim.outfit.core.export.work.locusapiextensions.*
 import java.util.*
 

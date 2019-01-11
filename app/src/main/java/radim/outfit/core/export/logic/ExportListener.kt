@@ -9,7 +9,7 @@ import locus.api.objects.extra.Track
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.export.work.locusapiextensions.isTimestamped
-import radim.outfit.core.getFilename
+import radim.outfit.core.export.work.getFilename
 import radim.outfit.core.viewmodels.MainActivityViewModel
 import radim.outfit.getString
 import java.io.File

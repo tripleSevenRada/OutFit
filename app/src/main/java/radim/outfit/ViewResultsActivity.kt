@@ -11,14 +11,17 @@ import android.widget.ProgressBar
 import kotlinx.android.synthetic.main.content_stats.*
 import android.view.View
 import android.widget.Toast
+import com.garmin.android.connectiq.IQDevice
 import kotlinx.android.synthetic.main.activity_view_results.*
 import kotlinx.android.synthetic.main.content_connectiq.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import radim.outfit.core.copyFilesIntoTarget
-import radim.outfit.core.emptyTarget
-import radim.outfit.core.getListOfExistingFiles
-import radim.outfit.core.getListOfFitFilesRecursively
+import radim.outfit.core.share.work.copyFilesIntoTarget
+import radim.outfit.core.share.work.emptyTarget
+import radim.outfit.core.share.work.getListOfExistingFiles
+import radim.outfit.core.share.work.getListOfFitFilesRecursively
+import radim.outfit.core.share.logic.ConnectIQButtonListener
+import radim.outfit.core.share.server.MIME_FIT
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
 import radim.outfit.core.viewmodels.ViewResultsActivityViewModel
@@ -50,6 +53,7 @@ class ViewResultsActivity : AppCompatActivity() {
                 this,
                 ::onStartCIQInit,
                 ::onFinnishCIQInit,
+                ::onDeviceEvent,
                 ::bindNanoHTTPD
         )
         btnCCIQ.setOnClickListener(connectIQButtonListener)
@@ -114,7 +118,6 @@ class ViewResultsActivity : AppCompatActivity() {
     }
 
     // NANO HTTPD START
-
     private fun bindNanoHTTPD() {
 
     }
@@ -122,25 +125,11 @@ class ViewResultsActivity : AppCompatActivity() {
     private fun unbindNanoHTTPD() {
 
     }
-
     // NANO HTTPD END
 
-    override fun onStart() {
-        super.onStart()
-        //Log.i(tag, "onStart")
-
-    }
-
-    override fun onResume() {
-        super.onResume()
-        //Log.i(tag, "onResume")
-
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.i(tag, "onPause")
-    }
+    //override fun onStart() { super.onStart() }
+    //override fun onResume() { super.onResume() }
+    //override fun onPause() { super.onPause() }
 
     override fun onStop() {
         super.onStop()
@@ -149,9 +138,9 @@ class ViewResultsActivity : AppCompatActivity() {
         // listener keeps track if connected or not
         connectIQButtonListener.unregisterForDeviceEvents()
         connectIQButtonListener.shutdown()
-        if(::indicatorIQTimer.isInitialized) {
+        if (::indicatorIQTimer.isInitialized) {
             indicatorIQTimer.stop()
-            if(::indicatorIQTimerCallback.isInitialized) indicatorIQTimerCallback.restart(View.VISIBLE)
+            if (::indicatorIQTimerCallback.isInitialized) indicatorIQTimerCallback.restart(View.VISIBLE)
         }
         enableExecutive()
     }
@@ -163,30 +152,42 @@ class ViewResultsActivity : AppCompatActivity() {
 
     // CALLBACKS START
     private fun enableExecutive() {
-        btnCCIQ.isEnabled = true; btnCCIQShareCourse.isEnabled = true; progressBarView.visibility = ProgressBar.INVISIBLE
+        btnCCIQ.isEnabled = true
+        btnCCIQShareCourse.isEnabled = true
+        progressBarView.visibility = ProgressBar.INVISIBLE
     }
 
     private fun disableExecutive() {
-        btnCCIQ.isEnabled = false; btnCCIQShareCourse.isEnabled = false; progressBarView.visibility = ProgressBar.VISIBLE
+        btnCCIQ.isEnabled = false
+        btnCCIQShareCourse.isEnabled = false
+        progressBarView.visibility = ProgressBar.VISIBLE
     }
 
-    private fun onStartCIQInit(){
+    private fun onStartCIQInit() {
         btnCCIQ.isEnabled = false
         progressBarView.visibility = ProgressBar.VISIBLE
     }
-    private fun onFinnishCIQInit(){
+
+    private fun onFinnishCIQInit() {
         btnCCIQ.isEnabled = false
         progressBarView.visibility = ProgressBar.INVISIBLE
         indicatorIQTimerCallback = IndicatorIQTimerCallback()
-        indicatorIQTimer = SimpleTimer(200, indicatorIQTimerCallback)
+        indicatorIQTimer = SimpleTimer(220, indicatorIQTimerCallback)
         indicatorIQTimer.start()
+    }
+
+    private val deviceLogBuilder = StringBuilder()
+    private fun onDeviceEvent(device: IQDevice, message: String){
+        deviceLogBuilder.append("${device.deviceIdentifier} ${device.friendlyName} ${device.status} $message\n")
+        tvCCIQDevicesData.text = deviceLogBuilder.toString()
     }
     // CALLBACKS END
 
     // INDICATOR START
     private lateinit var indicatorIQTimer: SimpleTimer
     private lateinit var indicatorIQTimerCallback: IndicatorIQTimerCallback
-    inner class IndicatorIQTimerCallback: Timer.TimerCallback {
+
+    inner class IndicatorIQTimerCallback : Timer.TimerCallback {
         private val views = listOf<View>(
                 CCIQIndicatorView1,// 0
                 CCIQIndicatorView2,
@@ -195,19 +196,25 @@ class ViewResultsActivity : AppCompatActivity() {
                 CCIQIndicatorView5)// 4
         private var pointer = 0
         override fun tick(): Boolean {
-            if(pointer == 0) restart(View.INVISIBLE)
+            //increasing style
+            if (pointer == 0) restart(View.INVISIBLE)
             views[pointer].visibility = View.VISIBLE
             pointer = getIncreasing(pointer)
+            //progress bar style
             //views[pointer].visibility = View.INVISIBLE
             //views[getPrevious(pointer)].visibility = View.VISIBLE
             //pointer = getNext(pointer)
             return true
         }
-        private fun getNext(pointer: Int): Int = if(pointer < (views.size - 1)) pointer + 1 else 0
-        private fun getPrevious(pointer: Int): Int = if(pointer > 0) pointer - 1 else (views.size - 1)
-        private fun getIncreasing(pointer: Int): Int = if(pointer < (views.size - 1)) pointer + 1 else 0
-        fun restart(visibilityRequired: Int) = let{for (i in 0 .. views.lastIndex)
-            views[i].visibility = visibilityRequired; pointer = 0}
+
+        //private fun getNext(pointer: Int): Int = if(pointer < (views.size - 1)) pointer + 1 else 0
+        //private fun getPrevious(pointer: Int): Int = if(pointer > 0) pointer - 1 else (views.size - 1)
+        private fun getIncreasing(pointer: Int): Int = if (pointer < (views.size - 1)) pointer + 1 else 0
+
+        fun restart(visibilityRequired: Int) {
+            for (i in 0..views.lastIndex)
+                views[i].visibility = visibilityRequired; pointer = 0
+        }
     }
     // INDICATOR END
 

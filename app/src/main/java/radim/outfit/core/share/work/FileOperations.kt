@@ -1,4 +1,4 @@
-package radim.outfit.core
+package radim.outfit.core.share.work
 
 import android.util.Log
 import java.io.File
