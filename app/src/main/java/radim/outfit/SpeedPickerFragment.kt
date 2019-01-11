@@ -35,41 +35,6 @@ class SpeedPickerFragment : DialogFragment() {
     private lateinit var actionProvider: OkActionProvider
     private lateinit var lastSelectedProvider: LastSelectedValuesProvider
 
-    override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-    ): View {
-        // Inflate the layout for this fragment
-        val view: View = inflater.inflate(R.layout.speed_picker_fragment, container, false)
-        val np: NumberPicker = view.findViewById(R.id.speedFragNP)
-        np.minValue = SPEED_MIN
-        np.maxValue = SPEED_MAX
-        np.wrapSelectorWheel = false
-        val buttKmh: RadioButton = view.findViewById(R.id.speedFragButtonKmh)
-        val buttMph: RadioButton = view.findViewById(R.id.speedFragButtonMph)
-        if (::lastSelectedProvider.isInitialized) {
-            np.value = lastSelectedProvider.getSpeed()
-            np.setOnValueChangedListener { _, _, newVal -> lastSelectedProvider.setSpeed(newVal) }
-            val lastSelectedButton: RadioButton = view.findViewById(lastSelectedProvider.getUnitsButtonId())
-            lastSelectedButton.isChecked = true
-            buttKmh.setOnClickListener { lastSelectedProvider.setUnitsButtonId(R.id.speedFragButtonKmh) }
-            buttMph.setOnClickListener { lastSelectedProvider.setUnitsButtonId(R.id.speedFragButtonMph) }
-        } else Log.e("SpeedFrag","lateinit error 1")
-        val buttonOK: Button = view.findViewById(R.id.speedFragButtonOk)
-        buttonOK.setOnClickListener {
-            val value = np.value.toFloat()
-            val valueMperS = if(buttKmh.isChecked) value / 3.6F
-            else value / 2.237F
-            if (::actionProvider.isInitialized) {
-                val action = actionProvider.getOkAction()
-                action.invoke(valueMperS)
-            } else Log.e("SpeedFrag","lateinit error 2")
-            dialog.dismiss()
-        }
-        return view
-    }
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is Activity) {
@@ -78,5 +43,45 @@ class SpeedPickerFragment : DialogFragment() {
         } else {
             Log.e("SpeedFrag", "Activity expected, called by $context instead")
         }
+    }
+
+    override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+    ): View {
+        // Inflate the layout for this fragment
+        val mView = inflater.inflate(R.layout.speed_picker_fragment, container, false)
+        if(::actionProvider.isInitialized && ::lastSelectedProvider.isInitialized){
+            val np: NumberPicker? = mView?.findViewById(R.id.speedFragNP)
+            np?.minValue = SPEED_MIN
+            np?.maxValue = SPEED_MAX
+            np?.wrapSelectorWheel = false
+            val buttKmh: RadioButton? = mView?.findViewById(R.id.speedFragButtonKmh)
+            val buttMph: RadioButton? = mView?.findViewById(R.id.speedFragButtonMph)
+            if (::lastSelectedProvider.isInitialized) {
+                np?.value = lastSelectedProvider.getSpeed()
+                np?.setOnValueChangedListener { _, _, newVal -> lastSelectedProvider.setSpeed(newVal) }
+                val lastSelectedButton: RadioButton? = mView?.findViewById(lastSelectedProvider.getUnitsButtonId())
+                lastSelectedButton?.isChecked = true
+                buttKmh?.setOnClickListener { lastSelectedProvider.setUnitsButtonId(R.id.speedFragButtonKmh) }
+                buttMph?.setOnClickListener { lastSelectedProvider.setUnitsButtonId(R.id.speedFragButtonMph) }
+            } else Log.e("SpeedFrag","lateinit error 1")
+            val buttonOK: Button? = mView?.findViewById(R.id.speedFragButtonOk)
+            buttonOK?.setOnClickListener {
+                val value: Float = np?.value?.toFloat()?: SPEED_DEFAULT.toFloat()
+                val valueMperS: Float = if( buttKmh != null && buttKmh.isChecked) value / 3.6F
+                else if(buttMph != null && buttMph.isChecked) value / 2.237F
+                else value / 3.6F
+                if (::actionProvider.isInitialized) {
+                    val action = actionProvider.getOkAction()
+                    action.invoke(valueMperS)
+                } else Log.e("SpeedFrag","lateinit error 2")
+                dialog.dismiss()
+            }
+        } else {
+            Log.e("SpeedPickerFragment", "init error")
+        }
+        return mView
     }
 }

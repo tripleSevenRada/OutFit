@@ -58,19 +58,17 @@
 
     <!-- ViewResultsActivity -->
     <string name="activity_view_results_label">OUT FIT - Share</string>
+    <string name="btn_share_course">Share course</string>
     <string name="imgbtn_connectiq_desc">Start ConnectIQ</string>
-    <string name="btn_share_course">Share courses</string>
     <string name="nmb_trackpoints">Number of trackpoints:</string>
     <string name="nmb_coursepoints">Number of coursepoints:</string>
     <string name="connected_devices_label">Connected devices:</string>
-    <string name="served_files_label">Files served to them:</string>
 
     <!-- Locus dir pick-->
     <string name="pick_dir_message">Select export folder</string>
 
     <!-- FileProvider / ViewResultActivity-->
-    <string name="share_single">Share single course</string>
-    <string name="share_multiple">Share multiple courses</string>
+    <string name="share_single">Share course</string>
 
     <!--
 install_needed_title — Dialog title for when Garmin Connect Mobile needs to be installed.
@@ -82,7 +80,6 @@ upgrade_needed_message — Dialog message for when Garmin Connect Mobile needs t
 upgrade_needed_yes — Button text for user to confirm they want to visit the Google Play Store to upgrade Garmin Connect Mobile.
 upgrade_needed_cancel — Button text for a user to cancel the dialog and not upgrade Garmin Connect Mobile.
  -->
-
 
     <string name="install_needed_title">Component missing.</string>
     <string name="install_needed_message">Connect IQ platform depends on Garmin Connect Mobile. Install?</string>

@@ -5,135 +5,87 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/llContentConnectIQInnerHorButtons"
+    <Button
+        android:id="@+id/btnCCIQShareCourse"
+        style="@style/customButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:weightSum="100">
+        android:layout_marginTop="16dp"
+        android:onClick="shareCourse"
+        android:text="@string/btn_share_course" />
 
-        <ImageButton
-            android:id="@+id/btnContentConnectIQ"
-            android:layout_marginTop="16dp"
-            android:layout_width="0dp"
-            android:layout_height="64dp"
-            android:layout_weight="64"
-            android:contentDescription="@string/imgbtn_connectiq_desc"
-            android:src="@drawable/connect_iq_logo_black"
-            android:scaleType="centerInside"/>
+    <View
+        android:id="@+id/CCIQDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="?android:attr/listDivider" />
 
-        <Button
-            android:id="@+id/btnContentConnectIQShareCourse"
-            android:layout_marginTop="16dp"
-            style="@style/customButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="36"
-            android:onClick="shareCourses"
-            android:text="@string/btn_share_course" />
+    <ImageButton
+        android:id="@+id/btnCCIQ"
+        android:layout_width="match_parent"
+        style="@style/customButton"
+        android:layout_height="60dp"
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/imgbtn_connectiq_desc"
+        android:scaleType="centerInside"
+        android:src="@drawable/connect_iq_logo_black" />
 
-    </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/contentConnectIQIndicator"
+        android:id="@+id/llCCIQIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <View
-            android:id="@+id/contentConnectIQIndicatorView1"
-            android:layout_marginStart="4dp"
-            style="@style/contentConnectIQIndicator"/>
+            android:id="@+id/CCIQIndicatorView1"
+            style="@style/contentConnectIQIndicator"
+            android:layout_marginStart="4dp" />
 
         <View
-            android:id="@+id/contentConnectIQIndicatorView2"
-            style="@style/contentConnectIQIndicator"/>
+            android:id="@+id/CCIQIndicatorView2"
+            style="@style/contentConnectIQIndicator" />
 
         <View
-            android:id="@+id/contentConnectIQIndicatorView3"
-            style="@style/contentConnectIQIndicator"/>
+            android:id="@+id/CCIQIndicatorView3"
+            style="@style/contentConnectIQIndicator" />
 
         <View
-            android:id="@+id/contentConnectIQIndicatorView4"
-            style="@style/contentConnectIQIndicator"/>
+            android:id="@+id/CCIQIndicatorView4"
+            style="@style/contentConnectIQIndicator" />
 
         <View
-            android:id="@+id/contentConnectIQIndicatorView5"
-            style="@style/contentConnectIQIndicator"/>
+            android:id="@+id/CCIQIndicatorView5"
+            style="@style/contentConnectIQIndicator" />
 
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/llContentConnectIQParentOfScrollViewsAndLabels"
+        android:id="@+id/llCCIQGroupDevices"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:weightSum="100">
+        android:layout_height="0dp"
+        android:layout_weight="32"
+        android:orientation="vertical">
 
-        <LinearLayout
-            android:id="@+id/llContentConnectIQScrollGroupDevices"
+        <TextView
+            android:id="@+id/tvCCIQDevicesLabel"
+            style="@style/labelTextView"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="32"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/connected_devices_label"
+            android:textColor="@color/black" />
 
-            <TextView
-                android:id="@+id/tvContentConnectIQDevicesLabel"
-                style="@style/labelTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/connected_devices_label" />
-
-            <ScrollView
-                android:id="@+id/svContentConnectIQDevices"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <TextView
-                    android:id="@+id/tvContentConnectIQDevicesData"
-                    style="@style/mainTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/connectIQBlue"
-                    android:text="MockMockMock"/>
-
-            </ScrollView>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/llContentConnectIQScrollGroupFiles"
+        <TextView
+            android:id="@+id/tvCCIQDevicesData"
+            style="@style/mainTextView"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="68"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tvContentConnectIQFilesLabel"
-                style="@style/labelTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/served_files_label" />
-
-            <ScrollView
-                android:id="@+id/svContentConnectIQFiles"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <TextView
-                    android:id="@+id/tvContentConnectIQFilesData"
-                    style="@style/mainTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp" />
-
-            </ScrollView>
-
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="MockMockMock"
+            android:textColor="@color/connectIQBlue" />
 
     </LinearLayout>
 

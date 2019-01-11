@@ -8,10 +8,10 @@ import android.os.Bundle
 import android.support.v4.content.FileProvider
 import android.util.Log
 import android.widget.ProgressBar
-import kotlinx.android.synthetic.main.content_connectiq.*
 import kotlinx.android.synthetic.main.content_stats.*
 import android.view.View
 import kotlinx.android.synthetic.main.activity_view_results.*
+import kotlinx.android.synthetic.main.content_connectiq.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.copyFilesIntoTarget
@@ -37,20 +37,20 @@ class ViewResultsActivity : AppCompatActivity() {
 
         supportActionBar?.title = getString("activity_view_results_label")
 
+        btnCCIQ.elevation = 4F
+
         disableExecutive()
-        btnContentConnectIQ.elevation = 6F
-        btnContentConnectIQShareCourse.elevation = 6F
 
         if (intent.hasExtra(EXTRA_MESSAGE_VIEW_RESULTS))
             parcel = intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
 
         connectIQButtonListener = ConnectIQButtonListener(
                 this,
-                ::enableExecutive,
-                ::disableExecutive,
-                ::bindNanoHTTPD,
-                ::disableConnectIQUI)
-        btnContentConnectIQ.setOnClickListener(connectIQButtonListener)
+                ::onStartCIQInit,
+                ::onFinnishCIQInit,
+                ::bindNanoHTTPD
+        )
+        btnCCIQ.setOnClickListener(connectIQButtonListener)
 
         if (::parcel.isInitialized) {
             val messagesAsStringBuilder = StringBuilder()
@@ -89,7 +89,7 @@ class ViewResultsActivity : AppCompatActivity() {
                     }
                     if (dataToServeReady) {
                         val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
-                        displayServedFiles(afterFiles)
+                        systemOutServedFiles(afterFiles)//TODO
                         viewModel.fileOperationsDone = true
                         enableExecutive()
                     } else {
@@ -99,27 +99,13 @@ class ViewResultsActivity : AppCompatActivity() {
             }
         } else {
             val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
-            displayServedFiles(afterFiles)
+            systemOutServedFiles(afterFiles)//TODO
             enableExecutive()
         }
     }
 
-    private fun displayServedFiles(files: List<File>) {
-        val builder = StringBuilder()
-        var counter = 0
-        with(builder) {
-            while (counter < files.size) {
-                append(files[counter].name)
-                counter++
-                if (counter < files.size) {
-                    append("  |  ")
-                    append(files[counter].name)
-                    append("\n")
-                    counter++
-                }
-            }
-        }
-        tvContentConnectIQFilesData.text = builder.toString()
+    private fun systemOutServedFiles(files: List<File>) {
+        files.forEach { System.out.println("SERVED QUEUE: $it") }
     }
 
     // NANO HTTPD START
@@ -155,7 +141,6 @@ class ViewResultsActivity : AppCompatActivity() {
         super.onStop()
         //Log.i(tag, "onStop")
         unbindNanoHTTPD()
-        enableConnectIQUI()
         // listener keeps track if connected or not
         connectIQButtonListener.unregisterForDeviceEvents()
         connectIQButtonListener.shutdown()
@@ -170,20 +155,20 @@ class ViewResultsActivity : AppCompatActivity() {
 
     // ENABLE / DISABLE EXECUTIVE UI
     private fun enableExecutive() {
-        btnContentConnectIQShareCourse.isEnabled = true; btnContentConnectIQ.isEnabled = true; progressBarView.visibility = ProgressBar.INVISIBLE
+        btnCCIQ.isEnabled = true; btnCCIQShareCourse.isEnabled = true; progressBarView.visibility = ProgressBar.INVISIBLE
     }
 
     private fun disableExecutive() {
-        btnContentConnectIQShareCourse.isEnabled = false; btnContentConnectIQ.isEnabled = false; progressBarView.visibility = ProgressBar.VISIBLE
+        btnCCIQ.isEnabled = false; btnCCIQShareCourse.isEnabled = false; progressBarView.visibility = ProgressBar.VISIBLE
     }
 
-    private fun enableConnectIQUI() = let { btnContentConnectIQ.isEnabled = true }
-    private fun disableConnectIQUI() = let { btnContentConnectIQ.isEnabled = false }
+    private fun onStartCIQInit() = let { btnCCIQ.isEnabled = false; progressBarView.visibility =ProgressBar.VISIBLE }
+    private fun onFinnishCIQInit() = let { btnCCIQ.isEnabled = false; progressBarView.visibility =ProgressBar.INVISIBLE }
 
 
     // CALLBACKS END
 
-    fun shareCourses(v: View?) {
+    fun shareCourse(v: View?) {
         Log.i(tag, "shareCourse")
         val dirToServeFrom = File(filesDir, NANOHTTPD_SERVE_FROM_DIR_NAME)
         val uris = mutableListOf<Uri?>()

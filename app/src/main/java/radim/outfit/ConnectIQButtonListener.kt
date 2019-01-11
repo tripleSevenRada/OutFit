@@ -8,10 +8,9 @@ import com.garmin.android.connectiq.IQDevice
 
 class ConnectIQButtonListener(
         private val ctx: AppCompatActivity,
-        private val enableExecutiveUICallback: () -> Unit,
-        private val disableExecutiveUICallback: () -> Unit,
-        private val bindNanoHTTPD: () -> Unit,
-        private val disableConnectIQUI: () -> Unit
+        private val onStartInit: () -> Unit,
+        private val onFinishInit: () -> Unit,
+        private val bindNanoHTTPD: () -> Unit
 ) : View.OnClickListener {
 
     private val tag = "ConnIQList"
@@ -27,7 +26,7 @@ class ConnectIQButtonListener(
         if (!connectIQIsInitialized &&
                 !connectIQIsBeingInitialized) {
             connectIQIsBeingInitialized = true
-            disableExecutiveUICallback()
+            onStartInit()
             Log.i(tag, "init")
             connectIQ.initialize(ctx, true, connectIQListener)
         }
@@ -65,8 +64,7 @@ class ConnectIQButtonListener(
                     if (it != null) connectIQ.registerForDeviceEvents(it, DeviceEventListener())
                 }
             }
-            enableExecutiveUICallback()
-            disableConnectIQUI()
+            onFinishInit()
         }
 
         // Called when the SDK has been shut down
