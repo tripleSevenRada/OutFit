@@ -21,16 +21,30 @@
         android:layout_marginTop="16dp"
         android:background="?android:attr/listDivider" />
 
-    <ImageButton
-        android:id="@+id/btnCCIQ"
+    <LinearLayout
+        android:id="@+id/llCCIQLogoCheckbox"
         android:layout_width="match_parent"
-        style="@style/customButton"
-        android:layout_height="60dp"
-        android:layout_marginTop="16dp"
-        android:contentDescription="@string/imgbtn_connectiq_desc"
-        android:scaleType="centerInside"
-        android:src="@drawable/connect_iq_logo_black" />
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
+        <ImageView
+            android:id="@+id/ivCCIQ"
+            android:layout_width="225dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="16dp"
+            android:contentDescription="@string/imgview_connectiq_desc"
+            android:scaleType="centerInside"
+            android:src="@drawable/connect_iq_logo_black" />
+
+        <CheckBox
+            android:id="@+id/chbCCIQ"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onCheckBoxCCIQClicked"/>
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/llCCIQIndicator"
@@ -75,17 +89,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="@string/connected_devices_label"
+            android:text="@string/found_devices_label"
             android:textColor="@color/black" />
 
-        <TextView
-            android:id="@+id/tvCCIQDevicesData"
-            style="@style/mainTextView"
+        <ScrollView
+            android:id="@+id/svCCIQDevicesData"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="MockMockMock"
-            android:textColor="@color/connectIQBlue" />
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/tvCCIQDevicesData"
+                style="@style/mainTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/connectIQBlue" />
+
+        </ScrollView>
 
     </LinearLayout>
 

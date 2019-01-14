@@ -1,6 +1,7 @@
 package radim.outfit
 
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
@@ -10,6 +11,7 @@ import android.util.Log
 import android.widget.ProgressBar
 import kotlinx.android.synthetic.main.content_stats.*
 import android.view.View
+import android.widget.CheckBox
 import android.widget.Toast
 import com.garmin.android.connectiq.IQDevice
 import kotlinx.android.synthetic.main.activity_view_results.*
@@ -20,7 +22,7 @@ import radim.outfit.core.share.work.copyFilesIntoTarget
 import radim.outfit.core.share.work.emptyTarget
 import radim.outfit.core.share.work.getListOfExistingFiles
 import radim.outfit.core.share.work.getListOfFitFilesRecursively
-import radim.outfit.core.share.logic.ConnectIQButtonListener
+import radim.outfit.core.share.logic.ConnectIQManager
 import radim.outfit.core.share.server.MIME_FIT
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
@@ -34,7 +36,22 @@ class ViewResultsActivity : AppCompatActivity() {
 
     private val tag = "VIEW_RESULTS"
     private lateinit var parcel: ViewResultsParcel
-    private lateinit var connectIQButtonListener: ConnectIQButtonListener
+    private lateinit var connectIQManager: ConnectIQManager
+
+
+    fun onCheckBoxCCIQClicked(checkboxCCIQ: View) {
+        if (checkboxCCIQ is CheckBox) {
+            setCheckBoxStatus(checkboxCCIQ.isChecked)
+            if(checkboxCCIQ.isChecked) startConnectIQServices()
+            else stopConnectIQServices()
+        }
+    }
+
+    private fun setCheckBoxStatus(status: Boolean) {
+        this.getSharedPreferences(
+                getString(R.string.main_activity_preferences),
+                Context.MODE_PRIVATE).edit().putBoolean(getString("checkbox_cciq"), status).apply()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,21 +59,21 @@ class ViewResultsActivity : AppCompatActivity() {
 
         supportActionBar?.title = getString("activity_view_results_label")
 
-        btnCCIQ.elevation = 4F
+        chbCCIQ.isChecked = this.getSharedPreferences(
+                getString(R.string.main_activity_preferences),
+                Context.MODE_PRIVATE).getBoolean(getString("checkbox_cciq"), true)
 
         disableExecutive()
 
         if (intent.hasExtra(EXTRA_MESSAGE_VIEW_RESULTS))
             parcel = intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
 
-        connectIQButtonListener = ConnectIQButtonListener(
+        connectIQManager = ConnectIQManager(
                 this,
                 ::onStartCIQInit,
                 ::onFinnishCIQInit,
-                ::onDeviceEvent,
-                ::bindNanoHTTPD
+                ::onDeviceEvent
         )
-        btnCCIQ.setOnClickListener(connectIQButtonListener)
 
         if (::parcel.isInitialized) {
             val messagesAsStringBuilder = StringBuilder()
@@ -98,7 +115,8 @@ class ViewResultsActivity : AppCompatActivity() {
                         if (DEBUG_MODE) systemOutServedFiles(afterFiles)
                         viewModel.fileOperationsDone = true
                         viewModel.bufferHead = if (afterFiles.isNotEmpty()) afterFiles[0] else null
-                        enableExecutive()
+                        if(chbCCIQ.isChecked)startConnectIQServices() // includes disableExecutive()
+                        else enableExecutive()
                     } else {
                         FailGracefullyLauncher().failGracefully(this@ViewResultsActivity, "file operations")
                     }
@@ -127,17 +145,32 @@ class ViewResultsActivity : AppCompatActivity() {
     }
     // NANO HTTPD END
 
-    //override fun onStart() { super.onStart() }
+    override fun onStart() {
+        super.onStart()
+        if(::connectIQManager.isInitialized && chbCCIQ.isChecked) startConnectIQServices()
+    }
+
     //override fun onResume() { super.onResume() }
     //override fun onPause() { super.onPause() }
 
     override fun onStop() {
         super.onStop()
         Log.i(tag, "onStop")
+        stopConnectIQServices()
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i(tag, "onDestroy")
+    }
+
+    private fun startConnectIQServices(){
+        bindNanoHTTPD()
+        connectIQManager.startConnectIQ()
+    }
+    private fun stopConnectIQServices(){
         unbindNanoHTTPD()
         // listener keeps track if connected or not
-        connectIQButtonListener.unregisterForDeviceEvents()
-        connectIQButtonListener.shutdown()
+        connectIQManager.shutDownConnectIQ()
         if (::indicatorIQTimer.isInitialized) {
             indicatorIQTimer.stop()
             if (::indicatorIQTimerCallback.isInitialized) indicatorIQTimerCallback.restart(View.VISIBLE)
@@ -145,40 +178,35 @@ class ViewResultsActivity : AppCompatActivity() {
         enableExecutive()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.i(tag, "onDestroy")
-    }
-
     // CALLBACKS START
     private fun enableExecutive() {
-        btnCCIQ.isEnabled = true
-        btnCCIQShareCourse.isEnabled = true
+        chbCCIQ.isEnabled = true
+        //btnCCIQShareCourse.isEnabled = true
         progressBarView.visibility = ProgressBar.INVISIBLE
     }
-
     private fun disableExecutive() {
-        btnCCIQ.isEnabled = false
-        btnCCIQShareCourse.isEnabled = false
+        chbCCIQ.isEnabled = false
+        //btnCCIQShareCourse.isEnabled = false
         progressBarView.visibility = ProgressBar.VISIBLE
     }
 
+    //ConnectIQ init loop START
     private fun onStartCIQInit() {
-        btnCCIQ.isEnabled = false
-        progressBarView.visibility = ProgressBar.VISIBLE
+        disableExecutive()
     }
-
+    //called back after cca 10 - 30 ms from startConnectIQServices()
     private fun onFinnishCIQInit() {
-        btnCCIQ.isEnabled = false
-        progressBarView.visibility = ProgressBar.INVISIBLE
+        enableExecutive()
         indicatorIQTimerCallback = IndicatorIQTimerCallback()
         indicatorIQTimer = SimpleTimer(220, indicatorIQTimerCallback)
         indicatorIQTimer.start()
     }
+    //ConnectIQ init loop END
 
     private val deviceLogBuilder = StringBuilder()
-    private fun onDeviceEvent(device: IQDevice, message: String){
-        deviceLogBuilder.append("${device.deviceIdentifier} ${device.friendlyName} ${device.status} $message\n")
+    private fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus) {
+        //TODO
+        deviceLogBuilder.append("${device.deviceIdentifier} ${device.friendlyName} ${device.status} $status\n")
         tvCCIQDevicesData.text = deviceLogBuilder.toString()
     }
     // CALLBACKS END

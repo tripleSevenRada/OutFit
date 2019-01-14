@@ -24,13 +24,13 @@
             layout="@layout/content_stats"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="50" />
+            android:layout_weight="45" />
 
         <include
             layout="@layout/content_connectiq"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="50" />
+            android:layout_weight="55" />
 
     </LinearLayout>
 

@@ -2,22 +2,20 @@ package radim.outfit.core.share.logic
 
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.view.View
 import com.garmin.android.connectiq.ConnectIQ
 import com.garmin.android.connectiq.IQDevice
 import radim.outfit.DEBUG_MODE
 import radim.outfit.FailGracefullyLauncher
 
-class ConnectIQButtonListener(
+class ConnectIQManager(
         private val ctx: AppCompatActivity,
         private val onStartInit: () -> Unit,
         private val onFinishInit: () -> Unit,
-        private val onDeviceEvent: (IQDevice, String) -> Unit,
-        private val bindNanoHTTPD: () -> Unit
-) : View.OnClickListener {
+        private val onDeviceEvent: (IQDevice, IQDevice.IQDeviceStatus) -> Unit
+) {
 
     private val tag = "ConnIQList"
-    private val connectionType = ConnectIQ.IQConnectType.TETHERED
+    private val connectionType = ConnectIQ.IQConnectType.WIRELESS
     private val connectIQ: ConnectIQ = ConnectIQ.getInstance(ctx, connectionType)
     private val connectIQListener: ConnectIQ.ConnectIQListener = ConnectIQLifecycleListener()
     //val myApp = "9B0A09CFC89E4F7CA5E4AB21400EE424"//fb8c00180889407a913db58884cb3ec3
@@ -25,7 +23,7 @@ class ConnectIQButtonListener(
     private var connectIQIsInitialized = false
     private var connectIQIsBeingInitialized = false
 
-    override fun onClick(v: View?) {
+    fun startConnectIQ() {
         if (!connectIQIsInitialized &&
                 !connectIQIsBeingInitialized) {
             connectIQIsBeingInitialized = true
@@ -33,6 +31,21 @@ class ConnectIQButtonListener(
             Log.i(tag, "init")
             connectIQ.initialize(ctx, true, connectIQListener)
         }
+    }
+    fun shutDownConnectIQ(){
+        unregisterForDeviceEvents()
+        shutdown()
+    }
+    private fun unregisterForDeviceEvents() {
+        if (connectIQIsInitialized) {
+            connectIQ.connectedDevices?.forEach {
+                if (it != null) connectIQ.unregisterForDeviceEvents(it)
+            }
+        }
+    }
+    private fun shutdown() {
+        if (connectIQIsInitialized) connectIQ.shutdown(ctx)
+        connectIQIsInitialized = false
     }
 
     // connectIQListener
@@ -48,7 +61,6 @@ class ConnectIQButtonListener(
 
         // Called when the SDK has been successfully initialized
         override fun onSdkReady() {
-            bindNanoHTTPD()
             connectIQIsInitialized = true
             connectIQIsBeingInitialized = false
             // Do any post initialization setup.
@@ -66,7 +78,7 @@ class ConnectIQButtonListener(
                     // Register to receive status updates
                     if (it != null){
                         // send callback to ViewResultsActivity
-                        onDeviceEvent(it," onSdkReady")
+                        onDeviceEvent(it, it.status)
                         connectIQ.registerForDeviceEvents(it, DeviceEventListener())
                     }
                 }
@@ -88,22 +100,8 @@ class ConnectIQButtonListener(
                 Log.i(tag, "STATUS_CHANGED, friendlyName: ${p0?.friendlyName}")
                 Log.i(tag, "STATUS_CHANGED, newStatus: ${p1?.toString()}")
             }
-            val message = if(p1 != null) p1.toString() else " null"
-            if(p0 != null)
-            onDeviceEvent(p0, message)
+            if(p0 != null && p1 != null)
+            onDeviceEvent(p0, p1)
         }
-    }
-
-    fun unregisterForDeviceEvents() {
-        if (connectIQIsInitialized) {
-            connectIQ.connectedDevices?.forEach {
-                if (it != null) connectIQ.unregisterForDeviceEvents(it)
-            }
-        }
-    }
-
-    fun shutdown() {
-        if (connectIQIsInitialized) connectIQ.shutdown(ctx)
-        connectIQIsInitialized = false
     }
 }

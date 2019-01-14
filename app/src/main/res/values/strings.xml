@@ -48,6 +48,7 @@
     <string name="last_seen_speed_value" translatable="false">value_in_speed_picker</string>
     <string name="last_seen_speed_units" translatable="false">units_in_speed_picker-id_of_the_widget</string>
     <string name="last_seen_root" translatable="false">last_seen_root_directory</string>
+    <string name="checkbox_cciq" translatable="false">checkbox_enabling_cc_iq</string>
 
     <!-- public messages  - Encode-->
     <string name="course_name">Course name:</string>
@@ -59,10 +60,10 @@
     <!-- ViewResultsActivity -->
     <string name="activity_view_results_label">OUT FIT - Share</string>
     <string name="btn_share_course">Share course</string>
-    <string name="imgbtn_connectiq_desc">Start ConnectIQ</string>
+    <string name="imgview_connectiq_desc">ConnectIQ logo</string>
     <string name="nmb_trackpoints">Number of trackpoints:</string>
     <string name="nmb_coursepoints">Number of coursepoints:</string>
-    <string name="connected_devices_label">Connected devices:</string>
+    <string name="found_devices_label">Found devices:</string>
 
     <!-- Locus dir pick-->
     <string name="pick_dir_message">Select export folder</string>

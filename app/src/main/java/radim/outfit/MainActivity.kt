@@ -159,6 +159,8 @@ class MainActivity : AppCompatActivity(),
             }
             if (!sharedPreferences.contains(CIRC_BUFF_POINTER_KEY))
                 initCircularBuffer(this)
+            if (!sharedPreferences.contains(getString("checkbox_cciq")))
+                putBoolean(getString("checkbox_cciq"), true)
             apply()
         }
 
