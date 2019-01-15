@@ -18,12 +18,9 @@ import kotlinx.android.synthetic.main.activity_view_results.*
 import kotlinx.android.synthetic.main.content_connectiq.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import radim.outfit.core.share.work.copyFilesIntoTarget
-import radim.outfit.core.share.work.emptyTarget
-import radim.outfit.core.share.work.getListOfExistingFiles
-import radim.outfit.core.share.work.getListOfFitFilesRecursively
 import radim.outfit.core.share.logic.ConnectIQManager
 import radim.outfit.core.share.server.MIME_FIT
+import radim.outfit.core.share.work.*
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
 import radim.outfit.core.viewmodels.ViewResultsActivityViewModel
@@ -203,11 +200,11 @@ class ViewResultsActivity : AppCompatActivity() {
     }
     // ConnectIQ init loop END
 
-    private val deviceLogBuilder = StringBuilder()
+    private val spannedDeviceDisplay = SpannedDeviceDisplay()
+
     private fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus) {
-        //TODO
-        deviceLogBuilder.append("${device.deviceIdentifier} ${device.friendlyName} ${device.status} $status\n")
-        tvCCIQDevicesData.text = deviceLogBuilder.toString()
+        spannedDeviceDisplay.onDeviceEvent(device, status)
+        tvCCIQDevicesData.text = spannedDeviceDisplay.getDisplay()
     }
     // CALLBACKS END
 
