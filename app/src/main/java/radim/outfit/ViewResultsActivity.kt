@@ -37,6 +37,7 @@ class ViewResultsActivity : AppCompatActivity() {
     private val tag = "VIEW_RESULTS"
     private lateinit var parcel: ViewResultsParcel
     private lateinit var connectIQManager: ConnectIQManager
+    private var shareFitReady = false
 
 
     fun onCheckBoxCCIQClicked(checkboxCCIQ: View) {
@@ -115,7 +116,8 @@ class ViewResultsActivity : AppCompatActivity() {
                         if (DEBUG_MODE) systemOutServedFiles(afterFiles)
                         viewModel.fileOperationsDone = true
                         viewModel.bufferHead = if (afterFiles.isNotEmpty()) afterFiles[0] else null
-                        if(chbCCIQ.isChecked)startConnectIQServices() // includes disableExecutive()
+                        shareFitReady = true
+                        if(chbCCIQ.isChecked)startConnectIQServices() // includes disableExecutive() // START
                         else enableExecutive()
                     } else {
                         FailGracefullyLauncher().failGracefully(this@ViewResultsActivity, "file operations")
@@ -127,7 +129,9 @@ class ViewResultsActivity : AppCompatActivity() {
                 val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
                 systemOutServedFiles(afterFiles)
             }
-            enableExecutive()
+            shareFitReady = true
+            if(chbCCIQ.isChecked)startConnectIQServices() // includes disableExecutive() // START
+            else enableExecutive()
         }
     }
 
@@ -145,11 +149,7 @@ class ViewResultsActivity : AppCompatActivity() {
     }
     // NANO HTTPD END
 
-    override fun onStart() {
-        super.onStart()
-        if(::connectIQManager.isInitialized && chbCCIQ.isChecked) startConnectIQServices()
-    }
-
+    //override fun onStart() { super.onStart() }
     //override fun onResume() { super.onResume() }
     //override fun onPause() { super.onPause() }
 
@@ -190,18 +190,18 @@ class ViewResultsActivity : AppCompatActivity() {
         progressBarView.visibility = ProgressBar.VISIBLE
     }
 
-    //ConnectIQ init loop START
+    // ConnectIQ init loop START
     private fun onStartCIQInit() {
         disableExecutive()
     }
-    //called back after cca 10 - 30 ms from startConnectIQServices()
+    // called back after cca 10 - 30 ms from startConnectIQServices()
     private fun onFinnishCIQInit() {
         enableExecutive()
         indicatorIQTimerCallback = IndicatorIQTimerCallback()
         indicatorIQTimer = SimpleTimer(220, indicatorIQTimerCallback)
         indicatorIQTimer.start()
     }
-    //ConnectIQ init loop END
+    // ConnectIQ init loop END
 
     private val deviceLogBuilder = StringBuilder()
     private fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus) {
@@ -247,6 +247,7 @@ class ViewResultsActivity : AppCompatActivity() {
     // INDICATOR END
 
     fun shareCourse(v: View?) {
+        if(!shareFitReady) return
         val viewModel = ViewModelProviders.of(this).get(ViewResultsActivityViewModel::class.java)
         val fileToShare: File? = viewModel.bufferHead
         val uriToShare: Uri? = if (fileToShare != null) {
