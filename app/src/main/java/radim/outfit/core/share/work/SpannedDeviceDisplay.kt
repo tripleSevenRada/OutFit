@@ -9,7 +9,7 @@ import com.garmin.android.connectiq.IQDevice
 
 class SpannedDeviceDisplay{
 
-    private val devicesIdsOrder = mutableListOf<Long>()
+    private var devicesIdsOrder = mutableListOf<Long>()
     private val devicesIdsToSpannable = mutableMapOf<Long, SpannableString>()
 
     private val statusToColor: Map<IQDevice.IQDeviceStatus, Int> = mapOf(
@@ -22,7 +22,7 @@ class SpannedDeviceDisplay{
     fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus){
         devicesIdsToSpannable[device.deviceIdentifier] = getSpannableString(device, status)
         devicesIdsOrder.remove(device.deviceIdentifier)
-        devicesIdsOrder[0] = device.deviceIdentifier
+        devicesIdsOrder = (mutableListOf(device.deviceIdentifier) + devicesIdsOrder).toMutableList()
     }
 
     private fun getSpannableString(device: IQDevice, status: IQDevice.IQDeviceStatus): SpannableString{
@@ -33,7 +33,7 @@ class SpannedDeviceDisplay{
                 ForegroundColorSpan(statusToColor[status]?: Color.BLACK),
                 friendlyNameLength + 2, // start, plus ": "
                 rawString.length, // end
-                Spannable.SPAN_EXCLUSIVE_INCLUSIVE
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
         return spannable
     }
