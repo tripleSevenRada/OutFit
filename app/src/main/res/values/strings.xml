@@ -64,6 +64,7 @@
     <string name="nmb_trackpoints">Number of trackpoints:</string>
     <string name="nmb_coursepoints">Number of coursepoints:</string>
     <string name="found_devices_label">Found devices:</string>
+    <string name="found_companion">. IN FIT, the companion app: </string>
 
     <!-- Locus dir pick-->
     <string name="pick_dir_message">Select export folder</string>
@@ -91,5 +92,9 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
     <string name="upgrade_needed_message">Garmin Connect Mobile is not up-to-date. Update?</string>
     <string name="upgrade_needed_yes">Update</string>
     <string name="upgrade_needed_cancel">Cancel</string>
+
+    <!-- Locus dir pick-->
+    <string name="infit">IN FIT</string>
+
 
 </resources>
