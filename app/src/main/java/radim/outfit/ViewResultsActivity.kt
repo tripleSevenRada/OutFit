@@ -95,6 +95,7 @@ class ViewResultsActivity : AppCompatActivity() {
         try {
             server = LocalHostServer(NANOHTTPD_PORT,
                     File("${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"))
+            if(DEBUG_MODE)Log.i(tag, "JSONArray, coursenames: ${server.coursenamesAsJSON()}")
             server.start()
         } catch (e: Exception){
             Log.e(tag, e.localizedMessage)

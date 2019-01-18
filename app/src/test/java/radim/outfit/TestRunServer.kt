@@ -7,26 +7,28 @@ import java.io.File
 import fi.iki.elonen.NanoHTTPD
 
 
-    private val log: Logger = LoggerFactory.getLogger(NanoHTTPD::class.java)
+private val log: Logger = LoggerFactory.getLogger(NanoHTTPD::class.java)
 
-    fun main(args: Array<String>) {
-        val from = "/home/radim/nano-httpd-serve-from"
-        try {
-            val server = LocalHostServer(NANOHTTPD_PORT,
-                    File(from)
-            )
-            server.start()
-            log.info("serving " + from)
-        } catch (e: Exception) {
-            log.error(e.localizedMessage)
-        }
-
-        try {
-            while (true) {
-                Thread.sleep(10000)
-            }
-        } catch (e: Exception) {
-            log.error(e.localizedMessage)
-        }
-
+fun main(args: Array<String>) {
+    val from = "/home/radim/nano-httpd-serve-from"
+    try {
+        val server = LocalHostServer(NANOHTTPD_PORT,
+                File(from)
+        )
+        log.info("JSONArray: ${server.coursenamesAsJSON()}")
+        server.start()
+        log.info("serving from: $from")
+    } catch (e: Exception) {
+        log.error(e.localizedMessage)
     }
+
+    try {
+        while (true) {
+            Thread.sleep(10000)
+            log.debug("still serving")
+        }
+    } catch (e: Exception) {
+        log.error(e.localizedMessage)
+    }
+
+}
