@@ -97,15 +97,16 @@ class MainActivity : AppCompatActivity(),
             apply()
         }
     }
+
     override fun getLengthInM(): Int {
         val viewModel =
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
         val length = viewModel.track?.stats?.totalLength
-        return if(length == null){
+        return if (length == null) {
             // sanity check, should never happen
-            FailGracefullyLauncher().failGracefully(this,"Null track length.")
+            FailGracefullyLauncher().failGracefully(this, "Null track length.")
             2
-        }else length.toInt()
+        } else length.toInt()
     }
     // SpeedPickerFragment interfaces impl END
 
@@ -172,6 +173,8 @@ class MainActivity : AppCompatActivity(),
             apply()
         }
 
+        //showSpeedPickerDialog()  // if you want to test layout on emulator only!
+
         val activeLocus = LocusUtils.getActiveVersion(this)
         if (activeLocus == null) {
             fail.failGracefully(this, this.getString("locus_not_installed") + " Error 1")
@@ -217,7 +220,7 @@ class MainActivity : AppCompatActivity(),
     private fun handleIntentTrackToolsMenu(act: AppCompatActivity,
                                            intent: Intent,
                                            viewModel: MainActivityViewModel) {
-        if(viewModel.track == null) {
+        if (viewModel.track == null) {
             disableExecutive()
             var doFail = false
             var failMessage = ""
@@ -238,7 +241,7 @@ class MainActivity : AppCompatActivity(),
                     failMessage = "${e.localizedMessage} Error 5"
                 }
                 uiThread {
-                    if(doFail){
+                    if (doFail) {
                         fail.failGracefully(act, failMessage)
                     }
                     if (track != null && track.points != null && track.points.size > 0) {
@@ -253,11 +256,11 @@ class MainActivity : AppCompatActivity(),
             }
         } else {
             val track = viewModel.track
-            if(track != null) trackInit(track, act)
+            if (track != null) trackInit(track, act)
         }
     }
 
-    private fun trackInit(track: Track, act: AppCompatActivity){
+    private fun trackInit(track: Track, act: AppCompatActivity) {
         content_exportTVStatsData?.text = Stats().basicInfo(track, act)
         val filename = getFilename(track.name, getString("default_filename"))
         content_pathETFilename?.setText(filename)

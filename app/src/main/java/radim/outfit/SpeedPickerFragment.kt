@@ -77,11 +77,13 @@ class SpeedPickerFragment : DialogFragment() {
             lastSelectedButton?.isChecked = true
             buttKmh?.setOnClickListener {
                 lastSelectedProvider.setUnitsButtonId(R.id.content_speed_picker_speedBTNKmh)
-                setCurrentSelectedSpeedInMperS(true, false, npSpeed?.value ?: 10, npHours, npMinutes)
+                setCurrentSelectedSpeedInMperS(true, false, npSpeed?.value
+                        ?: 10, npHours, npMinutes)
             }
             buttMph?.setOnClickListener {
                 lastSelectedProvider.setUnitsButtonId(R.id.content_speed_picker_speedBTNMph)
-                setCurrentSelectedSpeedInMperS(false, true, npSpeed?.value ?: 10, npHours, npMinutes)
+                setCurrentSelectedSpeedInMperS(false, true, npSpeed?.value
+                        ?: 10, npHours, npMinutes)
             }
             npSpeed?.value = readStoredSpeedInUnit(buttKmh?.isChecked, buttMph?.isChecked)
             npSpeed?.setOnValueChangedListener { _, _, newVal ->
@@ -97,10 +99,11 @@ class SpeedPickerFragment : DialogFragment() {
             val buttonOKSpeed: Button? = mView?.findViewById(R.id.content_speed_picker_speedBTNOk)
             buttonOKSpeed?.setOnClickListener {
                 val value: Float = npSpeed?.value?.toFloat() ?: SPEED_DEFAULT_M_S
-                val valueMperS: Float = if (buttKmh != null && buttKmh.isChecked) value.kmhToMS()
-                else if (buttMph != null && buttMph.isChecked) value.mphToMS()
-                else value.kmhToMS()
-
+                val valueMperS: Float = when {
+                    (buttKmh != null && buttKmh.isChecked) -> value.kmhToMS()
+                    (buttMph != null && buttMph.isChecked) -> value.mphToMS()
+                    else -> value.kmhToMS()
+                }
                 val action = actionProvider.getOkAction()
                 action.invoke(valueMperS)
 
@@ -114,23 +117,25 @@ class SpeedPickerFragment : DialogFragment() {
 
     private fun setCurrentSelectedSpeedInMperS(kmhChecked: Boolean?, mphChecked: Boolean?, pickerVal: Int,
                                                npHours: NumberPicker?, npMinutes: NumberPicker?) {
-        val inMperS = if (kmhChecked != null && kmhChecked) pickerVal.toFloat().kmhToMS()
-        else if (mphChecked != null && mphChecked) pickerVal.toFloat().mphToMS()
-        else pickerVal.toFloat().kmhToMS()
+        val inMperS = when {
+            (kmhChecked != null && kmhChecked) -> pickerVal.toFloat().kmhToMS()
+            (mphChecked != null && mphChecked) -> pickerVal.toFloat().mphToMS()
+            else -> pickerVal.toFloat().kmhToMS()
+        }
         val extraData: TrackTimesPOJO = getTrackTimesPOJO(kmhChecked, mphChecked, pickerVal, trackDetailProvider.getLengthInM().toFloat())
         updateDuration(extraData, npHours, npMinutes)
         lastSelectedProvider.setSpeedMperS(inMperS) // accessor clamps
     }
 
-    private fun readStoredSpeedInUnit(kmhChecked: Boolean?, mphChecked: Boolean?): Int = if (kmhChecked != null && kmhChecked)
-        clampSpeed(speedMperSToKmh(lastSelectedProvider.getSpeedMperS()))
-    else if (mphChecked != null && mphChecked)
-        clampSpeed(speedMperSToMph(lastSelectedProvider.getSpeedMperS()))
-    else clampSpeed(speedMperSToKmh(lastSelectedProvider.getSpeedMperS()))
+    private fun readStoredSpeedInUnit(kmhChecked: Boolean?, mphChecked: Boolean?): Int = when {
+        (kmhChecked != null && kmhChecked) -> clampSpeed(speedMperSToKmh(lastSelectedProvider.getSpeedMperS()))
+        (mphChecked != null && mphChecked) -> clampSpeed(speedMperSToMph(lastSelectedProvider.getSpeedMperS()))
+        else -> clampSpeed(speedMperSToKmh(lastSelectedProvider.getSpeedMperS()))
+    }
 
     private fun updateDuration(extraData: TrackTimesPOJO, npHours: NumberPicker?, npMinutes: NumberPicker?) {
         if (extraData.hours in 0..MAX_HOURS_PICKER) npHours?.value = extraData.hours
-        if (extraData.minutes in 0..59)npMinutes?.value = extraData.minutes
+        if (extraData.minutes in 0..59) npMinutes?.value = extraData.minutes
     }
 
 }
