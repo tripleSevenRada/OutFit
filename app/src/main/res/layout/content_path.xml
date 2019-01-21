@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/llPath"
+    android:id="@+id/content_pathLLTopLevel"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/blueBackground"
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/tvRootDirLabel"
+        android:id="@+id/content_pathTVRootDirLabel"
         style="@style/labelTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,21 +15,21 @@
         android:text="@string/root_folder_label" />
 
     <TextView
-        android:id="@+id/tvRootDir"
+        android:id="@+id/content_pathTVRootDirPath"
         style="@style/mainTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp" />
 
     <Button
-        android:id="@+id/btnDirPick"
+        android:id="@+id/content_pathBTNDirPick"
         style="@style/customButton"
         android:layout_marginTop="16dp"
         android:onClick="directoryPick"
         android:text="@string/btn_directory_picker" />
 
     <TextView
-        android:id="@+id/tvFilenameLabel"
+        android:id="@+id/content_pathTVFilenameLabel"
         style="@style/labelTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -37,10 +37,11 @@
         android:text="@string/filename_label" />
 
     <EditText
-        android:id="@+id/etFilename"
+        android:id="@+id/content_pathETFilename"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
+        android:importantForAutofill="no"
         android:hint="@string/filename_hint"
         android:inputType="text" />
 

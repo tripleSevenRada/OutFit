@@ -123,7 +123,7 @@ class MainActivity : AppCompatActivity(),
 
         supportActionBar?.title = getString("activity_main_label")
 
-        tvStats?.text = tvStatsFiller // do not flick or "inflate" visibly
+        content_exportTVStatsData?.text = tvStatsFiller // do not flick or "inflate" visibly
 
         val viewModel =
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
@@ -182,9 +182,9 @@ class MainActivity : AppCompatActivity(),
             return
         }
 
-        etFilename?.filters = arrayOf(FilenameCharsFilter())
-        btnExport?.setOnClickListener(exportListener)
-        if (etFilename != null) exportListener.attachView(etFilename)
+        content_pathETFilename?.filters = arrayOf(FilenameCharsFilter())
+        content_exportBTNExport?.setOnClickListener(exportListener)
+        if (content_pathETFilename != null) exportListener.attachView(content_pathETFilename)
         exportListener.attachDefaultFilename(this.getString("default_filename"))
 
         if (permWriteIsGranted()) {
@@ -250,9 +250,9 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun trackInit(track: Track, act: AppCompatActivity){
-        tvStats?.text = Stats().basicInfo(track, act)
+        content_exportTVStatsData?.text = Stats().basicInfo(track, act)
         val filename = getFilename(track.name, getString("default_filename"))
-        etFilename?.setText(filename)
+        content_pathETFilename?.setText(filename)
         setTrack(track, exportListener)
         setFilename(filename, exportListener)
     }
@@ -334,16 +334,16 @@ class MainActivity : AppCompatActivity(),
     private fun disableExecutive() {
         if (DEBUG_MODE) Log.i(LOG_TAG_MAIN, "DISABLE_Executive; Activity: $this")
         // disable executive UI
-        btnExport?.isEnabled = false
-        progressBar?.visibility = ProgressBar.VISIBLE
+        content_exportBTNExport?.isEnabled = false
+        activity_mainPB?.visibility = ProgressBar.VISIBLE
     }
 
     private fun enableExecutive(viewModel: MainActivityViewModel) {
         if (DEBUG_MODE) Log.i(LOG_TAG_MAIN, "ENABLE_Executive; Activity: $this")
         // enable executive UI if export is not running
         if (!viewModel.exportInProgress) {
-            btnExport?.isEnabled = true
-            progressBar?.visibility = ProgressBar.INVISIBLE
+            content_exportBTNExport?.isEnabled = true
+            activity_mainPB?.visibility = ProgressBar.INVISIBLE
         }
     }
 
@@ -400,11 +400,11 @@ class MainActivity : AppCompatActivity(),
     private fun setTvRootDir() {
         val text: String? = getRoot(exportListener)?.path
         if (text != null) {
-            tvRootDir?.setTextColor(this.getColor(R.color.imitateButtons))
-            tvRootDir?.text = text
+            content_pathTVRootDirPath?.setTextColor(this.getColor(R.color.imitateButtons))
+            content_pathTVRootDirPath?.text = text
         } else {
-            tvRootDir?.setTextColor(this.getColor(R.color.colorAccent))
-            tvRootDir?.text = this.getString("not_set")
+            content_pathTVRootDirPath?.setTextColor(this.getColor(R.color.colorAccent))
+            content_pathTVRootDirPath?.text = this.getString("not_set")
         }
     }
 

@@ -13,12 +13,17 @@ public class PointStringDump {
             dump.add("NULL");
             return dump;
         }
+
         dump.add("---------------getId()   " + point.getId());
         dump.add("---------------getName()   " + point.getName());
         dump.add("---------------getTimeCreated() " + point.getTimeCreated());
         dump.add("---------------getParameterRteAction() " + point.getParameterRteAction());
         dump.add("---------------getParameterDescription() " + point.getParameterDescription());
-        dump.add("---------------getParameterStyleName() " + point.getParameterStyleName());
+        dump.add("-------||-------getParameterStyleName() " + point.getParameterStyleName());
+        dump.add("---------------point.styleNormal " + point.styleNormal);
+        if (point.styleNormal != null && point.styleNormal.getIconStyleIconUrl() != null) {
+            dump.add("-------||-------point.styleNormal.getIconStyleIconUrl() " + point.styleNormal.getIconStyleIconUrl());
+        }
         dump.add("---------------getParameterSource() " + point.getParameterSource());
         dump.add("---------------getParamRteIndex() " + point.getParamRteIndex());
         return dump;

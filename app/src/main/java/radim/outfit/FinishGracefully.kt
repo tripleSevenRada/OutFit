@@ -14,6 +14,6 @@ class FinishGracefully : AppCompatActivity() {
         } else {
             ""
         }
-        tvFinishGracefully.text = message
+        activity_finish_gracefullyTVData.text = message
     }
 }

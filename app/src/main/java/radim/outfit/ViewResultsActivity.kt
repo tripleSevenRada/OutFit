@@ -62,7 +62,7 @@ class ViewResultsActivity : AppCompatActivity() {
 
         supportActionBar?.title = getString("activity_view_results_label")
 
-        chbCCIQ.isChecked = this.getSharedPreferences(
+        content_connectiqCHCKBOX.isChecked = this.getSharedPreferences(
                 getString(R.string.main_activity_preferences),
                 Context.MODE_PRIVATE).getBoolean(getString("checkbox_cciq"), true)
 
@@ -82,7 +82,7 @@ class ViewResultsActivity : AppCompatActivity() {
         if (::parcel.isInitialized) {
             val messagesAsStringBuilder = StringBuilder()
             parcel.messages.forEach { with(messagesAsStringBuilder) { append(it); append("\n") } }
-            tvContentStatsData.text = messagesAsStringBuilder.toString()
+            content_statsTVData.text = messagesAsStringBuilder.toString()
         }
         if (DEBUG_MODE && ::parcel.isInitialized) {
             parcel.buffer.forEach { Log.i(tag, "Circular buffer of exports: $it") }
@@ -146,7 +146,7 @@ class ViewResultsActivity : AppCompatActivity() {
                         viewModel.fileOperationsDone = true
                         viewModel.bufferHead = if (afterFiles.isNotEmpty()) afterFiles[0] else null
                         shareFitReady = true
-                        if (chbCCIQ.isChecked) startConnectIQServices() // includes disableExecutive() // START
+                        if (content_connectiqCHCKBOX.isChecked) startConnectIQServices() // includes disableExecutive() // START
                         else enableExecutive()
                     } else {
                         FailGracefullyLauncher().failGracefully(this@ViewResultsActivity, "file operations")
@@ -155,7 +155,7 @@ class ViewResultsActivity : AppCompatActivity() {
             }
         } else {
             shareFitReady = true
-            if (chbCCIQ.isChecked) startConnectIQServices() // includes disableExecutive() // START
+            if (content_connectiqCHCKBOX.isChecked) startConnectIQServices() // includes disableExecutive() // START
             else enableExecutive()
         }
     }
@@ -186,20 +186,20 @@ class ViewResultsActivity : AppCompatActivity() {
             indicatorIQTimer.stop()
             if (::indicatorIQTimerCallback.isInitialized) indicatorIQTimerCallback.restart(View.VISIBLE)
         }
-        tvCCIQDevicesData.text = ""
+        content_connectiqTVDevicesData.text = ""
     }
 
     // CALLBACKS START
     private fun enableExecutive() {
-        chbCCIQ.isEnabled = true
+        content_connectiqCHCKBOX.isEnabled = true
         //btnCCIQShareCourse.isEnabled = true
-        progressBarView.visibility = ProgressBar.INVISIBLE
+        activity_view_resultsPB.visibility = ProgressBar.INVISIBLE
     }
 
     private fun disableExecutive() {
-        chbCCIQ.isEnabled = false
+        content_connectiqCHCKBOX.isEnabled = false
         //btnCCIQShareCourse.isEnabled = false
-        progressBarView.visibility = ProgressBar.VISIBLE
+        activity_view_resultsPB.visibility = ProgressBar.VISIBLE
     }
 
     // ConnectIQ init loop START
@@ -221,12 +221,12 @@ class ViewResultsActivity : AppCompatActivity() {
     private fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus) {
         spannedDeviceDisplay.onDeviceEvent(device, status)
         if(DEBUG_MODE)Log.i(tag,"onDeviceEvent display after call ${device.friendlyName} $status")
-        tvCCIQDevicesData.text = spannedDeviceDisplay.getDisplay()
+        content_connectiqTVDevicesData.text = spannedDeviceDisplay.getDisplay()
     }
     private fun onAppEvent(device: IQDevice, status: IQApp.IQAppStatus){
         spannedDeviceDisplay.onAppEvent(device, status, this)
         if(DEBUG_MODE)Log.i(tag,"onAppEvent display after call ${device.friendlyName} $status ")
-        tvCCIQDevicesData.text = spannedDeviceDisplay.getDisplay()
+        content_connectiqTVDevicesData.text = spannedDeviceDisplay.getDisplay()
     }
     // CALLBACKS END
 
@@ -236,11 +236,11 @@ class ViewResultsActivity : AppCompatActivity() {
 
     inner class IndicatorIQTimerCallback : Timer.TimerCallback {
         private val views = listOf<View>(
-                CCIQIndicatorView1,// 0
-                CCIQIndicatorView2,
-                CCIQIndicatorView3,
-                CCIQIndicatorView4,
-                CCIQIndicatorView5)// 4
+                content_connectiqVIEWIndicator1,// 0
+                content_connectiqVIEWIndicator2,
+                content_connectiqVIEWIndicator3,
+                content_connectiqVIEWIndicator4,
+                content_connectiqVIEWIndicator5)// 4
         private var pointer = 0
         override fun tick(): Boolean {
             //increasing style

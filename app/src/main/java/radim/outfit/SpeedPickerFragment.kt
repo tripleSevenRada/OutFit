@@ -15,17 +15,19 @@ import android.widget.RadioButton
 const val SPEED_MIN = 1
 const val SPEED_MAX = 130
 const val SPEED_DEFAULT = 14
-const val DEFAULT_UNITS_RADIO_BUTTON_ID = R.id.speedFragButtonKmh
+const val DEFAULT_UNITS_RADIO_BUTTON_ID = R.id.content_speed_picker_speedBTNKmh
 
 interface OkActionProvider {
     fun getOkAction(): (Float) -> Unit
 }
-
 interface LastSelectedValuesProvider {
     fun getSpeed(): Int
     fun setSpeed(value: Int)
     fun getUnitsButtonId(): Int
     fun setUnitsButtonId(id: Int)
+}
+interface trackDetailProvider{
+    fun getLengthInM(): Int
 }
 
 // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
@@ -53,21 +55,21 @@ class SpeedPickerFragment : DialogFragment() {
         // Inflate the layout for this fragment
         val mView = inflater.inflate(R.layout.speed_picker_fragment, container, false)
         if(::actionProvider.isInitialized && ::lastSelectedProvider.isInitialized){
-            val np: NumberPicker? = mView?.findViewById(R.id.speedFragNP)
+            val np: NumberPicker? = mView?.findViewById(R.id.content_speed_picker_speedNPSpeed)
             np?.minValue = SPEED_MIN
             np?.maxValue = SPEED_MAX
             np?.wrapSelectorWheel = false
-            val buttKmh: RadioButton? = mView?.findViewById(R.id.speedFragButtonKmh)
-            val buttMph: RadioButton? = mView?.findViewById(R.id.speedFragButtonMph)
+            val buttKmh: RadioButton? = mView?.findViewById(R.id.content_speed_picker_speedBTNKmh)
+            val buttMph: RadioButton? = mView?.findViewById(R.id.content_speed_picker_speedBTNMph)
             if (::lastSelectedProvider.isInitialized) {
                 np?.value = lastSelectedProvider.getSpeed()
                 np?.setOnValueChangedListener { _, _, newVal -> lastSelectedProvider.setSpeed(newVal) }
                 val lastSelectedButton: RadioButton? = mView?.findViewById(lastSelectedProvider.getUnitsButtonId())
                 lastSelectedButton?.isChecked = true
-                buttKmh?.setOnClickListener { lastSelectedProvider.setUnitsButtonId(R.id.speedFragButtonKmh) }
-                buttMph?.setOnClickListener { lastSelectedProvider.setUnitsButtonId(R.id.speedFragButtonMph) }
+                buttKmh?.setOnClickListener { lastSelectedProvider.setUnitsButtonId(R.id.content_speed_picker_speedBTNKmh) }
+                buttMph?.setOnClickListener { lastSelectedProvider.setUnitsButtonId(R.id.content_speed_picker_speedBTNMph) }
             } else Log.e("SpeedFrag","lateinit error 1")
-            val buttonOK: Button? = mView?.findViewById(R.id.speedFragButtonOk)
+            val buttonOK: Button? = mView?.findViewById(R.id.content_speed_picker_speedBTNOk)
             buttonOK?.setOnClickListener {
                 val value: Float = np?.value?.toFloat()?: SPEED_DEFAULT.toFloat()
                 val valueMperS: Float = if( buttKmh != null && buttKmh.isChecked) value / 3.6F

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/llFinishGracefully"
+    android:id="@+id/activity_finish_gracefully_LLTopLevel"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/tvFinishGracefullyLabel"
+        android:id="@+id/activity_finish_gracefullyTVLabel"
         style="@style/labelTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,7 +14,7 @@
         android:text="@string/what_happened" />
 
     <TextView
-        android:id="@+id/tvFinishGracefully"
+        android:id="@+id/activity_finish_gracefullyTVData"
         style="@style/mainTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -3,7 +3,7 @@ package radim.outfit.core.export.work.locusapiextensions
 import com.garmin.fit.CoursePoint
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Point
-import radim.outfit.core.export.work.parameterStyleNameToCoursePoints
+import radim.outfit.core.export.work.styleNameORIconStyleIconUrlToCoursePoints
 
 const val PARAMETER_STYLE_NAME_FALLBACK = "poi"
 
@@ -26,9 +26,22 @@ fun Point.getWaypointName(): String {
     } else PARAMETER_STYLE_NAME_FALLBACK
 }
 
+/*
+String styleName = pt.getParameterStyleName();
+if (Validator.isValid(styleName)) {
+    return styleName;
+}
+
+if (pt.styleNormal != null && pt.styleNormal.getIconStyleIconUrl() != null) {
+    return pt.styleNormal.getIconStyleIconUrl();
+}
+return "";
+*/
+
 fun Point.getCoursepointEnumForced(): CoursePoint?{
-    val styleName = parameterStyleName ?: ""
-    var enumForced = parameterStyleNameToCoursePoints[styleName]
+    val styleName:String = parameterStyleName ?: if (styleNormal != null && styleNormal.iconStyleIconUrl != null)
+        styleNormal.iconStyleIconUrl else ""
+    var enumForced = styleNameORIconStyleIconUrlToCoursePoints[styleName]
     if (enumForced == null &&
             (parameterRteAction == PointRteAction.PASS_PLACE ||
             parameterRteAction == PointRteAction.UNDEFINED))
