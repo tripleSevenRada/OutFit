@@ -25,13 +25,11 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_export.*
 import kotlinx.android.synthetic.main.content_path.*
 import locus.api.android.utils.LocusInfo
-import radim.outfit.core.export.work.Stats
 import radim.outfit.core.export.logic.*
 import locus.api.android.ActionTools
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import radim.outfit.core.export.work.FilenameCharsFilter
-import radim.outfit.core.export.work.getFilename
+import radim.outfit.core.export.work.*
 import radim.outfit.core.share.work.*
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
@@ -58,6 +56,7 @@ class MainActivity : AppCompatActivity(),
         OkActionProvider,
         LastSelectedValuesProvider,
         PermInfoProvider,
+        TrackDetailProvider,
         Toaster {
 
     private val tvStatsFiller = " \n \n \n "
@@ -74,9 +73,9 @@ class MainActivity : AppCompatActivity(),
     // SpeedPickerFragment interfaces impl START
     override fun getOkAction(): (Float) -> Unit = exportListener.getOkAction()
 
-    override fun getSpeed() = sharedPreferences.getInt(getString("last_seen_speed_value"), SPEED_DEFAULT)
+    override fun getSpeedMperS() = sharedPreferences.getFloat(getString("last_seen_speed_value_m_s"), SPEED_DEFAULT_M_S)
+    override fun setSpeedMperS(value: Float) = persistInSharedPreferences(getString("last_seen_speed_value_m_s"), clampSpeedMS(value))
     override fun getUnitsButtonId() = sharedPreferences.getInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
-    override fun setSpeed(value: Int) = persistInSharedPreferences(getString("last_seen_speed_value"), value)
     override fun setUnitsButtonId(id: Int) = persistInSharedPreferences(getString("last_seen_speed_units"), id)
 
     private fun <T> persistInSharedPreferences(key: String, value: T) {
@@ -97,6 +96,16 @@ class MainActivity : AppCompatActivity(),
             }
             apply()
         }
+    }
+    override fun getLengthInM(): Int {
+        val viewModel =
+                ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
+        val length = viewModel.track?.stats?.totalLength
+        return if(length == null){
+            // sanity check, should never happen
+            FailGracefullyLauncher().failGracefully(this,"Null track length.")
+            2
+        }else length.toInt()
     }
     // SpeedPickerFragment interfaces impl END
 
@@ -151,9 +160,8 @@ class MainActivity : AppCompatActivity(),
                 getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
 
         with(sharedPreferences.edit()) {
-            if (!sharedPreferences.contains(getString("last_seen_speed_value"))) {
-                putInt(getString("last_seen_speed_value"), SPEED_DEFAULT)
-            }
+            if (!sharedPreferences.contains(getString("last_seen_speed_value_m_s")))
+                putFloat(getString("last_seen_speed_value_m_s"), SPEED_DEFAULT_M_S)
             if (!sharedPreferences.contains(getString("last_seen_speed_units"))) {
                 putInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
             }

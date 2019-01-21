@@ -59,8 +59,6 @@ class ExportListener(
             return
         }
 
-        viewModel.exportInProgress = true
-
         // https://medium.com/coding-blocks/making-asynctask-obsolete-with-kotlin-5fe1d944d69
         // https://antonioleiva.com/anko-background-kotlin-android/
 
@@ -84,6 +82,7 @@ class ExportListener(
         if (!dataIsValid()) return
         val finalExportPojo = getFinalExportPOJO()
         onStartCallback()
+        viewModel.exportInProgress = true
         doAsync {
             val result = execute(finalExportPojo.file,
                     finalExportPojo.filename,
