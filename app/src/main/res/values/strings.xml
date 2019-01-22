@@ -35,9 +35,12 @@
     <string name="nmb_waypoints_stats">Number of waypoints:</string>
 
     <!-- speed_fragment.xml-->
-    <string name="frag_label">There is no speed in this track. Please select.</string>
+    <string name="frag_label_speed">There is no speed in this track. Please select.</string>
     <string name="kmh" translatable="false">km/h</string>
     <string name="mph" translatable="false">mph</string>
+    <string name="frag_label_time_to_complete_course">Maybe you expect to complete this track in:</string>
+    <string name="hours">hours</string>
+    <string name="minutes">minutes</string>
 
     <string name="ok">OK</string>
     <string name="yes">YES</string>
@@ -45,7 +48,7 @@
 
     <!-- shared preferences -->
     <string name="main_activity_preferences" translatable="false">radim.outfit.MainActivity</string>
-    <string name="last_seen_speed_value" translatable="false">value_in_speed_picker</string>
+    <string name="last_seen_speed_value_m_s" translatable="false">value_for_duration_picker</string>
     <string name="last_seen_speed_units" translatable="false">units_in_speed_picker-id_of_the_widget</string>
     <string name="last_seen_root" translatable="false">last_seen_root_directory</string>
     <string name="checkbox_cciq" translatable="false">checkbox_enabling_cc_iq</string>
@@ -64,6 +67,7 @@
     <string name="nmb_trackpoints">Number of trackpoints:</string>
     <string name="nmb_coursepoints">Number of coursepoints:</string>
     <string name="found_devices_label">Found devices:</string>
+    <string name="found_companion">. IN FIT, the companion app: </string>
 
     <!-- Locus dir pick-->
     <string name="pick_dir_message">Select export folder</string>
@@ -91,5 +95,9 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
     <string name="upgrade_needed_message">Garmin Connect Mobile is not up-to-date. Update?</string>
     <string name="upgrade_needed_yes">Update</string>
     <string name="upgrade_needed_cancel">Cancel</string>
+
+    <!-- Locus dir pick-->
+    <string name="infit">IN FIT</string>
+
 
 </resources>

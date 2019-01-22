@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/llContentConnectIQ"
+    android:id="@+id/content_connectiqLLTopLevel"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
     <Button
-        android:id="@+id/btnCCIQShareCourse"
+        android:id="@+id/content_connectiqBTNShareCourse"
         style="@style/customButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,20 +15,20 @@
         android:text="@string/btn_share_course" />
 
     <View
-        android:id="@+id/CCIQDivider"
+        android:id="@+id/content_connectiqVIEWDivider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="16dp"
         android:background="?android:attr/listDivider" />
 
     <LinearLayout
-        android:id="@+id/llCCIQLogoCheckbox"
+        android:id="@+id/content_connectiqLLLogoCheckboxHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <ImageView
-            android:id="@+id/ivCCIQ"
+            android:id="@+id/content_connectiqIV"
             android:layout_width="225dp"
             android:layout_height="60dp"
             android:layout_marginTop="16dp"
@@ -37,7 +37,7 @@
             android:src="@drawable/connect_iq_logo_black" />
 
         <CheckBox
-            android:id="@+id/chbCCIQ"
+            android:id="@+id/content_connectiqCHCKBOX"
             android:layout_marginTop="16dp"
             android:layout_marginStart="16dp"
             android:layout_width="wrap_content"
@@ -47,44 +47,44 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/llCCIQIndicator"
+        android:id="@+id/content_connectiqLLIndicatorHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:orientation="horizontal">
 
         <View
-            android:id="@+id/CCIQIndicatorView1"
+            android:id="@+id/content_connectiqVIEWIndicator1"
             style="@style/contentConnectIQIndicator"
             android:layout_marginStart="4dp" />
 
         <View
-            android:id="@+id/CCIQIndicatorView2"
+            android:id="@+id/content_connectiqVIEWIndicator2"
             style="@style/contentConnectIQIndicator" />
 
         <View
-            android:id="@+id/CCIQIndicatorView3"
+            android:id="@+id/content_connectiqVIEWIndicator3"
             style="@style/contentConnectIQIndicator" />
 
         <View
-            android:id="@+id/CCIQIndicatorView4"
+            android:id="@+id/content_connectiqVIEWIndicator4"
             style="@style/contentConnectIQIndicator" />
 
         <View
-            android:id="@+id/CCIQIndicatorView5"
+            android:id="@+id/content_connectiqVIEWIndicator5"
             style="@style/contentConnectIQIndicator" />
 
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/llCCIQGroupDevices"
+        android:id="@+id/content_connectiqLLGroupDevicecVertical"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="32"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tvCCIQDevicesLabel"
+            android:id="@+id/content_connectiqTVDevicesLabel"
             style="@style/labelTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -93,13 +93,14 @@
             android:textColor="@color/black" />
 
         <ScrollView
-            android:id="@+id/svCCIQDevicesData"
+            android:id="@+id/content_connectiqSCRLVIEWDevices"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <TextView
-                android:id="@+id/tvCCIQDevicesData"
+                android:id="@+id/content_connectiqTVDevicesData"
                 style="@style/mainTextView"
+                android:textSize="14sp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp" />

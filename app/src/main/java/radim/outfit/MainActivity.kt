@@ -25,13 +25,11 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_export.*
 import kotlinx.android.synthetic.main.content_path.*
 import locus.api.android.utils.LocusInfo
-import radim.outfit.core.export.work.Stats
 import radim.outfit.core.export.logic.*
 import locus.api.android.ActionTools
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import radim.outfit.core.export.work.FilenameCharsFilter
-import radim.outfit.core.export.work.getFilename
+import radim.outfit.core.export.work.*
 import radim.outfit.core.share.work.*
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
@@ -58,6 +56,7 @@ class MainActivity : AppCompatActivity(),
         OkActionProvider,
         LastSelectedValuesProvider,
         PermInfoProvider,
+        TrackDetailProvider,
         Toaster {
 
     private val tvStatsFiller = " \n \n \n "
@@ -74,9 +73,9 @@ class MainActivity : AppCompatActivity(),
     // SpeedPickerFragment interfaces impl START
     override fun getOkAction(): (Float) -> Unit = exportListener.getOkAction()
 
-    override fun getSpeed() = sharedPreferences.getInt(getString("last_seen_speed_value"), SPEED_DEFAULT)
+    override fun getSpeedMperS() = sharedPreferences.getFloat(getString("last_seen_speed_value_m_s"), SPEED_DEFAULT_M_S)
+    override fun setSpeedMperS(value: Float) = persistInSharedPreferences(getString("last_seen_speed_value_m_s"), clampSpeedMS(value))
     override fun getUnitsButtonId() = sharedPreferences.getInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
-    override fun setSpeed(value: Int) = persistInSharedPreferences(getString("last_seen_speed_value"), value)
     override fun setUnitsButtonId(id: Int) = persistInSharedPreferences(getString("last_seen_speed_units"), id)
 
     private fun <T> persistInSharedPreferences(key: String, value: T) {
@@ -97,6 +96,17 @@ class MainActivity : AppCompatActivity(),
             }
             apply()
         }
+    }
+
+    override fun getLengthInM(): Int {
+        val viewModel =
+                ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
+        val length = viewModel.track?.stats?.totalLength
+        return if (length == null) {
+            // sanity check, should never happen
+            FailGracefullyLauncher().failGracefully(this, "Null track length.")
+            2
+        } else length.toInt()
     }
     // SpeedPickerFragment interfaces impl END
 
@@ -123,7 +133,7 @@ class MainActivity : AppCompatActivity(),
 
         supportActionBar?.title = getString("activity_main_label")
 
-        tvStats?.text = tvStatsFiller // do not flick or "inflate" visibly
+        content_exportTVStatsData?.text = tvStatsFiller // do not flick or "inflate" visibly
 
         val viewModel =
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
@@ -151,9 +161,8 @@ class MainActivity : AppCompatActivity(),
                 getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
 
         with(sharedPreferences.edit()) {
-            if (!sharedPreferences.contains(getString("last_seen_speed_value"))) {
-                putInt(getString("last_seen_speed_value"), SPEED_DEFAULT)
-            }
+            if (!sharedPreferences.contains(getString("last_seen_speed_value_m_s")))
+                putFloat(getString("last_seen_speed_value_m_s"), SPEED_DEFAULT_M_S)
             if (!sharedPreferences.contains(getString("last_seen_speed_units"))) {
                 putInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
             }
@@ -163,6 +172,8 @@ class MainActivity : AppCompatActivity(),
                 putBoolean(getString("checkbox_cciq"), true)
             apply()
         }
+
+        //showSpeedPickerDialog()  // if you want to test layout on emulator only!
 
         val activeLocus = LocusUtils.getActiveVersion(this)
         if (activeLocus == null) {
@@ -182,9 +193,9 @@ class MainActivity : AppCompatActivity(),
             return
         }
 
-        etFilename?.filters = arrayOf(FilenameCharsFilter())
-        btnExport?.setOnClickListener(exportListener)
-        if (etFilename != null) exportListener.attachView(etFilename)
+        content_pathETFilename?.filters = arrayOf(FilenameCharsFilter())
+        content_exportBTNExport?.setOnClickListener(exportListener)
+        if (content_pathETFilename != null) exportListener.attachView(content_pathETFilename)
         exportListener.attachDefaultFilename(this.getString("default_filename"))
 
         if (permWriteIsGranted()) {
@@ -209,7 +220,7 @@ class MainActivity : AppCompatActivity(),
     private fun handleIntentTrackToolsMenu(act: AppCompatActivity,
                                            intent: Intent,
                                            viewModel: MainActivityViewModel) {
-        if(viewModel.track == null) {
+        if (viewModel.track == null) {
             disableExecutive()
             var doFail = false
             var failMessage = ""
@@ -230,7 +241,7 @@ class MainActivity : AppCompatActivity(),
                     failMessage = "${e.localizedMessage} Error 5"
                 }
                 uiThread {
-                    if(doFail){
+                    if (doFail) {
                         fail.failGracefully(act, failMessage)
                     }
                     if (track != null && track.points != null && track.points.size > 0) {
@@ -245,14 +256,14 @@ class MainActivity : AppCompatActivity(),
             }
         } else {
             val track = viewModel.track
-            if(track != null) trackInit(track, act)
+            if (track != null) trackInit(track, act)
         }
     }
 
-    private fun trackInit(track: Track, act: AppCompatActivity){
-        tvStats?.text = Stats().basicInfo(track, act)
+    private fun trackInit(track: Track, act: AppCompatActivity) {
+        content_exportTVStatsData?.text = Stats().basicInfo(track, act)
         val filename = getFilename(track.name, getString("default_filename"))
-        etFilename?.setText(filename)
+        content_pathETFilename?.setText(filename)
         setTrack(track, exportListener)
         setFilename(filename, exportListener)
     }
@@ -334,16 +345,16 @@ class MainActivity : AppCompatActivity(),
     private fun disableExecutive() {
         if (DEBUG_MODE) Log.i(LOG_TAG_MAIN, "DISABLE_Executive; Activity: $this")
         // disable executive UI
-        btnExport?.isEnabled = false
-        progressBar?.visibility = ProgressBar.VISIBLE
+        content_exportBTNExport?.isEnabled = false
+        activity_mainPB?.visibility = ProgressBar.VISIBLE
     }
 
     private fun enableExecutive(viewModel: MainActivityViewModel) {
         if (DEBUG_MODE) Log.i(LOG_TAG_MAIN, "ENABLE_Executive; Activity: $this")
         // enable executive UI if export is not running
         if (!viewModel.exportInProgress) {
-            btnExport?.isEnabled = true
-            progressBar?.visibility = ProgressBar.INVISIBLE
+            content_exportBTNExport?.isEnabled = true
+            activity_mainPB?.visibility = ProgressBar.INVISIBLE
         }
     }
 
@@ -400,11 +411,11 @@ class MainActivity : AppCompatActivity(),
     private fun setTvRootDir() {
         val text: String? = getRoot(exportListener)?.path
         if (text != null) {
-            tvRootDir?.setTextColor(this.getColor(R.color.imitateButtons))
-            tvRootDir?.text = text
+            content_pathTVRootDirPath?.setTextColor(this.getColor(R.color.imitateButtons))
+            content_pathTVRootDirPath?.text = text
         } else {
-            tvRootDir?.setTextColor(this.getColor(R.color.colorAccent))
-            tvRootDir?.text = this.getString("not_set")
+            content_pathTVRootDirPath?.setTextColor(this.getColor(R.color.colorAccent))
+            content_pathTVRootDirPath?.text = this.getString("not_set")
         }
     }
 

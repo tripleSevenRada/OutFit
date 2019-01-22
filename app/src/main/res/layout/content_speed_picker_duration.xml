@@ -1,0 +1,55 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/content_speed_picker_durationLLTopLevel"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/content_speed_picker_durationTVLabel"
+        style="@style/mainTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/speed_picker_margin"
+        android:layout_marginTop="@dimen/speed_picker_margin"
+        android:layout_marginEnd="@dimen/speed_picker_margin"
+        android:text="@string/frag_label_time_to_complete_course" />
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/content_speed_picker_durationLLWrapperHorizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <NumberPicker
+            android:id="@+id/content_speed_picker_durationNPHours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:descendantFocusability="blocksDescendants"
+            android:layout_marginStart="@dimen/speed_picker_margin" />
+
+        <TextView
+            android:id="@+id/content_speed_picker_durationTVHours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="@dimen/speed_picker_margin"
+            android:text="@string/hours" />
+
+        <NumberPicker
+            android:id="@+id/content_speed_picker_durationNPMinutes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:descendantFocusability="blocksDescendants"
+            android:layout_marginStart="@dimen/speed_picker_margin" />
+
+        <TextView
+            android:id="@+id/content_speed_picker_durationTVMinutes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="@dimen/speed_picker_margin"
+            android:text="@string/minutes" />
+
+    </LinearLayout>
+
+</LinearLayout>

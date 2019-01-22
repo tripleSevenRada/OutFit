@@ -1,7 +1,7 @@
 # OUT FIT
 Locus Add-on to export courses in .fit format.
 
-Dedendencies:
+Dependencies:
 
 * Locus API:
 https://github.com/asamm/locus-api

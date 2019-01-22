@@ -13,12 +13,14 @@ import kotlinx.android.synthetic.main.content_stats.*
 import android.view.View
 import android.widget.CheckBox
 import android.widget.Toast
+import com.garmin.android.connectiq.IQApp
 import com.garmin.android.connectiq.IQDevice
 import kotlinx.android.synthetic.main.activity_view_results.*
 import kotlinx.android.synthetic.main.content_connectiq.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.share.logic.ConnectIQManager
+import radim.outfit.core.share.server.LocalHostServer
 import radim.outfit.core.share.server.MIME_FIT
 import radim.outfit.core.share.work.*
 import radim.outfit.core.timer.SimpleTimer
@@ -28,8 +30,11 @@ import java.io.File
 import kotlin.text.StringBuilder
 
 const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-from" // plus xml resources - paths...
+const val NANOHTTPD_PORT = 22222
 
 class ViewResultsActivity : AppCompatActivity() {
+
+    //https://drive.google.com/open?id=18Z1mDp_IcV8NQWlSipONdPs1XWaNjsOr
 
     private val tag = "VIEW_RESULTS"
     private lateinit var parcel: ViewResultsParcel
@@ -40,7 +45,7 @@ class ViewResultsActivity : AppCompatActivity() {
     fun onCheckBoxCCIQClicked(checkboxCCIQ: View) {
         if (checkboxCCIQ is CheckBox) {
             setCheckBoxStatus(checkboxCCIQ.isChecked)
-            if(checkboxCCIQ.isChecked) startConnectIQServices()
+            if (checkboxCCIQ.isChecked) startConnectIQServices()
             else stopConnectIQServices()
         }
     }
@@ -57,7 +62,7 @@ class ViewResultsActivity : AppCompatActivity() {
 
         supportActionBar?.title = getString("activity_view_results_label")
 
-        chbCCIQ.isChecked = this.getSharedPreferences(
+        content_connectiqCHCKBOX.isChecked = this.getSharedPreferences(
                 getString(R.string.main_activity_preferences),
                 Context.MODE_PRIVATE).getBoolean(getString("checkbox_cciq"), true)
 
@@ -70,18 +75,46 @@ class ViewResultsActivity : AppCompatActivity() {
                 this,
                 ::onStartCIQInit,
                 ::onFinnishCIQInit,
-                ::onDeviceEvent
+                ::onDeviceEvent,
+                ::onAppEvent
         )
 
         if (::parcel.isInitialized) {
             val messagesAsStringBuilder = StringBuilder()
             parcel.messages.forEach { with(messagesAsStringBuilder) { append(it); append("\n") } }
-            tvContentStatsData.text = messagesAsStringBuilder.toString()
+            content_statsTVData.text = messagesAsStringBuilder.toString()
         }
         if (DEBUG_MODE && ::parcel.isInitialized) {
             parcel.buffer.forEach { Log.i(tag, "Circular buffer of exports: $it") }
         }
+    }
 
+    // NANO HTTPD START
+    private lateinit var server: LocalHostServer
+    private fun bindNanoHTTPD() {
+        try {
+            server = LocalHostServer(NANOHTTPD_PORT,
+                    File("${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"))
+            if(DEBUG_MODE)Log.i(tag, "JSONArray, coursenames: ${server.coursenamesAsJSON()}")
+            server.start()
+        } catch (e: Exception){
+            Log.e(tag, e.localizedMessage)
+        }
+    }
+
+    private fun unbindNanoHTTPD() {
+        if(::server.isInitialized){
+            try {
+                server.stop()
+            } catch (e: Exception){
+                Log.e(tag, e.localizedMessage)
+            }
+        }
+    }
+    // NANO HTTPD END
+
+    override fun onStart() {
+        super.onStart()
         val viewModel = ViewModelProviders.of(this).get(ViewResultsActivityViewModel::class.java)
 
         val dirToServeFromPath = "${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"
@@ -110,11 +143,10 @@ class ViewResultsActivity : AppCompatActivity() {
                     }
                     if (dataToServeReady) {
                         val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
-                        if (DEBUG_MODE) systemOutServedFiles(afterFiles)
                         viewModel.fileOperationsDone = true
                         viewModel.bufferHead = if (afterFiles.isNotEmpty()) afterFiles[0] else null
                         shareFitReady = true
-                        if(chbCCIQ.isChecked)startConnectIQServices() // includes disableExecutive() // START
+                        if (content_connectiqCHCKBOX.isChecked) startConnectIQServices() // includes disableExecutive() // START
                         else enableExecutive()
                     } else {
                         FailGracefullyLauncher().failGracefully(this@ViewResultsActivity, "file operations")
@@ -122,31 +154,11 @@ class ViewResultsActivity : AppCompatActivity() {
                 }
             }
         } else {
-            if (DEBUG_MODE) {
-                val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
-                systemOutServedFiles(afterFiles)
-            }
             shareFitReady = true
-            if(chbCCIQ.isChecked)startConnectIQServices() // includes disableExecutive() // START
+            if (content_connectiqCHCKBOX.isChecked) startConnectIQServices() // includes disableExecutive() // START
             else enableExecutive()
         }
     }
-
-    private fun systemOutServedFiles(files: List<File>) {
-        files.forEach { System.out.println("SERVED QUEUE: $it") }
-    }
-
-    // NANO HTTPD START
-    private fun bindNanoHTTPD() {
-
-    }
-
-    private fun unbindNanoHTTPD() {
-
-    }
-    // NANO HTTPD END
-
-    //override fun onStart() { super.onStart() }
     //override fun onResume() { super.onResume() }
     //override fun onPause() { super.onPause() }
 
@@ -155,16 +167,18 @@ class ViewResultsActivity : AppCompatActivity() {
         Log.i(tag, "onStop")
         stopConnectIQServices()
     }
+
     override fun onDestroy() {
         super.onDestroy()
         Log.i(tag, "onDestroy")
     }
 
-    private fun startConnectIQServices(){
+    private fun startConnectIQServices() {
         bindNanoHTTPD()
         connectIQManager.startConnectIQ()
     }
-    private fun stopConnectIQServices(){
+
+    private fun stopConnectIQServices() {
         unbindNanoHTTPD()
         // listener keeps track if connected or not
         connectIQManager.shutDownConnectIQ()
@@ -172,25 +186,27 @@ class ViewResultsActivity : AppCompatActivity() {
             indicatorIQTimer.stop()
             if (::indicatorIQTimerCallback.isInitialized) indicatorIQTimerCallback.restart(View.VISIBLE)
         }
-        enableExecutive()
+        content_connectiqTVDevicesData.text = ""
     }
 
     // CALLBACKS START
     private fun enableExecutive() {
-        chbCCIQ.isEnabled = true
+        content_connectiqCHCKBOX.isEnabled = true
         //btnCCIQShareCourse.isEnabled = true
-        progressBarView.visibility = ProgressBar.INVISIBLE
+        activity_view_resultsPB.visibility = ProgressBar.INVISIBLE
     }
+
     private fun disableExecutive() {
-        chbCCIQ.isEnabled = false
+        content_connectiqCHCKBOX.isEnabled = false
         //btnCCIQShareCourse.isEnabled = false
-        progressBarView.visibility = ProgressBar.VISIBLE
+        activity_view_resultsPB.visibility = ProgressBar.VISIBLE
     }
 
     // ConnectIQ init loop START
     private fun onStartCIQInit() {
         disableExecutive()
     }
+
     // called back after cca 10 - 30 ms from startConnectIQServices()
     private fun onFinnishCIQInit() {
         enableExecutive()
@@ -204,7 +220,13 @@ class ViewResultsActivity : AppCompatActivity() {
 
     private fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus) {
         spannedDeviceDisplay.onDeviceEvent(device, status)
-        tvCCIQDevicesData.text = spannedDeviceDisplay.getDisplay()
+        if(DEBUG_MODE)Log.i(tag,"onDeviceEvent display after call ${device.friendlyName} $status")
+        content_connectiqTVDevicesData.text = spannedDeviceDisplay.getDisplay()
+    }
+    private fun onAppEvent(device: IQDevice, status: IQApp.IQAppStatus){
+        spannedDeviceDisplay.onAppEvent(device, status, this)
+        if(DEBUG_MODE)Log.i(tag,"onAppEvent display after call ${device.friendlyName} $status ")
+        content_connectiqTVDevicesData.text = spannedDeviceDisplay.getDisplay()
     }
     // CALLBACKS END
 
@@ -214,11 +236,11 @@ class ViewResultsActivity : AppCompatActivity() {
 
     inner class IndicatorIQTimerCallback : Timer.TimerCallback {
         private val views = listOf<View>(
-                CCIQIndicatorView1,// 0
-                CCIQIndicatorView2,
-                CCIQIndicatorView3,
-                CCIQIndicatorView4,
-                CCIQIndicatorView5)// 4
+                content_connectiqVIEWIndicator1,// 0
+                content_connectiqVIEWIndicator2,
+                content_connectiqVIEWIndicator3,
+                content_connectiqVIEWIndicator4,
+                content_connectiqVIEWIndicator5)// 4
         private var pointer = 0
         override fun tick(): Boolean {
             //increasing style
@@ -244,7 +266,7 @@ class ViewResultsActivity : AppCompatActivity() {
     // INDICATOR END
 
     fun shareCourse(v: View?) {
-        if(!shareFitReady) return
+        if (!shareFitReady) return
         val viewModel = ViewModelProviders.of(this).get(ViewResultsActivityViewModel::class.java)
         val fileToShare: File? = viewModel.bufferHead
         val uriToShare: Uri? = if (fileToShare != null) {

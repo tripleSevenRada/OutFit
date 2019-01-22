@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/llExport"
+    android:id="@+id/content_exportLLTopLevel"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/tvStatsLabel"
+        android:id="@+id/content_exportTVStatsLabel"
         style="@style/labelTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,14 +14,14 @@
         android:text="@string/stats_label" />
 
     <TextView
-        android:id="@+id/tvStats"
+        android:id="@+id/content_exportTVStatsData"
         style="@style/mainTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp" />
 
     <Button
-        android:id="@+id/btnExport"
+        android:id="@+id/content_exportBTNExport"
         style="@style/customButton"
         android:layout_marginTop="16dp"
         android:text="@string/btn_export" />

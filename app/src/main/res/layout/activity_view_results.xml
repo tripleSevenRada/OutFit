@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/rlViewParent"
+    android:id="@+id/activity_view_resultsRLTopLevel"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <ProgressBar
-        android:id="@+id/progressBarView"
+        android:id="@+id/activity_view_resultsPB"
         style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -13,7 +13,7 @@
         android:elevation="16dp" />
 
     <LinearLayout
-        android:id="@+id/includeWrapperView"
+        android:id="@+id/activity_view_resultsLLIncludeHorizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:baselineAligned="true"

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/llContentStats"
+    android:id="@+id/content_statsLLTopLevel"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/blueBackground"
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/tvContentStatsLabel"
+        android:id="@+id/content_statsTVLabel"
         style="@style/labelTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,12 +15,12 @@
         android:text="@string/stats_label" />
 
     <ScrollView
-        android:id="@+id/svContentStats"
+        android:id="@+id/content_statsSV"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
     <TextView
-        android:id="@+id/tvContentStatsData"
+        android:id="@+id/content_statsTVData"
         style="@style/mainTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
