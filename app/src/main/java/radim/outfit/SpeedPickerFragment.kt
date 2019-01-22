@@ -134,7 +134,11 @@ class SpeedPickerFragment : DialogFragment() {
     }
 
     private fun updateDuration(extraData: TrackTimesPOJO, npHours: NumberPicker?, npMinutes: NumberPicker?) {
-        if (extraData.hours in 0..MAX_HOURS_PICKER) npHours?.value = extraData.hours
+        npHours?.value = when {
+            (extraData.hours < 0) -> 0
+            (extraData.hours > MAX_HOURS_PICKER) -> MAX_HOURS_PICKER
+            else -> extraData.hours
+        }
         if (extraData.minutes in 0..59) npMinutes?.value = extraData.minutes
     }
 
