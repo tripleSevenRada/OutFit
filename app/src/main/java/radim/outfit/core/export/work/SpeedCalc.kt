@@ -37,12 +37,7 @@ fun clampTimeInTimePicker(hours: Int, minutes: Int): SimpleTimePOJO {
 }
 
 // the only accessor, has to clamp
-fun getTrackTimesPOJO(btnKmh: Boolean?, btnMph: Boolean?, units: Int, trackLength: Float): TrackTimesInPickerPOJO {
-    val speedMperS = when {
-        (btnKmh != null && btnKmh) -> units.toFloat().kmhToMS()
-        (btnMph != null && btnMph) -> units.toFloat().mphToMS()
-        else -> units.toFloat().kmhToMS()
-    }
+fun getTrackTimesPOJO(speedMperS: Float, trackLength: Float): TrackTimesInPickerPOJO {
     val minutesTotal = ((trackLength / speedMperS) / 60F).roundToInt()
     val hours = minutesTotal / 60
     val minutes = minutesTotal % 60
