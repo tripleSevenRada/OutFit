@@ -21,7 +21,7 @@ interface Toaster{
     fun toast(key: String, length: Int)
 }
 
-// error codes 8 - 14
+// error codes 8 - 15
 // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
 
 class ExportListener(
@@ -125,12 +125,16 @@ class ExportListener(
             callBackResultError("12 - stats == null")
             return false
         }
+        if (track.stats.totalLength < 1.0) {
+            callBackResultError("13 - totalLength < 1.0")
+            return false
+        }
         if (!::editTextFilename.isInitialized) {
-            callBackResultError("13 - editTextFilename - lateinit error")
+            callBackResultError("14 - editTextFilename - lateinit error")
             return false
         }
         if (!::defaultFilename.isInitialized) {
-            callBackResultError("14 - defaultFilename - lateinit error")
+            callBackResultError("15 - defaultFilename - lateinit error")
             return false
         }
         return true

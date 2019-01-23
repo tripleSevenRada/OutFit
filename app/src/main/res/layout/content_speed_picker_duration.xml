@@ -18,6 +18,8 @@
         android:id="@+id/content_speed_picker_durationLLWrapperHorizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/speed_picker_margin"
+        android:layout_marginBottom="@dimen/speed_picker_margin"
         android:orientation="horizontal">
 
         <NumberPicker
