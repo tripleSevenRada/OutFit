@@ -19,8 +19,8 @@ import java.lang.Exception
 
 const val DEFAULT_UNITS_RADIO_BUTTON_ID = R.id.content_speed_picker_speedBTNKmh
 
-interface FireActionProvider {
-    fun getFireAction(): (Float) -> Unit
+interface TriggerActionProvider {
+    fun getTriggerAction(): (Float) -> Unit
 }
 
 interface LastSelectedValuesProvider {
@@ -38,14 +38,16 @@ interface TrackDetailsProvider {
 
 class SpeedPickerFragment : DialogFragment() {
 
-    private lateinit var providerOfFireAction: FireActionProvider
+    private lateinit var providerOfTriggerAction: TriggerActionProvider
     private lateinit var providerOfLastSelectedValues: LastSelectedValuesProvider
     private lateinit var providerOfTrackDetails: TrackDetailsProvider
+
+    lateinit var speed_toMperS: Int.() -> Float
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is Activity) {
-            providerOfFireAction = context as FireActionProvider
+            providerOfTriggerAction = context as TriggerActionProvider
             providerOfLastSelectedValues = context as LastSelectedValuesProvider
             providerOfTrackDetails = context as TrackDetailsProvider
         } else {
@@ -61,7 +63,7 @@ class SpeedPickerFragment : DialogFragment() {
         // Inflate the layout for this fragment
         val mView = inflater.inflate(R.layout.speed_picker_fragment, container, false)
 
-        if (::providerOfFireAction.isInitialized &&
+        if (::providerOfTriggerAction.isInitialized &&
                 ::providerOfLastSelectedValues.isInitialized &&
                 ::providerOfTrackDetails.isInitialized) {
 
@@ -70,6 +72,9 @@ class SpeedPickerFragment : DialogFragment() {
             val npSpeed: NumberPicker? = mView?.findViewById(R.id.content_speed_picker_speedNPSpeed)
             val npHours: NumberPicker? = mView?.findViewById(R.id.content_speed_picker_durationNPHours)
             val npMinutes: NumberPicker? = mView?.findViewById(R.id.content_speed_picker_durationNPMinutes)
+
+            val speedIsInKmh_toMperS: Int.() -> Float = {this.kmhToMS()}
+            val speedIsInMph_toMperS: Int.() -> Float = {this.mphToMS()}
 
             fun disconnectSpeedOnChangeListener() {
                 npSpeed?.setOnValueChangedListener(null)
@@ -149,20 +154,23 @@ class SpeedPickerFragment : DialogFragment() {
                     mView?.findViewById(providerOfLastSelectedValues.getUnitsButtonId())
             lastSelectedButton?.isChecked = true
 
-            buttKmh?.setOnClickListener {
-                providerOfLastSelectedValues.setUnitsButtonId(R.id.content_speed_picker_speedBTNKmh)
-                disconnectTimeOnChangeListeners()
-                setCurrentSelectedSpeed(SpeedInPickerPOJO.SpeedWithinBounds(true,
-                        false, npSpeed?.value ?: 10), npHours, npMinutes)
-                connectTimeOnChangeListeners()
-            }
-
-            buttMph?.setOnClickListener {
-                providerOfLastSelectedValues.setUnitsButtonId(R.id.content_speed_picker_speedBTNMph)
-                disconnectTimeOnChangeListeners()
-                setCurrentSelectedSpeed(SpeedInPickerPOJO.SpeedWithinBounds(false,
-                        true, npSpeed?.value ?: 10), npHours, npMinutes)
-                connectTimeOnChangeListeners()
+            val unitButtons = mutableListOf<Button?>(buttKmh, buttMph)
+            val boolParamKmh = mutableListOf(true, false)
+            val boolParamMph = mutableListOf(false, true)
+            val buttonIds = mutableListOf<Int>(R.id.content_speed_picker_speedBTNKmh,
+                    R.id.content_speed_picker_speedBTNMph)
+            val speedUnitsToMperS = mutableListOf<Int.() -> Float>(speedIsInKmh_toMperS, speedIsInMph_toMperS)
+            var count = 0
+            unitButtons.forEach{
+                it?.setOnClickListener {
+                    providerOfLastSelectedValues.setUnitsButtonId(buttonIds[count])
+                    speed_toMperS = speedUnitsToMperS[count]
+                    disconnectTimeOnChangeListeners()
+                    setCurrentSelectedSpeed(SpeedInPickerPOJO.SpeedWithinBounds(boolParamKmh[count],
+                            boolParamMph[count], npSpeed?.value ?: 10), npHours, npMinutes)
+                    connectTimeOnChangeListeners()
+                }
+                count++
             }
 
             updateSpeedCluster(readStoredSpeed(buttKmh?.isChecked, buttMph?.isChecked), npSpeed)
@@ -176,16 +184,10 @@ class SpeedPickerFragment : DialogFragment() {
 
             val buttonOKSpeed: Button? = mView?.findViewById(R.id.content_speed_picker_speedBTNOk)
             buttonOKSpeed?.setOnClickListener {
-                val valueToBeInCourse: Float = npSpeed?.value?.toFloat() ?: SPEED_DEFAULT_M_S
-                val valueToBeInCourseMperS: Float = when {
-                    (buttKmh != null && buttKmh.isChecked) -> valueToBeInCourse.kmhToMS()
-                    (buttMph != null && buttMph.isChecked) -> valueToBeInCourse.mphToMS()
-                    else -> valueToBeInCourse.kmhToMS()
-                }
-                providerOfFireAction.getFireAction().invoke(valueToBeInCourseMperS)
+                val valueToBeInCourseMperS: Float = (npSpeed?.value?: 10).speed_toMperS()
+                providerOfTriggerAction.getTriggerAction().invoke(valueToBeInCourseMperS)
                 dialog.dismiss()
             }
-
         } else {
             Log.e("SPF", "Init error...")
         }
@@ -215,7 +217,7 @@ class SpeedPickerFragment : DialogFragment() {
                                        kmh: Boolean?,
                                        mph: Boolean?,
                                        npSpeed: NumberPicker?) {
-        val seconds = (timePojo.hours * 60 * 60) + (timePojo.minutes * 60)
+        val seconds = timePojo.toSeconds()
         val speedUnitAgnostic = clampSpeed(
                 if (seconds > 0) {
                     val mPerS = providerOfTrackDetails.getLengthInM() / seconds.toFloat()
@@ -227,9 +229,7 @@ class SpeedPickerFragment : DialogFragment() {
         npSpeed?.value = speedUnitAgnostic
         providerOfLastSelectedValues.setSpeedMperS(
                 if (seconds == 0) {
-                    if (kmh != null && kmh) 1.0F.kmhToMS()
-                    else if (mph != null && mph) 1.0F.mphToMS()
-                    else 1.0F.kmhToMS()
+                    SPEED_MAX_UNIT_AGNOSTIC.speed_toMperS()
                 } else (providerOfTrackDetails.getLengthInM() / seconds.toFloat())
         )
     }
@@ -247,7 +247,8 @@ class SpeedPickerFragment : DialogFragment() {
         when {
             (extraData is TrackTimesInPickerPOJO.TimeWithinBounds) -> {
                 handleNumberPickersTime(SimpleTimePOJO(extraData.hours, extraData.minutes),
-                        ContextCompat.getColor(providerOfFireAction as AppCompatActivity, R.color.blueBackground))
+                        ContextCompat.getColor(providerOfTriggerAction as AppCompatActivity,
+                                R.color.blueBackground))
             }
             (extraData is TrackTimesInPickerPOJO.TimeOutOfBounds) -> {
                 handleNumberPickersTime(SimpleTimePOJO(extraData.hours, extraData.minutes),

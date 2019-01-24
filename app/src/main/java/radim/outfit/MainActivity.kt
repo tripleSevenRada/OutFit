@@ -53,7 +53,7 @@ fun AppCompatActivity.getString(name: String): String {
 const val DEBUG_MODE = true
 
 class MainActivity : AppCompatActivity(),
-        FireActionProvider,
+        TriggerActionProvider,
         LastSelectedValuesProvider,
         PermInfoProvider,
         TrackDetailsProvider,
@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     // SpeedPickerFragment interfaces impl START
-    override fun getFireAction(): (Float) -> Unit = exportListener.getOkAction()
+    override fun getTriggerAction(): (Float) -> Unit = exportListener.getOkAction()
 
     override fun getSpeedMperS() = sharedPreferences.getFloat(getString("last_seen_speed_value_m_s"), SPEED_DEFAULT_M_S)
     override fun setSpeedMperS(value: Float) = persistInSharedPreferences(getString("last_seen_speed_value_m_s"), clampSpeedMS(value))

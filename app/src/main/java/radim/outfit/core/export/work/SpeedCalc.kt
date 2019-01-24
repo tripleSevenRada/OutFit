@@ -11,10 +11,14 @@ const val MAX_HOURS_PICKER = 300
 
 const val WARNING_COLOR = Color.RED
 
-fun Float.kmhToMS() = this / 3.6F
-fun Float.mphToMS() = this / 2.237F
+fun Float.kmhToMS(): Float = this / 3.6F
+fun Int.kmhToMS(): Float = this.toFloat().kmhToMS()
+fun Float.mphToMS(): Float = this / 2.237F
+fun Int.mphToMS(): Float = this.toFloat().mphToMS()
 fun speedMperSToKmh(ms: Float): Int = (ms * 3.6F).roundToInt()
 fun speedMperSToMph(ms: Float): Int = (ms * 2.237F).roundToInt()
+fun TrackTimesInPickerPOJO.TimeWithinBounds.toSeconds() = (hours * 60 * 60) + (minutes * 60)
+fun TrackTimesInPickerPOJO.TimeOutOfBounds.toSeconds() = (hours * 60 * 60) + (minutes * 60)
 fun clampSpeed(speed: Int) = when {
     (speed > SPEED_MAX_UNIT_AGNOSTIC) -> SPEED_MAX_UNIT_AGNOSTIC
     (speed < SPEED_MIN_UNIT_AGNOSTIC) -> SPEED_MIN_UNIT_AGNOSTIC
