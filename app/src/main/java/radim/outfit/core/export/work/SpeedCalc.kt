@@ -17,8 +17,8 @@ fun Float.mphToMS(): Float = this / 2.237F
 fun Int.mphToMS(): Float = this.toFloat().mphToMS()
 fun speedMperSToKmh(ms: Float): Int = (ms * 3.6F).roundToInt()
 fun speedMperSToMph(ms: Float): Int = (ms * 2.237F).roundToInt()
-fun TrackTimesInPickerPOJO.TimeWithinBounds.toSeconds() = (hours * 60 * 60) + (minutes * 60)
-fun TrackTimesInPickerPOJO.TimeOutOfBounds.toSeconds() = (hours * 60 * 60) + (minutes * 60)
+fun TrackTimesInPickerPOJO.WithinBounds.toSeconds() = (hours * 60 * 60) + (minutes * 60)
+fun TrackTimesInPickerPOJO.OutOfBounds.toSeconds() = (hours * 60 * 60) + (minutes * 60)
 fun clampSpeed(speed: Int) = when {
     (speed > SPEED_MAX_UNIT_AGNOSTIC) -> SPEED_MAX_UNIT_AGNOSTIC
     (speed < SPEED_MIN_UNIT_AGNOSTIC) -> SPEED_MIN_UNIT_AGNOSTIC
@@ -46,8 +46,8 @@ fun getTrackTimesPOJO(speedMperS: Float, trackLength: Float): TrackTimesInPicker
     val hours = minutesTotal / 60
     val minutes = minutesTotal % 60
     return if (hours in 0..MAX_HOURS_PICKER && minutes in 0..59)
-        TrackTimesInPickerPOJO.TimeWithinBounds(hours, minutes)
-    else TrackTimesInPickerPOJO.TimeOutOfBounds(
+        TrackTimesInPickerPOJO.WithinBounds(hours, minutes)
+    else TrackTimesInPickerPOJO.OutOfBounds(
             clampTimeInTimePicker(hours, minutes).hours,
             clampTimeInTimePicker(hours, minutes).minutes,
             WARNING_COLOR)
@@ -66,25 +66,25 @@ fun getTrackSpeedPOJO(kmhButt: Boolean?, mphButt: Boolean?, mPerS: Float): Speed
     }
     return when {
         (speedUnitAgnostic in SPEED_MIN_UNIT_AGNOSTIC..SPEED_MAX_UNIT_AGNOSTIC) ->
-            SpeedInPickerPOJO.SpeedWithinBounds(kmhButt, mphButt, speedUnitAgnostic)
-        else -> SpeedInPickerPOJO.SpeedOutOfBounds(kmhButt, mphButt,
+            SpeedInPickerPOJO.WithinBounds(kmhButt, mphButt, speedUnitAgnostic)
+        else -> SpeedInPickerPOJO.OutOfBounds(kmhButt, mphButt,
                 clampSpeed(speedUnitAgnostic), WARNING_COLOR)
     }
 }
 
 // ALWAYS CLAMPED BOTH
 sealed class TrackTimesInPickerPOJO {
-    data class TimeWithinBounds(val hours: Int, val minutes: Int) : TrackTimesInPickerPOJO()
-    data class TimeOutOfBounds(val hours: Int, val minutes: Int, val backgroundColor: Int)
+    data class WithinBounds(val hours: Int, val minutes: Int) : TrackTimesInPickerPOJO()
+    data class OutOfBounds(val hours: Int, val minutes: Int, val backgroundColor: Int)
         : TrackTimesInPickerPOJO()
 }
 
 // ALWAYS CLAMPED BOTH
 sealed class SpeedInPickerPOJO {
-    data class SpeedWithinBounds
+    data class WithinBounds
     (val kmh: Boolean?, val mph: Boolean?, val speedUnitAgnostic: Int) : SpeedInPickerPOJO()
 
-    data class SpeedOutOfBounds
+    data class OutOfBounds
     (val kmh: Boolean?, val mph: Boolean?, val speedUnitAgnostic: Int, val backgroundColor: Int)
         : SpeedInPickerPOJO()
 }
