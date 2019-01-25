@@ -36,6 +36,7 @@
 
     <!-- speed_fragment.xml-->
     <string name="frag_label_speed">There is no speed in this track. Please select.</string>
+    <string name="frag_label_activity_type">ActivityType: </string>
     <string name="kmh" translatable="false">km/h</string>
     <string name="mph" translatable="false">mph</string>
     <string name="frag_label_time_to_complete_course">Maybe you expect to complete this track in:</string>

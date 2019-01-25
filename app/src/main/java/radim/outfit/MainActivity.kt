@@ -72,9 +72,8 @@ class MainActivity : AppCompatActivity(),
 
     // SpeedPickerFragment interfaces impl START
     override fun getTriggerAction(): (Float) -> Unit = exportListener.getOkAction()
-
     override fun getSpeedMperS() = sharedPreferences.getFloat(getString("last_seen_speed_value_m_s"), SPEED_DEFAULT_M_S)
-    override fun setSpeedMperS(value: Float) = persistInSharedPreferences(getString("last_seen_speed_value_m_s"), clampSpeedMS(value))
+    override fun setSpeedMperS(value: Float) = persistInSharedPreferences(getString("last_seen_speed_value_m_s"), value)
     override fun getUnitsButtonId() = sharedPreferences.getInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
     override fun setUnitsButtonId(id: Int) = persistInSharedPreferences(getString("last_seen_speed_units"), id)
 
@@ -105,8 +104,13 @@ class MainActivity : AppCompatActivity(),
         return if (length == null) {
             // sanity check, should never happen
             FailGracefullyLauncher().failGracefully(this, "Null track length.")
-            2
+            200
         } else length.toInt()
+    }
+    override fun getActivityType():Int {
+        val viewModel =
+                ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
+        return viewModel.track?.activityType?: 100
     }
     // SpeedPickerFragment interfaces impl END
 
