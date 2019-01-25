@@ -68,8 +68,14 @@ class SpeedPickerFragment : DialogFragment() {
                 ::providerOfTrackDetails.isInitialized) {
 
             val tvActivityType: TextView? = mView?.findViewById(R.id.content_speed_picker_speedTVActivityType)
-            val activityMessage = context?.getString(R.string.frag_label_activity_type) + providerOfTrackDetails.getActivityType()
-            tvActivityType?.text = activityMessage
+            val activityMessage = context?.getString(R.string.frag_label_activity_type)
+            val activityType = providerOfTrackDetails.getActivityType()
+            val resourceId = activityTypesToStringResourceId[activityType]?: R.string.activity_type_generic
+            val activityTypeAsString = context?.getString(resourceId)
+            val lengthInKm = providerOfTrackDetails.getLengthInM().toDouble()/1000.0
+            val lengthInKmFormatted = String.format("%.3f", lengthInKm)
+            @SuppressWarnings // this is properly translatable
+            tvActivityType?.text ="$activityMessage $activityTypeAsString, $lengthInKmFormatted km."
 
             val buttKmh: RadioButton? = mView?.findViewById(R.id.content_speed_picker_speedBTNKmh)
             val buttMph: RadioButton? = mView?.findViewById(R.id.content_speed_picker_speedBTNMph)
