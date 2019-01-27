@@ -43,9 +43,7 @@ fun clampTimeForTimePicker(data: TrackTimesInPickerPOJO): TrackTimesInPickerPOJO
 
 fun getTrackTimesPOJO(speedMperS: Float, trackLength: Float): TrackTimesInPickerPOJO {
     val minutesTotal = ((trackLength / speedMperS) / 60F).roundToInt()
-    val hours = minutesTotal / 60
-    val minutes = minutesTotal % 60
-    return TrackTimesInPickerPOJO(hours, minutes)
+    return TrackTimesInPickerPOJO(minutesTotal / 60, minutesTotal % 60)
 }
 
 fun getTrackSpeed(mPerS: Float, convertInUnits: Float.() -> Int): Int {

@@ -232,12 +232,12 @@ class SpeedPickerFragment : DialogFragment() {
                 if (seconds > 0) {
                     val mPerS = providerOfTrackDetails.getLengthInM() / seconds.toFloat()
                     mPerS.speedInMperSToCheckedUnit()
-                } else SPEED_MAX_UNIT_AGNOSTIC + 10 // so clamp is needed
+                } else SPEED_MAX_UNIT_AGNOSTIC
                 )
         npSpeed?.value = speed
         providerOfLastSelectedValues.setSpeedMperS(
                 if (seconds == 0) {
-                    (SPEED_MAX_UNIT_AGNOSTIC + 10).speedInCheckedUnitToMperS()// so clamp is needed
+                    (SPEED_MAX_UNIT_AGNOSTIC).speedInCheckedUnitToMperS()
                 } else (providerOfTrackDetails.getLengthInM() / seconds.toFloat())
         )
     }
