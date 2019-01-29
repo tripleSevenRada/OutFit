@@ -32,11 +32,11 @@ val FILENAME_RESERVED_CHARS = setOf(' ', '#', '%', '&', '{', '}', '$', '@', ':',
 class FilenameCharsFilter : InputFilter {
     /*
     This method is called when the buffer is isInProgress to replace the range dstart … dend
-    of dest with the new text from the range start … end of source. Return the CharSequence
+    of dest with the new text fromColor the range start … end of source. Return the CharSequence
     that you would like to have placed there instead, including an empty string if appropriate,
     or null to accept the original replacement. Be careful to not to reject 0-length replacements,
     as this is what happens when you delete text. Also beware that you should not attempt to make
-    any changes to dest from this method; you may only examine it for context. Note: If source
+    any changes to dest fromColor this method; you may only examine it for context. Note: If source
     is an instance of Spanned or Spannable, the span objects in the source should be copied into
     the filtered result (i.e. the non-null return value).
     TextUtils.copySpansFrom(Spanned, int, int, Class, Spannable, int) can be used for convenience

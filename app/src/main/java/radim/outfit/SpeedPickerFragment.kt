@@ -2,6 +2,7 @@ package radim.outfit
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.util.Log
@@ -70,12 +71,13 @@ class SpeedPickerFragment : DialogFragment() {
             val tvActivityType: TextView? = mView?.findViewById(R.id.content_speed_picker_speedTVActivityType)
             val activityMessage = context?.getString(R.string.frag_label_activity_type)
             val activityType = providerOfTrackDetails.getActivityType()
-            val resourceId = activityTypesToStringResourceId[activityType]?: R.string.activity_type_generic
+            val resourceId = activityTypesToStringResourceId[activityType]
+                    ?: R.string.activity_type_generic
             val activityTypeAsString = context?.getString(resourceId)
-            val lengthInKm = providerOfTrackDetails.getLengthInM().toDouble()/1000.0
+            val lengthInKm = providerOfTrackDetails.getLengthInM().toDouble() / 1000.0
             val lengthInKmFormatted = String.format("%.3f", lengthInKm)
             @SuppressWarnings // this is properly translatable
-            tvActivityType?.text ="$activityMessage $activityTypeAsString, $lengthInKmFormatted km."
+            tvActivityType?.text = "$activityMessage $activityTypeAsString, $lengthInKmFormatted km."
 
             val buttKmh: RadioButton? = mView?.findViewById(R.id.content_speed_picker_speedBTNKmh)
             val buttMph: RadioButton? = mView?.findViewById(R.id.content_speed_picker_speedBTNMph)
@@ -89,6 +91,15 @@ class SpeedPickerFragment : DialogFragment() {
             val speedInMperStoKmh: Float.() -> Int = { this.msToKmh() }
             val speedInMperStoMph: Float.() -> Int = { this.msToMph() }
 
+            val colorFrom = Color.parseColor("#ffe3eaa7")
+            val colorTo = Color.parseColor("#ffeca1a6")
+
+            val activitySpeeds: Pair<Int, Int>? = activityTypesToPairOfSpeeds[activityType]
+            val pair = if (activitySpeeds != null) activitySpeeds
+            else Pair(SPEED_MIN_UNIT_AGNOSTIC, SPEED_MAX_UNIT_AGNOSTIC)
+            val span = Span(pair.first.kmhToMs().toDouble(), pair.second.kmhToMs().toDouble())
+            val colorCrossFader = ColorCrossFader(colorFrom, colorTo, span.getSpan())
+
             fun disconnectSpeedOnChangeListener() {
                 npSpeed?.setOnValueChangedListener(null)
             }
@@ -99,13 +110,13 @@ class SpeedPickerFragment : DialogFragment() {
             }
 
             val numberPickers =
-                    mutableListOf<NumberPicker?>(npHours, npMinutes)
+                    listOf<NumberPicker?>(npHours, npMinutes)
             val numberPickersToCheckNonNull =
-                    mutableListOf<NumberPicker?>(npMinutes, npHours)
+                    listOf<NumberPicker?>(npMinutes, npHours)
 
             fun connectTimeOnChangeListeners() {
                 try {
-                    for (i in 0..1) {
+                    for (i in numberPickers.indices) {
                         numberPickers[i]?.setOnValueChangedListener { _, _, newVal ->
                             run {
                                 disconnectSpeedOnChangeListener()
@@ -122,11 +133,13 @@ class SpeedPickerFragment : DialogFragment() {
                                                 npSpeed)
                                     }
                                 }
+                                setBackgroundColor(npSpeed, speedInCheckedUnitToMperS, span, colorCrossFader, colorFrom, colorTo)
                                 npSpeed?.setOnValueChangedListener { _, _, newVal ->
                                     run {
                                         disconnectTimeOnChangeListeners()
                                         setCurrentSelectedSpeed(newVal.speedInCheckedUnitToMperS(),
                                                 npHours, npMinutes)
+                                        setBackgroundColor(npSpeed, speedInCheckedUnitToMperS, span, colorCrossFader, colorFrom, colorTo)
                                         connectTimeOnChangeListeners()
                                     }
                                 }
@@ -144,6 +157,7 @@ class SpeedPickerFragment : DialogFragment() {
                         disconnectTimeOnChangeListeners()
                         setCurrentSelectedSpeed(newVal.speedInCheckedUnitToMperS(),
                                 npHours, npMinutes)
+                        setBackgroundColor(npSpeed, speedInCheckedUnitToMperS, span, colorCrossFader, colorFrom, colorTo)
                         connectTimeOnChangeListeners()
                     }
                 }
@@ -162,11 +176,11 @@ class SpeedPickerFragment : DialogFragment() {
             npMinutes?.minValue = 0
             npMinutes?.maxValue = 59
 
-            val unitButtons = mutableListOf<Button?>(buttKmh, buttMph)
-            val buttonIds = mutableListOf<Int>(R.id.content_speed_picker_speedBTNKmh,
+            val unitButtons = listOf<Button?>(buttKmh, buttMph)
+            val buttonIds = listOf<Int>(R.id.content_speed_picker_speedBTNKmh,
                     R.id.content_speed_picker_speedBTNMph)
-            val speedInUnitToMperS = mutableListOf<Int.() -> Float>(speedIsInKmhToMperS, speedIsInMphToMperS)
-            val speedInMperSToUnit = mutableListOf<Float.() -> Int>(speedInMperStoKmh, speedInMperStoMph)
+            val speedInUnitToMperS = listOf<Int.() -> Float>(speedIsInKmhToMperS, speedIsInMphToMperS)
+            val speedInMperSToUnit = listOf<Float.() -> Int>(speedInMperStoKmh, speedInMperStoMph)
 
             for (i in unitButtons.indices) {
                 unitButtons[i]?.setOnClickListener {
@@ -176,6 +190,7 @@ class SpeedPickerFragment : DialogFragment() {
                     disconnectTimeOnChangeListeners()
                     setCurrentSelectedSpeed((npSpeed?.value
                             ?: 10).speedInCheckedUnitToMperS(), npHours, npMinutes)
+                    setBackgroundColor(npSpeed, speedInCheckedUnitToMperS, span, colorCrossFader, colorFrom, colorTo)
                     connectTimeOnChangeListeners()
                 }
             }
@@ -191,6 +206,7 @@ class SpeedPickerFragment : DialogFragment() {
             }
 
             npSpeed?.value = readStoredSpeed()
+            setBackgroundColor(npSpeed, speedInCheckedUnitToMperS, span, colorCrossFader, colorFrom, colorTo)
 
             val initialTrackTimesPOJO = getTrackTimesPOJO(
                     providerOfLastSelectedValues.getSpeedMperS(),
@@ -224,6 +240,29 @@ class SpeedPickerFragment : DialogFragment() {
         providerOfLastSelectedValues.setSpeedMperS(inMperS)
     }
 
+    private fun setBackgroundColor(
+            npSpeed: NumberPicker?,
+            toChosenUnit: Int.() -> Float,
+            span: Span,
+            colorCrossFader: ColorCrossFader,
+            colorFrom: Int,
+            colorTo: Int
+    ) {
+        if (npSpeed != null) {
+            val inMperS: Double = npSpeed.value.toChosenUnit().toDouble()
+            when {
+                (span.isInFrom(inMperS)) -> npSpeed.setBackgroundColor(colorFrom)
+                (span.isInTo(inMperS)) -> npSpeed.setBackgroundColor(colorTo)
+                else -> npSpeed.setBackgroundColor(
+                        colorCrossFader
+                                .colorCrossFade(
+                                        span.getInSpanRelativeToTo(inMperS)
+                                )
+                )
+            }
+        }
+    }
+
     //
     private fun setCurrentSelectedTime(timePojo: TrackTimesInPickerPOJO,
                                        npSpeed: NumberPicker?) {
@@ -233,8 +272,9 @@ class SpeedPickerFragment : DialogFragment() {
                     val mPerS = providerOfTrackDetails.getLengthInM() / seconds.toFloat()
                     mPerS.speedInMperSToCheckedUnit()
                 } else SPEED_MAX_UNIT_AGNOSTIC
-                )
+        )
         npSpeed?.value = speed
+
         providerOfLastSelectedValues.setSpeedMperS(
                 if (seconds == 0) {
                     (SPEED_MAX_UNIT_AGNOSTIC).speedInCheckedUnitToMperS()

@@ -62,7 +62,7 @@ class Encoder {
             // FitSDKRelease_20.76.00.
             // These seem to be outdated to me.
             // Helpful tool: https://github.com/mrihtar/Garmin-FIT
-            // Dump course exported directly from Garmin Connect and follow what you see in there
+            // Dump course exported directly fromColor Garmin Connect and follow what you see in there
 
             // Every FIT file MUST contain a 'File ID' message as the first message
             val fileIdMesg = getFileIdMesg()
@@ -89,7 +89,7 @@ state "isFullyTimestamped" as stamped {
   true --> timestampsNonNullPoints: Assign EMPTY list
   false --> timestampsNonNullPoints: Assign
   true --> trackTimeStampsBundle: ExtractFromPoints
-  false --> trackTimeStampsBundle: extract from\ntimestampsNonNullPoints \nwhich is NOT EMPTY
+  false --> trackTimeStampsBundle: extract fromColor\ntimestampsNonNullPoints \nwhich is NOT EMPTY
   note right of speedsNonNullPoints
   Depends on:
   trackTimeStampsBundle

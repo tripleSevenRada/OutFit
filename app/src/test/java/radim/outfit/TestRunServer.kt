@@ -9,14 +9,14 @@ import fi.iki.elonen.NanoHTTPD
     private val log: Logger = LoggerFactory.getLogger(NanoHTTPD::class.java)
 
     fun main(args: Array<String>) {
-        val from = "/home/radim/nano-httpd-serve-from"
+        val from = "/home/radim/nano-httpd-serve-fromColor"
         try {
             val server = LocalHostServer(NANOHTTPD_PORT,
                     File(from)
             )
             log.info("JSONArray: ${server.coursenamesAsJSON()}")
             server.start()
-            log.info("serving from: $from")
+            log.info("serving fromColor: $from")
         } catch (e: Exception) {
             log.error(e.localizedMessage)
         }

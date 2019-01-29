@@ -74,12 +74,10 @@ class MainActivity : AppCompatActivity(),
     override fun getTriggerAction(): (Float) -> Unit = exportListener.getOkAction()
     override fun getSpeedMperS(): Float{
         val speed = sharedPreferences.getFloat(getString("last_seen_speed_value_m_s"), SPEED_DEFAULT_M_S)
-        if(DEBUG_MODE) Log.i("PERSISTED-READ", "reading speed: $speed")
         return speed
     }
     override fun setSpeedMperS(value: Float){
         persistInSharedPreferences(getString("last_seen_speed_value_m_s"), value)
-        if(DEBUG_MODE) Log.i("PERSIST", "persisting speed: $value")
     }
     override fun getUnitsButtonId() = sharedPreferences.getInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
     override fun setUnitsButtonId(id: Int) = persistInSharedPreferences(getString("last_seen_speed_units"), id)

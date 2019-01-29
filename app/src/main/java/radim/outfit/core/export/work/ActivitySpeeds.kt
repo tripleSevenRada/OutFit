@@ -1,8 +1,6 @@
 package radim.outfit.core.export.work
 
-import radim.outfit.R
-
-val activityTypesToStringResourceId: Map<Int, Int> = mapOf(
+/*
         19 to R.string.activity_type_walking,
         25 to R.string.activity_type_nordic_walking,
         15 to R.string.activity_type_hiking,
@@ -33,4 +31,33 @@ val activityTypesToStringResourceId: Map<Int, Int> = mapOf(
         16 to R.string.activity_type_public_transport,
 
         0 to R.string.activity_type_generic
+*/
+
+// in kmh, converted to m per s in SpeedPickerFragment
+val activityTypesToPairOfSpeeds = mapOf<Int, Pair<Int, Int>>(
+        0 to Pair(SPEED_MIN_UNIT_AGNOSTIC, SPEED_MAX_UNIT_AGNOSTIC),
+        16 to Pair(SPEED_MIN_UNIT_AGNOSTIC, SPEED_MAX_UNIT_AGNOSTIC),
+        14 to Pair(40, 110),
+        13 to Pair(SPEED_MIN_UNIT_AGNOSTIC, SPEED_MAX_UNIT_AGNOSTIC),
+        29 to Pair(5, 80),
+        12 to Pair(SPEED_MIN_UNIT_AGNOSTIC, SPEED_MAX_UNIT_AGNOSTIC),
+        28 to Pair(5, 100),
+        24 to Pair(4,40),
+        4 to Pair(2,8),
+        5 to Pair(5,20),
+        6 to Pair(5,20),
+        7 to Pair(5,20),
+        26 to Pair(4, 40),
+        3 to Pair(2, 10),
+        9 to Pair(2, 20),
+        2 to Pair(10, 120),
+        1 to Pair(5, 22),
+        31 to Pair(4, 22),
+        22 to Pair(5, 34),
+        20 to Pair(14, 36),
+        17 to Pair(4, 22),
+        18 to Pair(6, 20),
+        15 to Pair(3, 8),
+        25 to Pair(3, 8),
+        19 to Pair(3, 8)
 )

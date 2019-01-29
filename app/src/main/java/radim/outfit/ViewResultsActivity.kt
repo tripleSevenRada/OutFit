@@ -29,7 +29,7 @@ import radim.outfit.core.viewmodels.ViewResultsActivityViewModel
 import java.io.File
 import kotlin.text.StringBuilder
 
-const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-from" // plus xml resources - paths...
+const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-fromColor" // plus xml resources - paths...
 const val NANOHTTPD_PORT = 22222
 
 class ViewResultsActivity : AppCompatActivity() {
@@ -123,7 +123,7 @@ class ViewResultsActivity : AppCompatActivity() {
             var dirToServeCreated = false
             var dataToServeReady = true
             doAsync {
-                // prepare dir for LocalHostServer to serve from
+                // prepare dir for LocalHostServer to serve fromColor
                 try {
                     if (filesDir != null) {
                         val dirToServeFromFile = File(dirToServeFromPath)
@@ -207,7 +207,7 @@ class ViewResultsActivity : AppCompatActivity() {
         disableExecutive()
     }
 
-    // called back after cca 10 - 30 ms from startConnectIQServices()
+    // called back after cca 10 - 30 ms fromColor startConnectIQServices()
     private fun onFinnishCIQInit() {
         enableExecutive()
         indicatorIQTimerCallback = IndicatorIQTimerCallback()
