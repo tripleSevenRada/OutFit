@@ -24,7 +24,8 @@ class LocalHostServer(port: Int, private val dir: File): NanoHTTPD(port) {
         log.info("session.parameters.toString(): " + session.parameters.toString())
         log.info("current state of dir: " + coursenamesAsJSON())
 
-        if(session.uri == "/dir.json"){
+        if( session.method.toString().equalsIgnoreCase("GET") &&
+            session.uri == "/dir.json"){
             return NanoHTTPD.newFixedLengthResponse(
                     NanoHTTPD.Response.Status.OK,
                     MIME_JSON,
@@ -34,8 +35,7 @@ class LocalHostServer(port: Int, private val dir: File): NanoHTTPD(port) {
         return errorResponse(UnsupportedOperationException())
     }
 
-    // ["sCp1","bezCP","kameniceDomu"]
-    // sorry, org.json
+    // sorry, org.json, todo later
     fun coursenamesAsJSON(): String {
         val files = getListOfFitFilesRecursively(dir)
         val sb = StringBuilder()
