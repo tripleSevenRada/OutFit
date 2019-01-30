@@ -30,7 +30,7 @@ import java.io.File
 import kotlin.text.StringBuilder
 
 const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-fromColor" // plus xml resources - paths...
-const val NANOHTTPD_PORT = 22222
+const val NANOHTTPD_PORT = 22333
 
 class ViewResultsActivity : AppCompatActivity() {
 

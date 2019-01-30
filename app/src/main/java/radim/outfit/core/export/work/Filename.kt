@@ -25,6 +25,7 @@ fun getFilename(fileName: String?, defaultFilename: String): String {
     }
 }
 
+//https://www.url-encode-decode.com/
 const val FILENAME_SUFFIX = ".fit"
 const val FILENAME_REPLACEMENT_CHAR = '-'
 val FILENAME_RESERVED_CHARS = setOf(' ', '#', '%', '&', '{', '}', '$', '@', ':', '?', '!', '\"', '\'', '*', '|', '/', '\\', '<', '>')
