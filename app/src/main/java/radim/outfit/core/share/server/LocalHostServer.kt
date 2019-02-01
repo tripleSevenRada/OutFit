@@ -35,12 +35,12 @@ class LocalHostServer(port: Int, private val dir: File): NanoHTTPD(port) {
                         NanoHTTPD.Response.Status.OK,
                         MIME_JSON,
                         coursenamesAsJSON())
-            } else if (session.uri.startsWith("/outfit-data-")) {
-                val uri = session.uri.substring(13,session.uri.length)
-                if(DEBUG_MODE) Log.i("localhost", "asked to serve: $uri")
+            } else if (session.uri.startsWith("/outfit-data")) {
+                val uri = session.uri.substring(12,session.uri.length)
+                if(DEBUG_MODE) log.info("asked to serve: $uri")
                 try{
-                    val fileToServe = File("${dir.absolutePath}/$uri")
-                    if(DEBUG_MODE) Log.i("localhost", "serving: ${fileToServe.absolutePath}")
+                    val fileToServe = File("${dir.absolutePath}$uri")
+                    if(DEBUG_MODE) log.info("serving: ${fileToServe.absolutePath}")
                     val stream = FileInputStream(fileToServe)
                     return NanoHTTPD.newFixedLengthResponse(Response.Status.OK, MIME_FIT,
                             stream, fileToServe.length())
@@ -67,6 +67,7 @@ class LocalHostServer(port: Int, private val dir: File): NanoHTTPD(port) {
     }
 
     private fun errorResponse(e: Exception): NanoHTTPD.Response {
+        if(DEBUG_MODE)log.info("returning error response")
         return NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.NOT_FOUND, MIME_JSON,
                 "{ \"error\" : \"${e.localizedMessage}\" }")
     }

@@ -8,7 +8,6 @@ import fi.iki.elonen.NanoHTTPD
 
 private val log: Logger = LoggerFactory.getLogger(NanoHTTPD::class.java)
 
-
         fun main(args: Array<String>) {
             val from = "/home/radim/nano-httpd-serve-from"
             try {
@@ -30,5 +29,4 @@ private val log: Logger = LoggerFactory.getLogger(NanoHTTPD::class.java)
             } catch (e: Exception) {
                 log.error(e.localizedMessage)
             }
-
         }
