@@ -21,17 +21,17 @@ class CircularBufferTest {
     private val appContext = InstrumentationRegistry.getTargetContext()
     private val sharedPreferences = appContext.getSharedPreferences("radim.outfit.MainActivity",
             Context.MODE_PRIVATE)
-
+    private val buffer = CircularBufferWithSharedPrefs(11)
     @Test
     fun initCB() {
-        initCircularBuffer(sharedPreferences.edit())
+        buffer.initCircularBuffer(sharedPreferences.edit())
     }
 
     @Test
     fun writeAndRead() {
         for (i in 1..23) {
-            writeToCircularBuffer("v$i", sharedPreferences)
-            printArray(readCircularBuffer(sharedPreferences))
+            buffer.writeToCircularBuffer("v$i", sharedPreferences)
+            printArray(buffer.readCircularBuffer(sharedPreferences))
         }
     }
 

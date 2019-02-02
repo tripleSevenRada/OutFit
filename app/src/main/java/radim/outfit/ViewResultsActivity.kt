@@ -29,7 +29,7 @@ import radim.outfit.core.viewmodels.ViewResultsActivityViewModel
 import java.io.File
 import kotlin.text.StringBuilder
 
-const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-fromColor" // plus xml resources - paths...
+const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-from" // plus xml resources - paths...
 const val NANOHTTPD_PORT = 22333
 
 class ViewResultsActivity : AppCompatActivity() {
@@ -85,7 +85,10 @@ class ViewResultsActivity : AppCompatActivity() {
             content_statsTVData.text = messagesAsStringBuilder.toString()
         }
         if (DEBUG_MODE && ::parcel.isInitialized) {
-            parcel.buffer.forEach { Log.i(tag, "Circular buffer of exports: $it") }
+            Log.i(tag, "Circular buffer of export PATHS:")
+            parcel.buffer.forEach { Log.i(tag, it) }
+            Log.i(tag, "Circular buffer of export MAPPING FROM FILENAMES TO COURSENAMES:")
+            Log.i(tag, parcel.fileNameToCourseName.toString())
         }
     }
 
@@ -93,8 +96,14 @@ class ViewResultsActivity : AppCompatActivity() {
     private lateinit var server: LocalHostServer
     private fun bindNanoHTTPD() {
         try {
+            val filenamesOnly = mutableListOf<String>()
+            parcel.buffer.forEach {
+                filenamesOnly.add(it.substring(it.lastIndexOf(File.separator) + 1))
+            }
             server = LocalHostServer(NANOHTTPD_PORT,
-                    File("${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"))
+                    File("${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"),
+                    filenamesOnly,
+                    parcel.fileNameToCourseName)
             if(DEBUG_MODE)Log.i(tag, "JSONArray, coursenames: ${server.coursenamesAsJSON()}")
             server.start()
         } catch (e: Exception){
@@ -123,7 +132,7 @@ class ViewResultsActivity : AppCompatActivity() {
             var dirToServeCreated = false
             var dataToServeReady = true
             doAsync {
-                // prepare dir for LocalHostServer to serve fromColor
+                // prepare dir for LocalHostServer to serve from
                 try {
                     if (filesDir != null) {
                         val dirToServeFromFile = File(dirToServeFromPath)
@@ -207,7 +216,7 @@ class ViewResultsActivity : AppCompatActivity() {
         disableExecutive()
     }
 
-    // called back after cca 10 - 30 ms fromColor startConnectIQServices()
+    // called back after cca 10 - 30 ms from startConnectIQServices()
     private fun onFinnishCIQInit() {
         enableExecutive()
         indicatorIQTimerCallback = IndicatorIQTimerCallback()

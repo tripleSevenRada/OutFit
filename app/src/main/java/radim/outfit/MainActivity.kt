@@ -72,13 +72,16 @@ class MainActivity : AppCompatActivity(),
 
     // SpeedPickerFragment interfaces impl START
     override fun getTriggerAction(): (Float) -> Unit = exportListener.getOkAction()
-    override fun getSpeedMperS(): Float{
+
+    override fun getSpeedMperS(): Float {
         val speed = sharedPreferences.getFloat(getString("last_seen_speed_value_m_s"), SPEED_DEFAULT_M_S)
         return speed
     }
-    override fun setSpeedMperS(value: Float){
+
+    override fun setSpeedMperS(value: Float) {
         persistInSharedPreferences(getString("last_seen_speed_value_m_s"), value)
     }
+
     override fun getUnitsButtonId() = sharedPreferences.getInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
     override fun setUnitsButtonId(id: Int) = persistInSharedPreferences(getString("last_seen_speed_units"), id)
 
@@ -112,10 +115,11 @@ class MainActivity : AppCompatActivity(),
             200
         } else length.toInt()
     }
-    override fun getActivityType():Int {
+
+    override fun getActivityType(): Int {
         val viewModel =
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
-        return viewModel.track?.activityType?: 100
+        return viewModel.track?.activityType ?: 100
     }
     // SpeedPickerFragment interfaces impl END
 
@@ -331,19 +335,35 @@ class MainActivity : AppCompatActivity(),
 
         when (result) {
             is Result.Success -> {
-
+                val lab = FilenameCoursenamePair()
                 val exportedFilePath = "${result.fileDir}${File.separator}${result.filename}"
                 circularBufferPaths.writeToCircularBuffer(exportedFilePath, sharedPreferences)
-
-                val circularBuffer = circularBufferPaths.readCircularBuffer(sharedPreferences)
-                if (DEBUG_MODE) circularBuffer.forEach { Log.i("CIRC_BUFFER", it) }
-                val circularBufferReduced = circularBuffer.ridEmpty().ridDuplicities()
-
+                circularBufferCourseNames.writeToCircularBuffer(lab.getEntry(
+                        Pair(
+                                result.filename,
+                                result.coursename
+                        )), sharedPreferences)
+                val cbPathsArray = circularBufferPaths.readCircularBuffer(sharedPreferences)
+                if (DEBUG_MODE) cbPathsArray.forEach { Log.i("CIRC_BUFF_PATHS", it) }
+                val cbPathsArrayReduced = cbPathsArray.ridEmpty().ridDuplicities()
+                val cbFilenamesToCoursenamesArray =
+                        circularBufferCourseNames.readCircularBuffer(sharedPreferences)
+                if (DEBUG_MODE) cbFilenamesToCoursenamesArray.forEach { Log.i("CIRC_BUFF_F_TO_C", it) }
+                val cbFilenamesToCoursenamesArrayReversed =
+                        cbFilenamesToCoursenamesArray.reversedArray()
+                if (DEBUG_MODE) cbFilenamesToCoursenamesArrayReversed.forEach { Log.i("CIRC_BUFF_F_TO_C_R", it) }
                 val filenamesToCourseNames = mutableMapOf<String, String>()
+                cbFilenamesToCoursenamesArrayReversed.forEach {
+                    if(it.isNotEmpty()) {
+                        val pair = lab.getPair(it)
+                        filenamesToCourseNames[pair.first] = pair.second
+                    }
+                }
+
                 val resultsParcel = ViewResultsParcel(
                         getString("stats_label"),
                         result.publicMessage,
-                        circularBufferReduced,
+                        cbPathsArrayReduced,
                         filenamesToCourseNames
                 )
 

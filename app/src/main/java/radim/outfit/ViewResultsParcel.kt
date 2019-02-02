@@ -9,7 +9,7 @@ class ViewResultsParcel : Parcelable {
     var messages: List<String>
     var buffer: Array<String> // circular buffer of last buffer.size exports. May contain empty strings or
     // duplicates both in terms of filenames and complete paths
-    var fileToCourseName: Map<String, String>
+    var fileNameToCourseName: Map<String, String>
 
     private constructor(inParcel: Parcel) {
         this.title = inParcel.readString()?: ""
@@ -30,7 +30,7 @@ class ViewResultsParcel : Parcelable {
         repeat(fileToCourseNameSize){
             fileToCourseName[inParcel.readString()?:""] = inParcel.readString()?:""
         }
-        this.fileToCourseName = fileToCourseName
+        this.fileNameToCourseName = fileToCourseName
     }
 
     constructor(title: String,
@@ -40,7 +40,7 @@ class ViewResultsParcel : Parcelable {
         this.title = title
         this.messages = messages
         this.buffer = buffer
-        this.fileToCourseName = fileToCourseName
+        this.fileNameToCourseName = fileToCourseName
     }
 
     override fun writeToParcel(p0: Parcel?, p1: Int) {
@@ -51,8 +51,8 @@ class ViewResultsParcel : Parcelable {
         for  (i in buffer.indices){
             p0?.writeString(buffer[i])
         }
-        p0?.writeInt(fileToCourseName.entries.size)
-        fileToCourseName.entries.forEach {
+        p0?.writeInt(fileNameToCourseName.entries.size)
+        fileNameToCourseName.entries.forEach {
             p0?.writeString(it.key)
             p0?.writeString(it.value)
         }

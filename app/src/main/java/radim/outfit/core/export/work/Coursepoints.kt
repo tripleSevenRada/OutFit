@@ -141,14 +141,14 @@ class AttachWaypointsToTrack(val track: Track) {
         }
 
         if (debug) debugMessages.add("Size of waypoints after UNDEFINED removed ${waypoints.size}")
-        if (debug) debugMessages.add("Size of waypointsUndefined removed fromColor waypoints ${waypointsUndefined.size}")
+        if (debug) debugMessages.add("Size of waypointsUndefined removed from waypoints ${waypointsUndefined.size}")
 
         // mark trackpoints indices of waypoints as taken
         waypoints.forEach {
             if (it.paramRteIndex == -1) {
-                Log.w(tag, "rebuild - unexpected -1 fromColor it.paramRteIndex")
+                Log.w(tag, "rebuild - unexpected -1 from it.paramRteIndex")
 
-                if (debug) debugMessages.add("rebuild - unexpected -1 fromColor it.paramRteIndex")
+                if (debug) debugMessages.add("rebuild - unexpected -1 from it.paramRteIndex")
 
             }
             indicesTaken.add(it.paramRteIndex)

@@ -44,6 +44,7 @@ class Encoder {
         val outputFile = File(dir.absolutePath + File.separatorChar + filename)
         lateinit var encoder: FileEncoder
         lateinit var filterBundle: MessagesStringFilterBundle
+        var courseName: String = "default"
         try {
             encoder = FileEncoder(outputFile, Fit.ProtocolVersion.V1_0)
             filterBundle = MessagesStringFilterBundle(FilenameCharsFilter(),
@@ -62,7 +63,7 @@ class Encoder {
             // FitSDKRelease_20.76.00.
             // These seem to be outdated to me.
             // Helpful tool: https://github.com/mrihtar/Garmin-FIT
-            // Dump course exported directly fromColor Garmin Connect and follow what you see in there
+            // Dump course exported directly from Garmin Connect and follow what you see in there
 
             // Every FIT file MUST contain a 'File ID' message as the first message
             val fileIdMesg = getFileIdMesg()
@@ -70,6 +71,7 @@ class Encoder {
 
             // 'Course message'
             val courseMesg = getCourseMesg(track, filename, filterBundle)
+            courseName = courseMesg.name
             encoder.write(courseMesg)
             with(publicMessages) {
                 add("${ctx.getString("course_name")} ${courseMesg.name}")
@@ -89,7 +91,7 @@ state "isFullyTimestamped" as stamped {
   true --> timestampsNonNullPoints: Assign EMPTY list
   false --> timestampsNonNullPoints: Assign
   true --> trackTimeStampsBundle: ExtractFromPoints
-  false --> trackTimeStampsBundle: extract fromColor\ntimestampsNonNullPoints \nwhich is NOT EMPTY
+  false --> trackTimeStampsBundle: extract from\ntimestampsNonNullPoints \nwhich is NOT EMPTY
   note right of speedsNonNullPoints
   Depends on:
   trackTimeStampsBundle
@@ -342,14 +344,14 @@ event_type (1-1-ENUM): stop_disable_all (9)
         } catch (e: Exception) { //FitRuntimeException
             errorMessages.add("${e.localizedMessage} - 1")
             e.printStackTrace()
-            return Result.Fail(debugMessages, errorMessages, dir, filename, e)
+            return Result.Fail(debugMessages, errorMessages, dir, filename, courseName, e)
         } finally {
             try {
                 encoder.close()
             } catch (e: Exception) { //FitRuntimeException
                 errorMessages.add("${e.localizedMessage} - 2")
                 e.printStackTrace()
-                return Result.Fail(debugMessages, errorMessages, dir, filename, e)
+                return Result.Fail(debugMessages, errorMessages, dir, filename, courseName, e)
             }
         }
 
@@ -359,7 +361,7 @@ event_type (1-1-ENUM): stop_disable_all (9)
             // TODO interrupted?
             Thread.sleep(MIN_TIME_TAKEN - timeTaken)
         }
-        return Result.Success(publicMessages, debugMessages, dir, filename)
+        return Result.Success(publicMessages, debugMessages, dir, filename, courseName)
     }
 
     private fun <K> countFrequencies(word: K, map: MutableMap<K, Int>) {

@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">OUT FIT</string>
 
+    <!-- SpannedDeviceDisplay -->
+    <string name="infit">IN FIT</string>
+
     <!-- activity_main.xml -->
     <string name="activity_main_label">OUT FIT - Export</string>
     <string name="btn_directory_picker">Select export folder</string>

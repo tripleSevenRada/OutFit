@@ -12,7 +12,7 @@ const val COURSENAME_MAX_LENGTH = 12
 
 internal fun getFileIdMesg(): FileIdMesg {
     /*
-exported course fromColor garmin connect printed by https://github.com/mrihtar/Garmin-FIT
+exported course from garmin connect printed by https://github.com/mrihtar/Garmin-FIT
 type (0-1-ENUM): course (6)
 manufacturer (1-1-UINT16): garmin (1)
 garmin_product (2-1-UINT16, original name: product): connect (65534)
