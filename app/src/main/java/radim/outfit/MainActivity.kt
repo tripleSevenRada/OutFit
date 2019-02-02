@@ -136,6 +136,9 @@ class MainActivity : AppCompatActivity(),
     //super.onSaveInstanceState(outState)
     //}
 
+    private var circularBufferPaths = CircularBufferWithSharedPrefs(1) // id 1
+    private var circularBufferCourseNames = CircularBufferWithSharedPrefs(2) // id 2
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -175,8 +178,10 @@ class MainActivity : AppCompatActivity(),
             if (!sharedPreferences.contains(getString("last_seen_speed_units"))) {
                 putInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
             }
-            if (!sharedPreferences.contains(CIRC_BUFF_POINTER_KEY))
-                initCircularBuffer(this)
+            if (!sharedPreferences.contains("${CIRC_BUFF_POINTER_KEY_PREFIX}1"))
+                circularBufferPaths.initCircularBuffer(this)
+            if (!sharedPreferences.contains("${CIRC_BUFF_POINTER_KEY_PREFIX}2"))
+                circularBufferCourseNames.initCircularBuffer(this)
             if (!sharedPreferences.contains(getString("checkbox_cciq")))
                 putBoolean(getString("checkbox_cciq"), true)
             apply()
@@ -328,16 +333,18 @@ class MainActivity : AppCompatActivity(),
             is Result.Success -> {
 
                 val exportedFilePath = "${result.fileDir}${File.separator}${result.filename}"
-                writeToCircularBuffer(exportedFilePath, sharedPreferences)
+                circularBufferPaths.writeToCircularBuffer(exportedFilePath, sharedPreferences)
 
-                val circularBuffer = readCircularBuffer(sharedPreferences)
+                val circularBuffer = circularBufferPaths.readCircularBuffer(sharedPreferences)
                 if (DEBUG_MODE) circularBuffer.forEach { Log.i("CIRC_BUFFER", it) }
                 val circularBufferReduced = circularBuffer.ridEmpty().ridDuplicities()
 
+                val filenamesToCourseNames = mutableMapOf<String, String>()
                 val resultsParcel = ViewResultsParcel(
                         getString("stats_label"),
                         result.publicMessage,
-                        circularBufferReduced
+                        circularBufferReduced,
+                        filenamesToCourseNames
                 )
 
                 val intent = Intent(this, ViewResultsActivity::class.java).apply {

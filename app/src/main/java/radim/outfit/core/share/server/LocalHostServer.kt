@@ -60,7 +60,7 @@ class LocalHostServer(port: Int, private val dir: File): NanoHTTPD(port) {
         files.forEach {
             val coursename = it.name.substring(0, it.name.lastIndexOf('.'))
             val url = "/${it.name}"
-            sb.append(String.format("{\"title\":\"%s\",\"url\":\"%s\"},", coursename, url))
+            sb.append(String.format("{\"name\":\"%s\",\"url\":\"%s\"},", coursename, url))
         }
         sb.replace(sb.length - 1, sb.length, "]}")
         return sb.toString()
