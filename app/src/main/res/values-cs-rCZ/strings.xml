@@ -26,12 +26,12 @@
     <string name="name_stats">Jméno trasy:</string>
     <string name="length_stats">Délka trasy:</string>
     <string name="nmb_points_stats">Počet bodů:</string>
-    <string name="nmb_waypoints_stats">Počet značek (WPoints):</string>
+    <string name="nmb_waypoints_stats">Počet značek (Waypointy):</string>
 
     <!-- speed_fragment.xml-->
     <string name="frag_label_speed">"Tato trasa neobsahuje údaje\no rychlosti. Prosím vyber."</string>
     <string name="frag_label_activity_type">"Typ aktivity: "</string>
-    <string name="frag_label_time_to_complete_course">Očekává se, že to potrvá:</string>
+    <string name="frag_label_time_to_complete_course">Bude to trvat:</string>
     <string name="hours">hodiny</string>
     <string name="minutes">minuty</string>
 
@@ -52,7 +52,7 @@
     <string name="activity_view_results_label">OUT FIT - Sdílení</string>
     <string name="btn_share_course">Sdílet trasu</string>
     <string name="nmb_trackpoints">Počet bodů:</string>
-    <string name="nmb_coursepoints">Počet značek na trase (Cpoints):</string>
+    <string name="nmb_coursepoints">Počet značek na trase (Coursepointy):</string>
     <string name="found_devices_label">Nalezená zařízení:</string>
     <string name="found_companion">. IN FIT, Connect IQ aplikace:</string>
 
