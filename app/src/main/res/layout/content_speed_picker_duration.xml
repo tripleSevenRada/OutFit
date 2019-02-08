@@ -50,6 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginStart="@dimen/speed_picker_margin"
+            android:layout_marginEnd="@dimen/speed_picker_margin"
             android:text="@string/minutes" />
 
     </LinearLayout>
