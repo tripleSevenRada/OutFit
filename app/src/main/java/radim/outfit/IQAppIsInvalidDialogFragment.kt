@@ -51,19 +51,19 @@ class IQAppIsInvalidDialogFragment : DialogFragment() {
             // Use the Builder class for convenient dialog construction
             val builder = AlertDialog.Builder(it)
             builder.setMessage(message)
-            if(positive.isNonEmpty())
+            if(positive.isNotEmpty())
                 builder.setPositiveButton(positive)
                     { _, _ ->
                         mListener.onDialogPositiveClick(this)
                         mListener.setDialogVisible(false)
                     }
-            if(negative.isNonEmpty())
+            if(negative.isNotEmpty())
                 builder.setNegativeButton(negative)
                     { _, _ ->
                         mListener.onDialogNegativeClick(this)
                         mListener.setDialogVisible(false)
                     }
-            if(neutral.isNonEmpty())
+            if(neutral.isNotEmpty())
                 builder.setNeutralButton(neutral)
                     { _, _ ->
                         mListener.onDialogNeutralClick(this)

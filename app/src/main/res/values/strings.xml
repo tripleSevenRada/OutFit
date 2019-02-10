@@ -49,6 +49,7 @@
     <string name="ok">OK</string>
     <string name="yes">YES</string>
     <string name="no">NO</string>
+    <string name="later">Later</string>
 
     <!-- shared preferences -->
     <string name="main_activity_preferences" translatable="false">radim.outfit.MainActivity</string>
@@ -68,6 +69,7 @@
     <string name="activity_view_results_label">OUT FIT - Share</string>
     <string name="btn_share_course">Share course</string>
     <string name="imgview_connectiq_desc" translatable="false">ConnectIQ logo</string>
+    <string name="bluetooth_status_icon">Bluetooth status icon</string>
     <string name="nmb_trackpoints">Number of trackpoints:</string>
     <string name="nmb_coursepoints">Number of coursepoints:</string>
     <string name="found_devices_label">Found devices:</string>

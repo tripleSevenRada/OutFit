@@ -112,5 +112,7 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
     <string name="infit_dialog_take_me_to_the_store">Jít do obchodu ConnectIQ</string>
     <string name="infit_dialog_infit_old_version">IN FIT, ConnectIQ aplikace je v zastaralé verzi na</string>
     <string name="infit_dialog_infit_not_installed_message">IN FIT, ConnectIQ aplikace není nainstalovaná na</string>
+    <string name="bluetooth_status_icon">Bluetooth stav</string>
+    <string name="later">Později</string>
 
 </resources>

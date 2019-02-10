@@ -1,11 +1,16 @@
 package radim.outfit
 
 import android.arch.lifecycle.ViewModelProviders
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.support.v4.app.DialogFragment
 import android.support.v4.content.FileProvider
 import android.util.Log
@@ -42,6 +47,7 @@ class ViewResultsActivity : AppCompatActivity(),
     private lateinit var parcel: ViewResultsParcel
     private lateinit var connectIQManager: ConnectIQManager
     private var shareFitReady = false
+    private val btBroadcastReceiver = BTBroadcastReceiver()
 
     fun onCheckBoxCCIQClicked(checkboxCCIQ: View) {
         if (checkboxCCIQ is CheckBox) {
@@ -91,10 +97,47 @@ class ViewResultsActivity : AppCompatActivity(),
             Log.i(tag, "Circular buffer of export MAPPING FROM FILENAMES TO COURSENAMES:")
             Log.i(tag, parcel.fileNameToCourseName.toString())
         }
+
+        val intentFilter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+        registerReceiver(btBroadcastReceiver, intentFilter)
+
+        val btManager = getSystemService(Context.BLUETOOTH_SERVICE)
+        if(btManager is BluetoothManager){
+            val btAdapter = btManager.adapter
+            val state = btAdapter.state
+            if (state == BluetoothAdapter.STATE_OFF) {
+                Log.w("BTBroadcastReceiver", "onCreate BT STATE OFF")
+                content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_disabled_black_36dp)
+            }
+            else if (state == BluetoothAdapter.STATE_ON) {
+                Log.w("BTBroadcastReceiver", "onCreate BT STATE ON")
+                content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_black_36dp)
+            }
+        }
+    }
+
+    //BT
+    inner class BTBroadcastReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action: String? = intent.action
+            if (BluetoothAdapter.ACTION_STATE_CHANGED == action) {
+                if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR) == BluetoothAdapter.STATE_OFF) {
+                    Log.w("BTBroadcastReceiver", "BT STATE OFF")
+                    content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_disabled_black_36dp)
+                }
+                else if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR) == BluetoothAdapter.STATE_ON) {
+                    Log.w("BTBroadcastReceiver", "BT STATE ON")
+                    content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_black_36dp)
+                    Handler().postDelayed({stopConnectIQServices()}, 6000)
+                    Handler().postDelayed({startConnectIQServices()}, 8000)
+                }
+            }
+        }
     }
 
     // NANO HTTPD START
     private lateinit var server: LocalHostServer
+
     private fun bindNanoHTTPD() {
         try {
             val filenamesOnly = mutableListOf<String>()
@@ -105,18 +148,18 @@ class ViewResultsActivity : AppCompatActivity(),
                     File("${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"),
                     filenamesOnly,
                     parcel.fileNameToCourseName)
-            if(DEBUG_MODE)Log.i(tag, "JSONArray, coursenames: ${server.coursenamesAsJSON()}")
+            if (DEBUG_MODE) Log.i(tag, "JSONArray, coursenames: ${server.coursenamesAsJSON()}")
             server.start()
-        } catch (e: Exception){
+        } catch (e: Exception) {
             Log.e(tag, e.localizedMessage)
         }
     }
 
     private fun unbindNanoHTTPD() {
-        if(::server.isInitialized){
+        if (::server.isInitialized) {
             try {
                 server.stop()
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 Log.e(tag, e.localizedMessage)
             }
         }
@@ -181,16 +224,18 @@ class ViewResultsActivity : AppCompatActivity(),
     override fun onDestroy() {
         super.onDestroy()
         Log.i(tag, "onDestroy")
+        unregisterReceiver(btBroadcastReceiver)
     }
 
     private fun startConnectIQServices() {
+        Log.w("IQ", "START SERVICES")
         bindNanoHTTPD()
         connectIQManager.startConnectIQ()
     }
 
     private fun stopConnectIQServices() {
+        Log.w("IQ", "STOP SERVICES")
         unbindNanoHTTPD()
-        // listener keeps track if connected or not
         connectIQManager.shutDownConnectIQ()
         if (::indicatorIQTimer.isInitialized) {
             indicatorIQTimer.stop()
@@ -227,17 +272,20 @@ class ViewResultsActivity : AppCompatActivity(),
     // ConnectIQ init loop END
 
     // IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener IMPL BEGIN
-    override fun onDialogPositiveClick(dialog: DialogFragment){
+    override fun onDialogPositiveClick(dialog: DialogFragment) {
         when (getDialogType()) {
             is DialogType.NotInstalled -> connectIQManager.goToTheStore()
             is DialogType.OldVersion -> {
                 //TODO
             }
-            else -> {Log.e(tag,"DialogType == null in onDialogPositiveClick," +
-                    " this should never happen")}
+            else -> {
+                Log.e(tag, "DialogType == null in onDialogPositiveClick," +
+                        " this should never happen")
+            }
         }
     }
-    override fun onDialogNegativeClick(dialog: DialogFragment){
+
+    override fun onDialogNegativeClick(dialog: DialogFragment) {
         val prefs = this.getSharedPreferences(
                 getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
         when (getDialogType()) {
@@ -245,16 +293,20 @@ class ViewResultsActivity : AppCompatActivity(),
                     .putBoolean("dialog_app_not_installed_disabled", true).apply()
             is DialogType.OldVersion -> prefs.edit()
                     .putBoolean("dialog_app_old_version_disabled", true).apply()
-            else -> {Log.e(tag,"DialogType == null in onDialogNegativeClick," +
-                    " this should never happen")}
+            else -> {
+                Log.e(tag, "DialogType == null in onDialogNegativeClick," +
+                        " this should never happen")
+            }
         }
     }
-    override fun onDialogNeutralClick(dialog: DialogFragment){
+
+    override fun onDialogNeutralClick(dialog: DialogFragment) {
         //TODO?
     }
-    override fun setDialogVisible(visible: Boolean) = let{getViewModel().dialogShown = visible}
+
+    override fun setDialogVisible(visible: Boolean) = let { getViewModel().dialogShown = visible }
     override fun getDialogVisible(): Boolean = getViewModel().dialogShown
-    override fun setDialogType(type: DialogType) = let{getViewModel().dialogType = type}
+    override fun setDialogType(type: DialogType) = let { getViewModel().dialogType = type }
     override fun getDialogType(): DialogType? = getViewModel().dialogType
 
     private fun getViewModel(): ViewResultsActivityViewModel =
@@ -265,12 +317,13 @@ class ViewResultsActivity : AppCompatActivity(),
 
     private fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus) {
         spannedDeviceDisplay.onDeviceEvent(device, status, getViewModel())
-        if(DEBUG_MODE)Log.i(tag,"onDeviceEvent display after call ${device.friendlyName} $status")
+        if (DEBUG_MODE) Log.i(tag, "onDeviceEvent display after call ${device.friendlyName} $status")
         content_connectiqTVDevicesData.text = spannedDeviceDisplay.getDisplay()
     }
-    private fun onAppEvent(device: IQDevice, status: IQApp.IQAppStatus){
+
+    private fun onAppEvent(device: IQDevice, status: IQApp.IQAppStatus) {
         spannedDeviceDisplay.onAppEvent(device, status, this)
-        if(DEBUG_MODE)Log.i(tag,"onAppEvent display after call ${device.friendlyName} $status ")
+        if (DEBUG_MODE) Log.i(tag, "onAppEvent display after call ${device.friendlyName} $status ")
         content_connectiqTVDevicesData.text = spannedDeviceDisplay.getDisplay()
     }
     // CALLBACKS END

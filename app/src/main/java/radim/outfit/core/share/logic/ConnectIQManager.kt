@@ -208,7 +208,7 @@ class ConnectIQManager(
                             bundle.putString("message", "${ctx.getString("infit_dialog_infit_not_installed_message")} $friendlyName")
                             bundle.putString("positive", ctx.getString("infit_dialog_take_me_to_the_store"))
                             bundle.putString("negative", ctx.getString("infit_dialog_never_ask_again"))
-                            bundle.putString("neutral", ctx.getString("ok"))
+                            bundle.putString("neutral", ctx.getString("later"))
                             dialog.arguments = bundle
                             val manager = ctx.supportFragmentManager
                             if (manager != null) {
