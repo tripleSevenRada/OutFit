@@ -1,13 +1,17 @@
 package radim.outfit.core.share.logic
 
+import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
+import android.os.Bundle
+import android.support.v4.app.DialogFragment
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.garmin.android.connectiq.ConnectIQ
 import com.garmin.android.connectiq.IQApp
 import com.garmin.android.connectiq.IQDevice
-import radim.outfit.DEBUG_MODE
-import radim.outfit.FailGracefullyLauncher
 import com.garmin.android.connectiq.ConnectIQ.IQApplicationInfoListener
+import radim.outfit.*
+import radim.outfit.core.viewmodels.ViewResultsActivityViewModel
 
 class ConnectIQManager(
         private val ctx: AppCompatActivity,
@@ -18,10 +22,10 @@ class ConnectIQManager(
 ) {
 
     private val tag = "ConnIQList"
-    private val connectionType = ConnectIQ.IQConnectType.TETHERED
+    private val connectionType = ConnectIQ.IQConnectType.WIRELESS
     private val connectIQ: ConnectIQ = ConnectIQ.getInstance(ctx, connectionType)
     private val connectIQListener: ConnectIQ.ConnectIQListener = ConnectIQLifecycleListener()
-    private val companionAppId = "id"
+    private val companionAppId = "77481aa8-8425-463b-b499-61ecf99332d3"
     private val companionAppCurrentVersion = 1000
 
     private var connectIQIsInitialized = false
@@ -36,11 +40,13 @@ class ConnectIQManager(
             connectIQ.initialize(ctx, true, connectIQListener)
         }
     }
-    fun shutDownConnectIQ(){
+
+    fun shutDownConnectIQ() {
         decoratedDevices.clear()
         unregisterForDeviceEvents()
         shutdown()
     }
+
     private fun unregisterForDeviceEvents() {
         if (connectIQIsInitialized) {
             connectIQ.connectedDevices?.forEach {
@@ -48,6 +54,9 @@ class ConnectIQManager(
             }
         }
     }
+
+    fun goToTheStore() = connectIQ.openStore(companionAppId)
+
     private fun shutdown() {
         if (connectIQIsInitialized) connectIQ.shutdown(ctx)
         connectIQIsInitialized = false
@@ -75,7 +84,7 @@ class ConnectIQManager(
             // list connected and known devices
             val connectedDevices = connectIQ.connectedDevices
             val knownDevices = connectIQ.knownDevices
-            if(DEBUG_MODE){
+            if (DEBUG_MODE) {
                 knownDevices.forEach {
                     Log.i(tag, "Known!DEVICE: deviceIdentifier: ${it?.deviceIdentifier}")
                     Log.i(tag, "Known!DEVICE: friendlyName: ${it?.friendlyName}")
@@ -90,7 +99,7 @@ class ConnectIQManager(
                         Log.i(tag, "CONNECTED!DEVICE: status: ${it?.status}")
                         Log.i(tag, "CONNECTED!DEVICE: describeContents(): ${it?.describeContents()}")
                     }
-                    if (it != null){
+                    if (it != null) {
                         onDeviceEvent(it, it.status)
                         decorateDevice(it)
                     }
@@ -106,13 +115,12 @@ class ConnectIQManager(
         }
     }
 
-    private fun decorateDevice(device: IQDevice){
-        if(decoratedDevices.contains(device.deviceIdentifier)){
-            if(DEBUG_MODE) Log.e(tag, "SHORT CIRCUITING decorating device: ${device.friendlyName}")
+    private fun decorateDevice(device: IQDevice) {
+        if (decoratedDevices.contains(device.deviceIdentifier)) {
+            if (DEBUG_MODE) Log.e(tag, "SHORT CIRCUITING decorating device: ${device.friendlyName}")
             return
-        }
-        else {
-            if(DEBUG_MODE) Log.w(tag, "decorating device: ${device.friendlyName}")
+        } else {
+            if (DEBUG_MODE) Log.w(tag, "decorating device: ${device.friendlyName}")
             // keep track of what I have seen
             decoratedDevices.add(device.deviceIdentifier)
             // Register to receive status updates
@@ -129,12 +137,12 @@ class ConnectIQManager(
                 Log.i(tag, "STATUS_CHANGED, friendlyName: ${device?.friendlyName}")
                 Log.i(tag, "STATUS_CHANGED, newStatus: ${status?.toString()}")
             }
-            if(device != null && status != null) {
+            if (device != null && status != null) {
                 if (!decoratedDevices.contains(device.deviceIdentifier)) {
                     onDeviceEvent(device, status)
                     decorateDevice(device)
                     decoratedDevices.add(device.deviceIdentifier)
-                }else{
+                } else {
                     onDeviceEvent(device, status)
                 }
             }
@@ -142,42 +150,78 @@ class ConnectIQManager(
     }
 
     // APP
-
     private fun setCompanionAppListeners(device: IQDevice) {
         connectIQ.getApplicationInfo(companionAppId,
                 device,
                 object : IQApplicationInfoListener {
 
-            override fun onApplicationInfoReceived(app: IQApp?) {
-                if (app != null) {
-                    if (app.status != null) {
-                        if (app.version() < companionAppCurrentVersion) {
-                            // Prompt the user to upgrade
-                            if(DEBUG_MODE) {
-                                Log.w(tag, "my current version is: $companionAppCurrentVersion")
-                                Log.w(tag, "detected app version on $device: ${app.version()}")
+                    override fun onApplicationInfoReceived(app: IQApp?) {
+                        if (app != null) {
+                            if (app.status != null) {
+                                if (app.version() < companionAppCurrentVersion) {
+                                    // Prompt the user to upgrade
+                                    if (DEBUG_MODE) {
+                                        Log.w(tag, "my current version is: $companionAppCurrentVersion")
+                                        Log.w(tag, "detected app version on $device: ${app.version()}")
+                                    }
+                                }
+                                if (DEBUG_MODE) {
+                                    Log.w(tag, "app.status = ${app.status}")
+                                    Log.w(tag, "deviceIdentifier: ${device.deviceIdentifier}")
+                                    Log.w(tag, "device friendlyName: ${device.friendlyName}")
+                                    Log.w(tag, "device status: ${device.status}")
+                                }
+                                onAppEvent(device, app.status)
                             }
                         }
-                        if(DEBUG_MODE) {
-                            Log.w(tag, "app.status = ${app.status}")
-                            Log.w(tag, "deviceIdentifier: ${device.deviceIdentifier}")
-                            Log.w(tag, "device friendlyName: ${device.friendlyName}")
-                            Log.w(tag, "device status: ${device.status}")
-                        }
-                        onAppEvent(device, app.status)
                     }
-                }
-            }
 
-            override fun onApplicationNotInstalled(applicationId: String) {
-                // Prompt user with information
-                //val dialog = AlertDialog.Builder(ctx)
-                //dialog.setTitle("Missing Application")
-                //dialog.setMessage("Corresponding IQ application not installed")
-                //dialog.setPositiveButton(ctx.getString("ok"), null)
-                //dialog.create().show()
-                Log.w(tag, "app not installed on ${device.friendlyName}")
-            }
-        })
+                    override fun onApplicationNotInstalled(applicationId: String) {
+                        // Prompt user with information only if not disabled by Never ask again
+                        val prefs = ctx.getSharedPreferences(
+                                ctx.getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
+                        if(prefs.contains("dialog_app_not_installed_disabled") &&
+                                prefs.getBoolean("dialog_app_not_installed_disabled", false)) {
+                            onAppEvent(device, IQApp.IQAppStatus.NOT_INSTALLED)
+                            return
+                        }
+                        // Verify that the host activity implements the callback interface
+                        val mListener: IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener
+                        try {
+                            // Instantiate the IQAppIsInvalidDialogListener so we can send events to the host
+                            mListener = ctx as IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener
+                        } catch (e: ClassCastException) {
+                            // The activity doesn't implement the interface, throw exception
+                            throw ClassCastException((ctx.toString() +
+                                    " must implement IQAppIsInvalidDialogListener"))
+                        }
+                        val installDialogShown = mListener.getDialogVisible() && mListener.getDialogType() is DialogType.NotInstalled
+                        if(!installDialogShown) {
+                            val dialog = IQAppIsInvalidDialogFragment()
+                            dialog.setStyle(DialogFragment.STYLE_NO_TITLE, 0)
+                            val bundle = Bundle()
+                            val friendlyName: String = if (device.friendlyName.isEmpty()) {
+                                val viewModel = ViewModelProviders.of(ctx).get(ViewResultsActivityViewModel::class.java)
+                                val friendlyNameStored = viewModel.idToFriendlyName[device.deviceIdentifier]
+                                friendlyNameStored ?: "device"
+                            } else device.friendlyName
+                            bundle.putString("message", "${ctx.getString("infit_dialog_infit_not_installed_message")} $friendlyName")
+                            bundle.putString("positive", ctx.getString("infit_dialog_take_me_to_the_store"))
+                            bundle.putString("negative", ctx.getString("infit_dialog_never_ask_again"))
+                            bundle.putString("neutral", ctx.getString("ok"))
+                            dialog.arguments = bundle
+                            val manager = ctx.supportFragmentManager
+                            if (manager != null) {
+                                dialog.show(manager, "onApplicationNotInstalledDialog")
+                                mListener.setDialogType(DialogType.NotInstalled("not installed enum"))
+                                mListener.setDialogVisible(true)
+                            } else {
+                                Log.e(tag, "manager == null")
+                            }
+                        }
+                        if (DEBUG_MODE) Log.w(tag, "app not installed on ${device.friendlyName}")
+                        onAppEvent(device, IQApp.IQAppStatus.NOT_INSTALLED)
+                    }
+                })
     }
 }

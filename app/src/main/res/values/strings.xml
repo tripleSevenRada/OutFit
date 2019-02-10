@@ -80,6 +80,12 @@
     <string name="share_single">Share course</string>
     <string name="share_error">Error sharing course</string>
 
+    <!-- Dialogs to prompt user to install or update IN FIT / ViewResultsActivity -->
+    <string name="infit_dialog_infit_not_installed_message">IN FIT, the ConnectIQ companion App is not installed on</string>
+    <string name="infit_dialog_infit_old_version">IN FIT, the ConnectIQ companion App is an old version on</string>
+    <string name="infit_dialog_never_ask_again">Never ask again</string>
+    <string name="infit_dialog_take_me_to_the_store">Take me to the ConnectIQ store</string>
+
     <!--
 install_needed_title — Dialog title for when Garmin Connect Mobile needs to be installed.
 install_needed_message — Dialog message for when Garmin Connect Mobile needs to be installed.

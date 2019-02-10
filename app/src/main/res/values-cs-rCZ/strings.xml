@@ -107,6 +107,10 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
     <string name="activity_type_hiking">Turistika</string>
     <string name="activity_type_nordic_walking">Severská chůze</string>
     <string name="activity_type_walking">Chůze</string>
-    <string name="activity_type_generic">Aktivita...</string>
-    
+    <string name="activity_type_generic">Aktivita&#8230;</string>
+    <string name="infit_dialog_never_ask_again">Příště se neptat</string>
+    <string name="infit_dialog_take_me_to_the_store">Jít do obchodu ConnectIQ</string>
+    <string name="infit_dialog_infit_old_version">IN FIT, ConnectIQ aplikace je v zastaralé verzi na</string>
+    <string name="infit_dialog_infit_not_installed_message">IN FIT, ConnectIQ aplikace není nainstalovaná na</string>
+
 </resources>
