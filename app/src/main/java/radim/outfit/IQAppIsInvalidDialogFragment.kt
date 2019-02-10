@@ -9,6 +9,8 @@ import android.support.v4.app.DialogFragment
 
 class IQAppIsInvalidDialogFragment : DialogFragment() {
 
+    // https://drive.google.com/open?id=1FKkw-kk3oXjaHCp9Z4muFLhNSxb_wAXc
+
     // Use this instance of the interface to deliver action events
     private lateinit var mListener: IQAppIsInvalidDialogListener
 
@@ -43,23 +45,26 @@ class IQAppIsInvalidDialogFragment : DialogFragment() {
         super.onCreate(savedInstanceState)
         return activity?.let {
             val message = arguments?.getString("message")?: "message"
-            val positive = arguments?.getString("positive")?: "positive"
-            val negative = arguments?.getString("negative")?: "negative"
-            val neutral = arguments?.getString("neutral")?: "neutral"
+            val positive = arguments?.getString("positive")?: ""
+            val negative = arguments?.getString("negative")?: ""
+            val neutral = arguments?.getString("neutral")?: ""
             // Use the Builder class for convenient dialog construction
             val builder = AlertDialog.Builder(it)
             builder.setMessage(message)
-                    .setPositiveButton(positive)
+            if(positive.isNonEmpty())
+                builder.setPositiveButton(positive)
                     { _, _ ->
                         mListener.onDialogPositiveClick(this)
                         mListener.setDialogVisible(false)
                     }
-                    .setNegativeButton(negative)
+            if(negative.isNonEmpty())
+                builder.setNegativeButton(negative)
                     { _, _ ->
                         mListener.onDialogNegativeClick(this)
                         mListener.setDialogVisible(false)
                     }
-                    .setNeutralButton(neutral)
+            if(neutral.isNonEmpty())
+                builder.setNeutralButton(neutral)
                     { _, _ ->
                         mListener.onDialogNeutralClick(this)
                         mListener.setDialogVisible(false)
