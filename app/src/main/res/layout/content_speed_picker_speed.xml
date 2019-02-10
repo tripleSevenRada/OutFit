@@ -18,8 +18,9 @@
         android:id="@+id/content_speed_picker_speedTVActivityType"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/labelTextView"
+        style="@style/labelTextViewSmall"
         android:layout_marginStart="@dimen/speed_picker_margin"
+        android:layout_marginEnd="@dimen/speed_picker_margin"
         android:layout_marginTop="@dimen/speed_picker_margin"
         android:layout_marginBottom="@dimen/speed_picker_margin" />
 
@@ -68,6 +69,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginStart="@dimen/speed_picker_margin_left_of_radio_buttons"
+            android:layout_marginEnd="@dimen/speed_picker_margin"
             android:text="@string/ok" />
 
     </LinearLayout>

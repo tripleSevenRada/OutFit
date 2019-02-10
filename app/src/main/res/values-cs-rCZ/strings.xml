@@ -1,6 +1,116 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OutFit</string>
 
-    <string name="btn_directory_picker">Vyber adresář</string>
+    <!-- activity_main.xml -->
+    <string name="btn_directory_picker">Vyber adresář pro export</string>
+    <string name="root_folder_label">Adresář pro export:</string>
+    <string name="stats_label">Statistiky:</string>
+    <string name="not_set">Není nastaveno</string>
+    <string name="filename_label">Jméno souboru:</string>
+    <string name="filename_hint">jméno souboru</string>
+    <string name="btn_export">Export</string>
+
+    <!-- activity_finish_gracefully.xml -->
+    <string name="what_happened">Co se stalo:</string>
+
+    <!-- MainActivity.kt DirectoryChooserConfig-->
+
+    <!-- MainActivity.kt default filename no extension-->
+
+    <!-- MainActivity.kt toast messages-->
+    <string name="permission_needed">Potřebuju oprávnění</string>
+    <string name="locus_not_installed">Locus není nainstalovaný!</string>
+    <string name="required_version_missing">Vypadá to, že Locus je zastaralý!</string>
+    <string name="locus_not_running">Locus neběží</string>
+
+    <!-- Stats.kt-->
+    <string name="name_stats">Jméno trasy:</string>
+    <string name="length_stats">Délka trasy:</string>
+    <string name="nmb_points_stats">Počet bodů:</string>
+    <string name="nmb_waypoints_stats">Počet značek (Waypointy):</string>
+
+    <!-- speed_fragment.xml-->
+    <string name="frag_label_speed">"Tato trasa neobsahuje údaje\no rychlosti. Prosím vyber."</string>
+    <string name="frag_label_activity_type">"Typ aktivity: "</string>
+    <string name="frag_label_time_to_complete_course">Bude to trvat:</string>
+    <string name="hours">hodiny</string>
+    <string name="minutes">minuty</string>
+
+    <string name="ok">OK</string>
+    <string name="yes">ANO</string>
+    <string name="no">NE</string>
+
+    <!-- shared preferences -->
+
+    <!-- public messages  - Encode-->
+    <string name="course_name">Jméno trasy:</string>
+    <string name="filename">Jméno souboru:</string>
+    <string name="exported">Co se exportovalo:</string>
+    <string name="course_has_elevation_yes">Tato trasa obsahuje údaje o nadm. výšce.</string>
+    <string name="course_has_elevation_no">Tato trasa neobsahuje údaje o nadm. výšce.</string>
+
+    <!-- ViewResultsActivity -->
+    <string name="activity_view_results_label">OUT FIT - Sdílení</string>
+    <string name="btn_share_course">Sdílet trasu</string>
+    <string name="nmb_trackpoints">Počet bodů:</string>
+    <string name="nmb_coursepoints">Počet značek na trase (Coursepointy):</string>
+    <string name="found_devices_label">Nalezená zařízení:</string>
+    <string name="found_companion">. IN FIT, Connect IQ aplikace:</string>
+
+    <!-- Locus dir pick-->
+    <string name="pick_dir_message">Vyber adresář pro export</string>
+
+    <!-- FileProvider / ViewResultActivity-->
+    <string name="share_single">Sdílet trasu</string>
+    <string name="share_error">Chyba při sdílení trasy</string>
+
+    <!--
+install_needed_title — Dialog title for when Garmin Connect Mobile needs to be installed.
+install_needed_message — Dialog message for when Garmin Connect Mobile needs to be installed.
+install_needed_yes — Button text for user to confirm they want to visit the Google Play Store to install Garmin Connect Mobile.
+install_needed_cancel — Button text for user to cancel the dialog and not install Garmin Connect Mobile.
+upgrade_needed_title — Dialog title for when Garmin Connect Mobile needs to be upgraded to a version that supports the SDK.
+upgrade_needed_message — Dialog message for when Garmin Connect Mobile needs to be upgraded to a version that supports the SDK.
+upgrade_needed_yes — Button text for user to confirm they want to visit the Google Play Store to upgrade Garmin Connect Mobile.
+upgrade_needed_cancel — Button text for a user to cancel the dialog and not upgrade Garmin Connect Mobile.
+ -->
+
+    <string name="install_needed_title">Něco chybí.</string>
+    <string name="install_needed_message">Prostředí Connect IQ potřebuje Garmin Connect Mobile. Instalovat?</string>
+    <string name="install_needed_yes">Instalovat</string>
+    <string name="upgrade_needed_title">Něco je zastaralého.</string>
+    <string name="upgrade_needed_message">Garmin Connect Mobile je zastaralý. Aktualizovat?</string>
+    <string name="upgrade_needed_cancel">Zrušit</string>
+    <string name="upgrade_needed_yes">Aktualizovat</string>
+    <string name="install_needed_cancel">Zrušit</string>
+
+    <!-- activity types -->
+    <string name="activity_type_inline_skating">Inline brusle</string>
+    <string name="activity_type_ski_mountaineering">Skialpinismus</string>
+    <string name="activity_type_snowshoeing">Sněžnice</string>
+    <string name="activity_type_kayaking">Kajak</string>
+    <string name="activity_type_motorcycle">Motorka</string>
+    <string name="activity_type_public_transport">Veřejná doprava</string>
+    <string name="activity_type_truck">Náklaďák</string>
+    <string name="activity_type_jeep">Džíp</string>
+    <string name="activity_type_car">Auto</string>
+    <string name="activity_type_boat">Loď</string>
+    <string name="activity_type_horse">Jízda na koni</string>
+    <string name="activity_type_swimming">Plavání</string>
+    <string name="activity_type_rowing">Veslování</string>
+    <string name="activity_type_canoeing">kánoe</string>
+    <string name="activity_type_sailing">Jízda na plachetnici</string>
+    <string name="activity_type_downhill_skiing">Sjezdové lyžování</string>
+    <string name="activity_type_cx_skiing">Běžky</string>
+    <string name="activity_type_scooter">Koloběžka</string>
+    <string name="activity_type_road_cycling">Silniční cyklistika</string>
+    <string name="activity_type_running">Běh</string>
+    <string name="activity_type_hiking">Turistika</string>
+    <string name="activity_type_nordic_walking">Severská chůze</string>
+    <string name="activity_type_walking">Chůze</string>
+    <string name="activity_type_generic">Aktivita&#8230;</string>
+    <string name="infit_dialog_never_ask_again">Příště se neptat</string>
+    <string name="infit_dialog_take_me_to_the_store">Jít do obchodu ConnectIQ</string>
+    <string name="infit_dialog_infit_old_version">IN FIT, ConnectIQ aplikace je v zastaralé verzi na</string>
+    <string name="infit_dialog_infit_not_installed_message">IN FIT, ConnectIQ aplikace není nainstalovaná na</string>
+
 </resources>

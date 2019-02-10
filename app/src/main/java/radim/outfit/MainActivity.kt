@@ -47,7 +47,11 @@ const val EXTRA_MESSAGE_VIEW_RESULTS = "start view results activity with ViewRes
 // 1 - 7
 
 fun AppCompatActivity.getString(name: String): String {
-    return resources.getString(resources.getIdentifier(name, "string", packageName))
+    return try{
+        resources.getString(resources.getIdentifier(name, "string", packageName))
+    }catch(e: Exception){
+        "*"
+    }
 }
 
 const val DEBUG_MODE = true
@@ -188,10 +192,14 @@ class MainActivity : AppCompatActivity(),
                 circularBufferCourseNames.initCircularBuffer(this)
             if (!sharedPreferences.contains(getString("checkbox_cciq")))
                 putBoolean(getString("checkbox_cciq"), true)
+            if (!sharedPreferences.contains("dialog_app_not_installed_disabled"))
+                putBoolean("dialog_app_not_installed_disabled", false)
+            if (!sharedPreferences.contains("dialog_app_old_version_disabled"))
+                putBoolean("dialog_app_old_version_disabled", false)
             apply()
         }
 
-        //showSpeedPickerDialog()  // if you want to test layout on emulator only!
+        //showSpeedPickerDialog()  // if you want to test speed picker layout on emulator only!
 
         val activeLocus = LocusUtils.getActiveVersion(this)
         if (activeLocus == null) {

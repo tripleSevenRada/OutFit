@@ -1,5 +1,6 @@
 package radim.outfit.core.share.work
 
+import android.arch.lifecycle.ViewModel
 import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.text.Spannable
@@ -9,6 +10,7 @@ import android.text.style.ForegroundColorSpan
 import android.util.Log
 import com.garmin.android.connectiq.IQApp
 import com.garmin.android.connectiq.IQDevice
+import radim.outfit.core.viewmodels.ViewResultsActivityViewModel
 import radim.outfit.getString
 
 class SpannedDeviceDisplay {
@@ -30,8 +32,16 @@ class SpannedDeviceDisplay {
             IQApp.IQAppStatus.UNKNOWN to Color.BLACK
     )
 
-    fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus) {
-        devicesIdsToSpannable[device.deviceIdentifier] = getSpannableString(device, status)
+    fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus, viewModel: ViewResultsActivityViewModel) {
+        val friendlyName: String = if(device.friendlyName.isNotEmpty()) {
+            viewModel.idToFriendlyName[device.deviceIdentifier] = device.friendlyName
+            device.friendlyName
+        } else {
+            // device.friendlyName is empty
+            val memoizedFriendlyName = viewModel.idToFriendlyName[device.deviceIdentifier]
+            memoizedFriendlyName ?: "Device"
+        }
+        devicesIdsToSpannable[device.deviceIdentifier] = getSpannableString(friendlyName, status)
         devicesIdsOrder.remove(device.deviceIdentifier)
         devicesIdsOrder = (mutableListOf(device.deviceIdentifier) + devicesIdsOrder).toMutableList()
     }
@@ -44,7 +54,7 @@ class SpannedDeviceDisplay {
             val preexistingSpannable: SpannableString? = devicesIdsToSpannable[device.deviceIdentifier]
             if (preexistingSpannable != null) {
                 val infit = ctx.getString("infit")
-                val infitSpannable = SpannableString(", $infit: ")
+                val infitSpannable = SpannableString(",\n\t\t\t$infit: ")
                 infitSpannable.setSpan(
                         ForegroundColorSpan(Color.BLACK),
                         0,
@@ -69,9 +79,9 @@ class SpannedDeviceDisplay {
         }
     }
 
-    private fun getSpannableString(device: IQDevice, status: IQDevice.IQDeviceStatus): SpannableString {
-        val friendlyNameLength = device.friendlyName.length
-        val rawString = "${device.friendlyName}: $status"
+    private fun getSpannableString(friendlyName: String, status: IQDevice.IQDeviceStatus): SpannableString {
+        val friendlyNameLength = friendlyName.length
+        val rawString = "$friendlyName: $status"
         val spannable = SpannableString(rawString)
         spannable.setSpan(
                 ForegroundColorSpan(deviceStatusToColor[status] ?: Color.BLACK),

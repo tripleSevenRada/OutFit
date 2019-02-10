@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.app.DialogFragment
 import android.support.v4.content.FileProvider
 import android.util.Log
 import android.widget.ProgressBar
@@ -32,7 +33,8 @@ import kotlin.text.StringBuilder
 const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-from" // plus xml resources - paths...
 const val NANOHTTPD_PORT = 22333
 
-class ViewResultsActivity : AppCompatActivity() {
+class ViewResultsActivity : AppCompatActivity(),
+        IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener {
 
     //https://drive.google.com/open?id=18Z1mDp_IcV8NQWlSipONdPs1XWaNjsOr
 
@@ -40,7 +42,6 @@ class ViewResultsActivity : AppCompatActivity() {
     private lateinit var parcel: ViewResultsParcel
     private lateinit var connectIQManager: ConnectIQManager
     private var shareFitReady = false
-
 
     fun onCheckBoxCCIQClicked(checkboxCCIQ: View) {
         if (checkboxCCIQ is CheckBox) {
@@ -124,7 +125,7 @@ class ViewResultsActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val viewModel = ViewModelProviders.of(this).get(ViewResultsActivityViewModel::class.java)
+        val viewModel = getViewModel()
 
         val dirToServeFromPath = "${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"
 
@@ -225,10 +226,45 @@ class ViewResultsActivity : AppCompatActivity() {
     }
     // ConnectIQ init loop END
 
+    // IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener IMPL BEGIN
+    override fun onDialogPositiveClick(dialog: DialogFragment){
+        when (getDialogType()) {
+            is DialogType.NotInstalled -> connectIQManager.goToTheStore()
+            is DialogType.OldVersion -> {
+                //TODO
+            }
+            else -> {Log.e(tag,"DialogType == null in onDialogPositiveClick," +
+                    " this should never happen")}
+        }
+    }
+    override fun onDialogNegativeClick(dialog: DialogFragment){
+        val prefs = this.getSharedPreferences(
+                getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
+        when (getDialogType()) {
+            is DialogType.NotInstalled -> prefs.edit()
+                    .putBoolean("dialog_app_not_installed_disabled", true).apply()
+            is DialogType.OldVersion -> prefs.edit()
+                    .putBoolean("dialog_app_old_version_disabled", true).apply()
+            else -> {Log.e(tag,"DialogType == null in onDialogNegativeClick," +
+                    " this should never happen")}
+        }
+    }
+    override fun onDialogNeutralClick(dialog: DialogFragment){
+        //TODO?
+    }
+    override fun setDialogVisible(visible: Boolean) = let{getViewModel().dialogShown = visible}
+    override fun getDialogVisible(): Boolean = getViewModel().dialogShown
+    override fun setDialogType(type: DialogType) = let{getViewModel().dialogType = type}
+    override fun getDialogType(): DialogType? = getViewModel().dialogType
+
+    private fun getViewModel(): ViewResultsActivityViewModel =
+            ViewModelProviders.of(this).get(ViewResultsActivityViewModel::class.java)
+    // IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener IMPL END
+
     private val spannedDeviceDisplay = SpannedDeviceDisplay()
 
     private fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus) {
-        spannedDeviceDisplay.onDeviceEvent(device, status)
+        spannedDeviceDisplay.onDeviceEvent(device, status, getViewModel())
         if(DEBUG_MODE)Log.i(tag,"onDeviceEvent display after call ${device.friendlyName} $status")
         content_connectiqTVDevicesData.text = spannedDeviceDisplay.getDisplay()
     }
@@ -276,7 +312,7 @@ class ViewResultsActivity : AppCompatActivity() {
 
     fun shareCourse(v: View?) {
         if (!shareFitReady) return
-        val viewModel = ViewModelProviders.of(this).get(ViewResultsActivityViewModel::class.java)
+        val viewModel = getViewModel()
         val fileToShare: File? = viewModel.bufferHead
         val uriToShare: Uri? = if (fileToShare != null) {
             try {
