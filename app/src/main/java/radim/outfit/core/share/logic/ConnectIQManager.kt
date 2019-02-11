@@ -18,15 +18,17 @@ class ConnectIQManager(
         private val onStartInit: () -> Unit,
         private val onFinishInit: () -> Unit,
         private val onDeviceEvent: (IQDevice, IQDevice.IQDeviceStatus) -> Unit,
-        private val onAppEvent: (IQDevice, IQApp.IQAppStatus) -> Unit
+        private val onAppEvent: (IQDevice, IQApp.IQAppStatus) -> Unit,
+        private val onFirstINFITDetected: (String) -> Unit
 ) {
 
+    private var firstINFITReported = false
     private val tag = "ConnIQList"
     private val connectionType = ConnectIQ.IQConnectType.WIRELESS
     private val connectIQ: ConnectIQ = ConnectIQ.getInstance(ctx, connectionType)
     private val connectIQListener: ConnectIQ.ConnectIQListener = ConnectIQLifecycleListener()
     private val companionAppId = "77481aa8-8425-463b-b499-61ecf99332d3"
-    private val companionAppCurrentVersion = 1000
+    private val companionAppRequiredVersion = 100
 
     private var connectIQIsInitialized = false
     private var connectIQIsBeingInitialized = false
@@ -158,10 +160,11 @@ class ConnectIQManager(
                     override fun onApplicationInfoReceived(app: IQApp?) {
                         if (app != null) {
                             if (app.status != null) {
-                                if (app.version() < companionAppCurrentVersion) {
+                                if (app.version() < companionAppRequiredVersion) {
                                     // Prompt the user to upgrade
+                                    // TODO
                                     if (DEBUG_MODE) {
-                                        Log.w(tag, "my current version is: $companionAppCurrentVersion")
+                                        Log.w(tag, "my current required version is: $companionAppRequiredVersion")
                                         Log.w(tag, "detected app version on $device: ${app.version()}")
                                     }
                                 }
@@ -172,6 +175,10 @@ class ConnectIQManager(
                                     Log.w(tag, "device status: ${device.status}")
                                 }
                                 onAppEvent(device, app.status)
+                                if(app.status == IQApp.IQAppStatus.INSTALLED){
+                                    if(!firstINFITReported)onFirstINFITDetected(getFriendlyName(device))
+                                    firstINFITReported = true
+                                }
                             }
                         }
                     }
@@ -195,17 +202,13 @@ class ConnectIQManager(
                             throw ClassCastException((ctx.toString() +
                                     " must implement IQAppIsInvalidDialogListener"))
                         }
-                        val installDialogShown = mListener.getDialogVisible() && mListener.getDialogType() is DialogType.NotInstalled
+                        val installDialogShown = mListener.getDialogVisible() &&
+                                mListener.getDialogType() is DialogType.NotInstalled
                         if(!installDialogShown) {
                             val dialog = IQAppIsInvalidDialogFragment()
                             dialog.setStyle(DialogFragment.STYLE_NO_TITLE, 0)
                             val bundle = Bundle()
-                            val friendlyName: String = if (device.friendlyName.isEmpty()) {
-                                val viewModel = ViewModelProviders.of(ctx).get(ViewResultsActivityViewModel::class.java)
-                                val friendlyNameStored = viewModel.idToFriendlyName[device.deviceIdentifier]
-                                friendlyNameStored ?: "device"
-                            } else device.friendlyName
-                            bundle.putString("message", "${ctx.getString("infit_dialog_infit_not_installed_message")} $friendlyName")
+                            bundle.putString("message", "${ctx.getString("infit_dialog_infit_not_installed_message")} ${getFriendlyName(device)}")
                             bundle.putString("positive", ctx.getString("infit_dialog_take_me_to_the_store"))
                             bundle.putString("negative", ctx.getString("infit_dialog_never_ask_again"))
                             bundle.putString("neutral", ctx.getString("later"))
@@ -221,6 +224,14 @@ class ConnectIQManager(
                         }
                         if (DEBUG_MODE) Log.w(tag, "app not installed on ${device.friendlyName}")
                         onAppEvent(device, IQApp.IQAppStatus.NOT_INSTALLED)
+                    }
+
+                    fun getFriendlyName(deviceToQuery: IQDevice): String{
+                        return if (deviceToQuery.friendlyName.isEmpty()) {
+                            val viewModel = ViewModelProviders.of(ctx).get(ViewResultsActivityViewModel::class.java)
+                            val friendlyNameStored = viewModel.idToFriendlyName[deviceToQuery.deviceIdentifier]
+                            friendlyNameStored ?: "device"
+                        } else deviceToQuery.friendlyName
                     }
                 })
     }

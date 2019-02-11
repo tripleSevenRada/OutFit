@@ -83,7 +83,8 @@ class ViewResultsActivity : AppCompatActivity(),
                 ::onStartCIQInit,
                 ::onFinnishCIQInit,
                 ::onDeviceEvent,
-                ::onAppEvent
+                ::onAppEvent,
+                ::onFirstINFITDetected
         )
 
         if (::parcel.isInitialized) {
@@ -284,7 +285,6 @@ class ViewResultsActivity : AppCompatActivity(),
             }
         }
     }
-
     override fun onDialogNegativeClick(dialog: DialogFragment) {
         val prefs = this.getSharedPreferences(
                 getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
@@ -299,7 +299,6 @@ class ViewResultsActivity : AppCompatActivity(),
             }
         }
     }
-
     override fun onDialogNeutralClick(dialog: DialogFragment) {
         //TODO?
     }
@@ -325,6 +324,11 @@ class ViewResultsActivity : AppCompatActivity(),
         spannedDeviceDisplay.onAppEvent(device, status, this)
         if (DEBUG_MODE) Log.i(tag, "onAppEvent display after call ${device.friendlyName} $status ")
         content_connectiqTVDevicesData.text = spannedDeviceDisplay.getDisplay()
+    }
+
+    private fun onFirstINFITDetected(device: String){
+        val message = "${getString("firstINFITReported")} $device"
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
     // CALLBACKS END
 
