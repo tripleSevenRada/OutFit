@@ -28,6 +28,7 @@
     <string name="locus_not_installed">Locus is not installed!</string>
     <string name="required_version_missing">Locus is probably too old!</string>
     <string name="locus_not_running">Locus is not running</string>
+    <string name="bt_may_be_needed">Bluetooth is off.</string>
     <string name="logs_written" translatable="false">Debug logs written</string>
     <string name="logs_write_error" translatable="false">Debug logs write error</string>
 

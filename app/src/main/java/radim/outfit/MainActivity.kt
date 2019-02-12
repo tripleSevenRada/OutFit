@@ -3,12 +3,11 @@ package radim.outfit
 import android.Manifest
 import android.app.Activity
 import android.arch.lifecycle.ViewModelProviders
-import android.content.ActivityNotFoundException
-import android.content.Context
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.*
 import android.os.Bundle
 import android.view.View
-import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Environment
 import android.util.Log
 import locus.api.android.utils.LocusUtils
@@ -239,6 +238,21 @@ class MainActivity : AppCompatActivity(),
         if (LocusUtils.isIntentTrackTools(this.intent)) {
             // event performed if user tap on your app icon in tools menu of 'Track'
             handleIntentTrackToolsMenu(this, this.intent, viewModel)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val btManager = getSystemService(Context.BLUETOOTH_SERVICE)
+        if(btManager is BluetoothManager){
+            val btAdapter = btManager.adapter
+            val state = btAdapter.state
+            if (state == BluetoothAdapter.STATE_OFF) {
+                Log.w("onCreateMain", "onCreate BT STATE OFF")
+                val checkboxInShare = sharedPreferences.getBoolean((getString("checkbox_cciq")), true)
+                if(checkboxInShare)
+                    Toast.makeText(this, getString("bt_may_be_needed"), Toast.LENGTH_LONG).show()
+            }
         }
     }
 
