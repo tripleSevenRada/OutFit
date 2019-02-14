@@ -195,6 +195,8 @@ class MainActivity : AppCompatActivity(),
                 putBoolean("dialog_app_not_installed_disabled", false)
             if (!sharedPreferences.contains("dialog_app_old_version_disabled"))
                 putBoolean("dialog_app_old_version_disabled", false)
+            if (!sharedPreferences.contains("dialog_use_infit_like_this_disabled"))
+                putBoolean("dialog_use_infit_like_this_disabled", false)
             apply()
         }
 

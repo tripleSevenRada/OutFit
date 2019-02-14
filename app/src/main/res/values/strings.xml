@@ -77,7 +77,7 @@
     <string name="found_companion">. IN FIT, the companion app: </string>
 
     <!-- ViewResultsActivity toasts -->
-    <string name="firstINFITReported">Please keep OUT FIT in foreground, use IN FIT on</string>
+    <string name="firstINFITReported">Please keep OUT FIT in foreground and use IN FIT on</string>
 
     <!-- Locus dir pick-->
     <string name="pick_dir_message">Select export folder</string>

@@ -83,4 +83,5 @@ class IQAppIsInvalidDialogFragment : DialogFragment() {
 sealed class DialogType {
     data class NotInstalled(val description: String) : DialogType()
     data class OldVersion(val description: String) : DialogType()
+    data class HowToInFitInfo(val description: String) : DialogType()
 }

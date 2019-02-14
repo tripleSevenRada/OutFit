@@ -274,6 +274,7 @@ class ViewResultsActivity : AppCompatActivity(),
 
     // IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener IMPL BEGIN
     override fun onDialogPositiveClick(dialog: DialogFragment) {
+        Log.i(tag, "onDialogPositiveClick")
         when (getDialogType()) {
             is DialogType.NotInstalled -> connectIQManager.goToTheStore()
             is DialogType.OldVersion -> {
@@ -286,6 +287,7 @@ class ViewResultsActivity : AppCompatActivity(),
         }
     }
     override fun onDialogNegativeClick(dialog: DialogFragment) {
+        Log.i(tag, "onDialogNegativeClick")
         val prefs = this.getSharedPreferences(
                 getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
         when (getDialogType()) {
@@ -293,6 +295,8 @@ class ViewResultsActivity : AppCompatActivity(),
                     .putBoolean("dialog_app_not_installed_disabled", true).apply()
             is DialogType.OldVersion -> prefs.edit()
                     .putBoolean("dialog_app_old_version_disabled", true).apply()
+            is DialogType.HowToInFitInfo -> prefs.edit()
+                    .putBoolean("dialog_use_infit_like_this_disabled", true).apply()
             else -> {
                 Log.e(tag, "DialogType == null in onDialogNegativeClick," +
                         " this should never happen")
@@ -300,6 +304,7 @@ class ViewResultsActivity : AppCompatActivity(),
         }
     }
     override fun onDialogNeutralClick(dialog: DialogFragment) {
+        Log.i(tag, "onDialogNeutralClick")
         //TODO?
     }
 
@@ -327,8 +332,17 @@ class ViewResultsActivity : AppCompatActivity(),
     }
 
     private fun onFirstINFITDetected(device: String){
+        val prefs = this.getSharedPreferences(
+            getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
+        val dialogDisabled = prefs.getBoolean("dialog_use_infit_like_this_disabled", false)
+        if(dialogDisabled) {
+            return
+        }
+        if(getDialogVisible() && getDialogType() is DialogType.HowToInFitInfo){
+            return
+        }
         val message = "${getString("firstINFITReported")} $device"
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        connectIQManager.showHowToInFitDialog(message)
     }
     // CALLBACKS END
 

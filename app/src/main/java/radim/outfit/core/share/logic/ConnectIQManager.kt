@@ -59,6 +59,28 @@ class ConnectIQManager(
 
     fun goToTheStore() = connectIQ.openStore(companionAppId)
 
+    fun showHowToInFitDialog(message: String) {
+        val dialog = getBundledDialog(
+                message,
+                "",
+                ctx.getString("infit_dialog_never_ask_again"),
+                ctx.getString("ok")
+        )
+        // Verify that the host activity implements the callback interface
+        val mListener: IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener
+        try {
+            // Instantiate the IQAppIsInvalidDialogListener so we can send events to the host
+            mListener = ctx as IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener
+        } catch (e: ClassCastException) {
+            // The activity doesn't implement the interface, throw exception
+            throw ClassCastException((ctx.toString() +
+                    " must implement IQAppIsInvalidDialogListener"))
+        }
+        mListener.setDialogVisible(true)
+        mListener.setDialogType(DialogType.HowToInFitInfo("say keep activity in foreground"))
+        showDialog(dialog, mListener)
+    }
+
     private fun shutdown() {
         if (connectIQIsInitialized) connectIQ.shutdown(ctx)
         connectIQIsInitialized = false
@@ -175,8 +197,8 @@ class ConnectIQManager(
                                     Log.w(tag, "device status: ${device.status}")
                                 }
                                 onAppEvent(device, app.status)
-                                if(app.status == IQApp.IQAppStatus.INSTALLED){
-                                    if(!firstINFITReported)onFirstINFITDetected(getFriendlyName(device))
+                                if (app.status == IQApp.IQAppStatus.INSTALLED) {
+                                    if (!firstINFITReported) onFirstINFITDetected(getFriendlyName(device))
                                     firstINFITReported = true
                                 }
                             }
@@ -187,7 +209,7 @@ class ConnectIQManager(
                         // Prompt user with information only if not disabled by Never ask again
                         val prefs = ctx.getSharedPreferences(
                                 ctx.getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
-                        if(prefs.contains("dialog_app_not_installed_disabled") &&
+                        if (prefs.contains("dialog_app_not_installed_disabled") &&
                                 prefs.getBoolean("dialog_app_not_installed_disabled", false)) {
                             onAppEvent(device, IQApp.IQAppStatus.NOT_INSTALLED)
                             return
@@ -204,29 +226,22 @@ class ConnectIQManager(
                         }
                         val installDialogShown = mListener.getDialogVisible() &&
                                 mListener.getDialogType() is DialogType.NotInstalled
-                        if(!installDialogShown) {
-                            val dialog = IQAppIsInvalidDialogFragment()
-                            dialog.setStyle(DialogFragment.STYLE_NO_TITLE, 0)
-                            val bundle = Bundle()
-                            bundle.putString("message", "${ctx.getString("infit_dialog_infit_not_installed_message")} ${getFriendlyName(device)}")
-                            bundle.putString("positive", ctx.getString("infit_dialog_take_me_to_the_store"))
-                            bundle.putString("negative", ctx.getString("infit_dialog_never_ask_again"))
-                            bundle.putString("neutral", ctx.getString("later"))
-                            dialog.arguments = bundle
-                            val manager = ctx.supportFragmentManager
-                            if (manager != null) {
-                                dialog.show(manager, "onApplicationNotInstalledDialog")
-                                mListener.setDialogType(DialogType.NotInstalled("not installed enum"))
-                                mListener.setDialogVisible(true)
-                            } else {
-                                Log.e(tag, "manager == null")
-                            }
+                        if (!installDialogShown) {
+                            val dialog = getBundledDialog(
+                                    "${ctx.getString("infit_dialog_infit_not_installed_message")} ${getFriendlyName(device)}",
+                                    ctx.getString("infit_dialog_take_me_to_the_store"),
+                                    ctx.getString("infit_dialog_never_ask_again"),
+                                    ctx.getString("later")
+                            )
+                            mListener.setDialogVisible(true)
+                            mListener.setDialogType(DialogType.NotInstalled("say not installed"))
+                            showDialog(dialog, ctx as IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener)
                         }
                         if (DEBUG_MODE) Log.w(tag, "app not installed on ${device.friendlyName}")
                         onAppEvent(device, IQApp.IQAppStatus.NOT_INSTALLED)
                     }
 
-                    fun getFriendlyName(deviceToQuery: IQDevice): String{
+                    fun getFriendlyName(deviceToQuery: IQDevice): String {
                         return if (deviceToQuery.friendlyName.isEmpty()) {
                             val viewModel = ViewModelProviders.of(ctx).get(ViewResultsActivityViewModel::class.java)
                             val friendlyNameStored = viewModel.idToFriendlyName[deviceToQuery.deviceIdentifier]
@@ -234,5 +249,31 @@ class ConnectIQManager(
                         } else deviceToQuery.friendlyName
                     }
                 })
+    }
+
+    private fun getBundledDialog(
+            message: String,
+            positive: String,
+            negative: String,
+            neutral: String): IQAppIsInvalidDialogFragment {
+        val dialog = IQAppIsInvalidDialogFragment()
+        dialog.setStyle(DialogFragment.STYLE_NO_TITLE, 0)
+        val bundle = Bundle()
+        bundle.putString("message", message)
+        bundle.putString("positive", positive)
+        bundle.putString("negative", negative)
+        bundle.putString("neutral", neutral)
+        dialog.arguments = bundle
+        return dialog
+    }
+
+    private fun showDialog(dialog: IQAppIsInvalidDialogFragment,
+                           mListener: IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener) {
+        val manager = ctx.supportFragmentManager
+        if (manager != null) {
+            dialog.show(manager, "showDialog")
+        } else {
+            Log.e(tag, "manager == null")
+        }
     }
 }
