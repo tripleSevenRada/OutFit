@@ -29,8 +29,8 @@
 
         <ImageView
             android:id="@+id/content_connectiqIV"
-            android:layout_width="225dp"
-            android:layout_height="60dp"
+            android:layout_width="188dp"
+            android:layout_height="50dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:contentDescription="@string/imgview_connectiq_desc"

@@ -27,7 +27,7 @@ class ConnectIQManager(
     private val connectionType = ConnectIQ.IQConnectType.WIRELESS
     private val connectIQ: ConnectIQ = ConnectIQ.getInstance(ctx, connectionType)
     private val connectIQListener: ConnectIQ.ConnectIQListener = ConnectIQLifecycleListener()
-    private val companionAppId = "77481aa8-8425-463b-b499-61ecf99332d3"
+    private val companionAppId = "77481aa88425463bb49961ecf99332d3"
     private val companionAppRequiredVersion = 100
 
     private var connectIQIsInitialized = false
