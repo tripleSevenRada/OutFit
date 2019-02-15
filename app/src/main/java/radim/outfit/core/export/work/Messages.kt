@@ -8,7 +8,7 @@ import locus.api.objects.extra.Track
 import radim.outfit.core.export.work.locusapiextensions.*
 import java.util.*
 
-const val COURSENAME_MAX_LENGTH = 12
+const val COURSENAME_MAX_LENGTH = 15 // important, keep
 
 internal fun getFileIdMesg(): FileIdMesg {
     /*

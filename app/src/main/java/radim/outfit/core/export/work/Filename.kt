@@ -5,6 +5,8 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextUtils
 
+const val FILENAME_MAX_LENGTH = 30
+
 fun getFilename(fileName: String?, defaultFilename: String): String {
     if(fileName == null)return "$defaultFilename$FILENAME_SUFFIX" // should never happen, Locus
     val filename = FilenameCharsFilter().replaceReservedChars(fileName,
@@ -12,12 +14,12 @@ fun getFilename(fileName: String?, defaultFilename: String): String {
             FILENAME_REPLACEMENT_CHAR).toString()
     return if (filename.isNotEmpty()) {
         if(!filename.endsWith(FILENAME_SUFFIX)) {
-            if(filename.length > 14) "${filename.subSequence(0, 14)}$FILENAME_SUFFIX"
+            if(filename.length > FILENAME_MAX_LENGTH) "${filename.subSequence(0, FILENAME_MAX_LENGTH)}$FILENAME_SUFFIX"
             else "$filename$FILENAME_SUFFIX"
         }
         else {
             val stripped = filename.subSequence(0, fileName.length - 4)
-            if(stripped.length > 14) "${stripped.subSequence(0, 14)}$FILENAME_SUFFIX"
+            if(stripped.length > FILENAME_MAX_LENGTH) "${stripped.subSequence(0, FILENAME_MAX_LENGTH)}$FILENAME_SUFFIX"
             else "$stripped$FILENAME_SUFFIX"
         }
     } else {
