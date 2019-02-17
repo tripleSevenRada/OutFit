@@ -9,6 +9,7 @@ import radim.outfit.core.export.work.locusapiextensions.*
 import java.util.*
 
 const val COURSENAME_MAX_LENGTH = 15 // important, keep
+const val NAMES_REPLACEMENT_CHAR = '-'
 
 internal fun getFileIdMesg(): FileIdMesg {
     /*
@@ -44,11 +45,11 @@ internal fun getCourseMesg(track: Track, filename: String, filterBundle: Message
     courseMesg.localNum = 1
     courseMesg.name = if (!track.name.isNullOrEmpty()) {
         val lengthAsserted = assertStringLength(track.name, COURSENAME_MAX_LENGTH)
-        replaceReserved(lengthAsserted, filterBundle)
+        replaceNonAllowedChars(lengthAsserted,NAMES_REPLACEMENT_CHAR)
     } else {
         val lengthAsserted = assertStringLength(
                 filename.substring(0, filename.lastIndexOf(".")), COURSENAME_MAX_LENGTH)
-        replaceReserved(lengthAsserted, filterBundle)
+        replaceNonAllowedChars(lengthAsserted,NAMES_REPLACEMENT_CHAR)
     }
     courseMesg.sport = Sport.GENERIC
     // courseMesg.capabilities = CourseCapabilities.NAVIGATION // Not required
@@ -186,16 +187,12 @@ internal fun getCoursepointMesg(wp: WaypointSimplified,
     cp.type = if (wp.coursepointEnumForced == null) routePointActionsToCoursePoints[typeInLocus]
     else wp.coursepointEnumForced
     val lengthAsserted = assertStringLength(wp.name, COURSEPOINTS_NAME_MAX_LENGTH)
-    cp.name = replaceReserved(lengthAsserted, filterBundle)
+    cp.name = replaceNonAllowedChars(lengthAsserted,NAMES_REPLACEMENT_CHAR)
     return cp
 }
 
 internal fun assertStringLength(value: String, max: Int): String {
-    return if (value.length > max) {
-        value.substring(0, max)
-    } else {
-        value
-    }
+    return if (value.length > max) value.substring(0, max) else value
 }
 
 internal fun replaceReserved(value: String, filterBundle: MessagesStringFilterBundle): String {

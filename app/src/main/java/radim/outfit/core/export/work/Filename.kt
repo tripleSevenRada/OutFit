@@ -5,7 +5,7 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextUtils
 
-const val FILENAME_MAX_LENGTH = 30
+const val FILENAME_MAX_LENGTH = 60
 
 fun getFilename(fileName: String?, defaultFilename: String): String {
     if(fileName == null)return "$defaultFilename$FILENAME_SUFFIX" // should never happen, Locus
