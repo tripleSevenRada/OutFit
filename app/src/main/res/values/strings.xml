@@ -43,7 +43,7 @@
     <string name="frag_label_activity_type">ActivityType: </string>
     <string name="kmh" translatable="false">km/h</string>
     <string name="mph" translatable="false">mph</string>
-    <string name="frag_label_time_to_complete_course">It is expected to take:</string>
+    <string name="frag_label_time_to_complete_course">It is going to take:</string>
     <string name="hours">hours</string>
     <string name="minutes">minutes</string>
 

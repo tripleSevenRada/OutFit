@@ -1,10 +1,11 @@
 package radim.outfit.core.export.logic
 
+import android.text.SpannableString
 import java.io.File
 
 sealed class Result{
     data class Success(
-            val publicMessage: List<String>,
+            val publicMessage: List<SpannableString>,
             val debugMessage: List<String>,
             val fileDir: File,
             val filename: String,

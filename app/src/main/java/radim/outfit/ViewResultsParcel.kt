@@ -2,11 +2,12 @@ package radim.outfit
 
 import android.os.Parcel
 import android.os.Parcelable
+import android.text.SpannableString
 
 class ViewResultsParcel : Parcelable {
 
     var title: String
-    var messages: List<String>
+    var messages: List<SpannableString>
     var buffer: Array<String> // circular buffer of last buffer.size exports. May contain empty strings or
     // duplicates both in terms of filenames and complete paths
     var fileNameToCourseName: Map<String, String>
@@ -14,7 +15,7 @@ class ViewResultsParcel : Parcelable {
     private constructor(inParcel: Parcel) {
         this.title = inParcel.readString()?: ""
         val nmb = inParcel.readInt()
-        val messagesLocally = mutableListOf<String>()
+        val messagesLocally = mutableListOf<SpannableString>()
         repeat(nmb) {
             messagesLocally.add(inParcel.readString()?:"")
         }

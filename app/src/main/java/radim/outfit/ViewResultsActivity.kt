@@ -38,6 +38,8 @@ import kotlin.text.StringBuilder
 const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-from" // plus xml resources - paths...
 const val NANOHTTPD_PORT = 22333
 
+const val BT_ICON_ALPHA = 100
+
 class ViewResultsActivity : AppCompatActivity(),
         IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener {
 
@@ -103,16 +105,17 @@ class ViewResultsActivity : AppCompatActivity(),
         registerReceiver(btBroadcastReceiver, intentFilter)
 
         val btManager = getSystemService(Context.BLUETOOTH_SERVICE)
+        content_connectiqBTIcon.imageAlpha = BT_ICON_ALPHA
         if(btManager is BluetoothManager){
             val btAdapter = btManager.adapter
             val state = btAdapter.state
             if (state == BluetoothAdapter.STATE_OFF) {
                 Log.w("BTBroadcastReceiver", "onCreate BT STATE OFF")
-                content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_disabled_black_36dp)
+                content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_disabled_black_24dp)
             }
             else if (state == BluetoothAdapter.STATE_ON) {
                 Log.w("BTBroadcastReceiver", "onCreate BT STATE ON")
-                content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_black_36dp)
+                content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_black_24dp)
             }
         }
     }
@@ -124,11 +127,11 @@ class ViewResultsActivity : AppCompatActivity(),
             if (BluetoothAdapter.ACTION_STATE_CHANGED == action) {
                 if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR) == BluetoothAdapter.STATE_OFF) {
                     Log.w("BTBroadcastReceiver", "BT STATE OFF")
-                    content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_disabled_black_36dp)
+                    content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_disabled_black_24dp)
                 }
                 else if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR) == BluetoothAdapter.STATE_ON) {
                     Log.w("BTBroadcastReceiver", "BT STATE ON")
-                    content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_black_36dp)
+                    content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_black_24dp)
                     Handler().postDelayed({stopConnectIQServices()}, 6000)
                     Handler().postDelayed({startConnectIQServices()}, 8000)
                 }

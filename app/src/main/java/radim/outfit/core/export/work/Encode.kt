@@ -1,6 +1,7 @@
 package radim.outfit.core.export.work
 
 import android.support.v7.app.AppCompatActivity
+import android.text.SpannableString as spString
 import android.util.Log
 import com.garmin.fit.*
 import locus.api.objects.extra.Track
@@ -34,10 +35,10 @@ class Encoder {
 
         val start = System.currentTimeMillis()
 
-        val publicMessages = mutableListOf<String>()
+        val publicMessages = mutableListOf<spString>()
         val debugMessages = mutableListOf<String>()
         val errorMessages = mutableListOf<String>()
-        publicMessages.add("${ctx.getString("filename")} $filename")
+        publicMessages.add(spString("${ctx.getString("filename")} $filename"))
         debugMessages.add("Debug:")
         errorMessages.add("Error:")
 
@@ -74,8 +75,8 @@ class Encoder {
             courseName = courseMesg.name
             encoder.write(courseMesg)
             with(publicMessages) {
-                add("${ctx.getString("course_name")} ${courseName}")
-                add(ctx.getString("exported"))
+                add(spString("${ctx.getString("course_name")} ${courseName}"))
+                add(spString(ctx.getString("exported")))
             }
             with(debugMessages) {
                 add("${ctx.getString("course_name")} ${courseName}")
@@ -275,15 +276,15 @@ event_type (1-1-ENUM): start (0)
             }
 
             val indexToInsertTrackpointsInfo = publicMessages.size
-            publicMessages.add("${ctx.getString("nmb_coursepoints")} ${reducedToLimit.size}")
+            publicMessages.add(spString("${ctx.getString("nmb_coursepoints")} ${reducedToLimit.size}"))
 
             coursePointsDisplayOrder.forEach {
                 if (mapCoursePointsTypesToFrequencies.keys.contains(it)) {
-                    publicMessages.add("$it : ${mapCoursePointsTypesToFrequencies[it]}")
+                    publicMessages.add(spString("$it : ${mapCoursePointsTypesToFrequencies[it]}"))
                 }
             }
-            publicMessages.add(if (trackHasAltitude) ctx.getString("course_has_elevation_yes")
-            else ctx.getString("course_has_elevation_no"))
+            publicMessages.add(if (trackHasAltitude) spString(ctx.getString("course_has_elevation_yes"))
+            else spString(ctx.getString("course_has_elevation_no")))
 
             if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
@@ -314,7 +315,7 @@ event_type (1-1-ENUM): start (0)
                 encoder.write(recordMesg)
                 index++
             }
-            publicMessages.add(indexToInsertTrackpointsInfo, "${ctx.getString("nmb_trackpoints")} ${track.points.size}")
+            publicMessages.add(indexToInsertTrackpointsInfo, spString("${ctx.getString("nmb_trackpoints")} ${track.points.size}"))
             // RECORDS END
 
             // sanity check
