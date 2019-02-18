@@ -78,7 +78,7 @@ class ConnectIQManager(
         }
         mListener.setDialogVisible(true)
         mListener.setDialogType(DialogType.HowToInFitInfo("say keep activity in foreground"))
-        showDialog(dialog, mListener)
+        showDialog(dialog)
     }
 
     private fun shutdown() {
@@ -235,7 +235,7 @@ class ConnectIQManager(
                             )
                             mListener.setDialogVisible(true)
                             mListener.setDialogType(DialogType.NotInstalled("say not installed"))
-                            showDialog(dialog, ctx as IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener)
+                            showDialog(dialog)
                         }
                         if (DEBUG_MODE) Log.w(tag, "app not installed on ${device.friendlyName}")
                         onAppEvent(device, IQApp.IQAppStatus.NOT_INSTALLED)
@@ -267,8 +267,7 @@ class ConnectIQManager(
         return dialog
     }
 
-    private fun showDialog(dialog: IQAppIsInvalidDialogFragment,
-                           mListener: IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener) {
+    private fun showDialog(dialog: IQAppIsInvalidDialogFragment) {
         val manager = ctx.supportFragmentManager
         if (manager != null) {
             dialog.show(manager, "showDialog")

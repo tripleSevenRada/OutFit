@@ -1,6 +1,9 @@
 package radim.outfit.core.export.work
 
+import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
+import android.text.Spannable
+import android.text.style.ForegroundColorSpan
 import android.text.SpannableString as spString
 import android.util.Log
 import com.garmin.fit.*

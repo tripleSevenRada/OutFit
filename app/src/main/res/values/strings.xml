@@ -47,6 +47,9 @@
     <string name="hours">hours</string>
     <string name="minutes">minutes</string>
 
+
+    <string name="seconds">seconds</string>
+
     <string name="ok">OK</string>
     <string name="yes">YES</string>
     <string name="no">NO</string>
@@ -75,6 +78,8 @@
     <string name="nmb_coursepoints">Number of coursepoints:</string>
     <string name="found_devices_label">Found devices:</string>
     <string name="found_companion">. IN FIT, the companion app: </string>
+
+    <string name="est_download_time">Estimated ConnectIQ download time:</string>
 
     <!-- ViewResultsActivity toasts -->
     <string name="firstINFITReported">Please keep OUT FIT in foreground and use IN FIT on</string>

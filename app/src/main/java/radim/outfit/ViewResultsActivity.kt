@@ -13,6 +13,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.DialogFragment
 import android.support.v4.content.FileProvider
+import android.text.SpannableStringBuilder
 import android.util.Log
 import android.widget.ProgressBar
 import kotlinx.android.synthetic.main.content_stats.*
@@ -26,6 +27,8 @@ import kotlinx.android.synthetic.main.content_connectiq.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.share.logic.ConnectIQManager
+import radim.outfit.core.share.logic.getEstimatedDownloadTimeInSeconds
+import radim.outfit.core.share.logic.getSpannableDownloadInfo
 import radim.outfit.core.share.server.LocalHostServer
 import radim.outfit.core.share.server.MIME_FIT
 import radim.outfit.core.share.work.*
@@ -33,12 +36,12 @@ import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
 import radim.outfit.core.viewmodels.ViewResultsActivityViewModel
 import java.io.File
-import kotlin.text.StringBuilder
 
 const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-from" // plus xml resources - paths...
 const val NANOHTTPD_PORT = 22333
 
 const val BT_ICON_ALPHA = 100
+const val DOWNLOAD_TIME_EST_TO_REPORT = 10
 
 class ViewResultsActivity : AppCompatActivity(),
         IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener {
@@ -89,11 +92,6 @@ class ViewResultsActivity : AppCompatActivity(),
                 ::onFirstINFITDetected
         )
 
-        if (::parcel.isInitialized) {
-            val messagesAsStringBuilder = StringBuilder()
-            parcel.messages.forEach { with(messagesAsStringBuilder) { append(it); append("\n") } }
-            content_statsTVData.text = messagesAsStringBuilder.toString()
-        }
         if (DEBUG_MODE && ::parcel.isInitialized) {
             Log.i(tag, "Circular buffer of export PATHS:")
             parcel.buffer.forEach { Log.i(tag, it) }
@@ -117,6 +115,33 @@ class ViewResultsActivity : AppCompatActivity(),
                 Log.w("BTBroadcastReceiver", "onCreate BT STATE ON")
                 content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_black_24dp)
             }
+        }
+    }
+
+    private fun buildStats(){
+        if (::parcel.isInitialized) {
+            val viewModel = getViewModel()
+            if (viewModel.statsSpannableStringBuilder != null) return
+            val messagesAsSpannableStringBuilder = SpannableStringBuilder()
+            val fileToShare: File? = viewModel.bufferHead
+            if (fileToShare != null) {
+                val secondsTotal = getEstimatedDownloadTimeInSeconds(fileToShare.length())
+                if (secondsTotal > DOWNLOAD_TIME_EST_TO_REPORT) {
+                    with(messagesAsSpannableStringBuilder) {
+                        append(getSpannableDownloadInfo(secondsTotal, this@ViewResultsActivity, fileToShare.length()))
+                        append("\n")
+                    }
+                }
+            } else { Log.e(tag, "fileToShare = null") }
+            parcel.messages.forEach { with(messagesAsSpannableStringBuilder) { append(it); append("\n") } }
+            viewModel.statsSpannableStringBuilder = messagesAsSpannableStringBuilder
+        } else Log.e(tag, "parcel.isInitialized NOT")
+    }
+
+    private fun populateStats(){
+        val viewModel = getViewModel()
+        if (viewModel.statsSpannableStringBuilder != null) {
+            content_statsTVData.text = viewModel.statsSpannableStringBuilder
         }
     }
 
@@ -173,7 +198,7 @@ class ViewResultsActivity : AppCompatActivity(),
     override fun onStart() {
         super.onStart()
         val viewModel = getViewModel()
-
+        populateStats() // only if stats in viewModel are not null
         val dirToServeFromPath = "${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"
 
         if (!viewModel.fileOperationsDone) {
@@ -203,6 +228,8 @@ class ViewResultsActivity : AppCompatActivity(),
                         viewModel.fileOperationsDone = true
                         viewModel.bufferHead = if (afterFiles.isNotEmpty()) afterFiles[0] else null
                         shareFitReady = true
+                        buildStats()
+                        populateStats()
                         if (content_connectiqCHCKBOX.isChecked) startConnectIQServices() // includes disableExecutive() // START
                         else enableExecutive()
                     } else {

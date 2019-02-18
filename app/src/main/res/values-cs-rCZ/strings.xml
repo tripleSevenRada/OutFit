@@ -35,6 +35,9 @@
     <string name="hours">hodiny</string>
     <string name="minutes">minuty</string>
 
+
+    <string name="seconds">sekundy</string>
+
     <string name="ok">OK</string>
     <string name="yes">ANO</string>
     <string name="no">NE</string>
@@ -55,6 +58,8 @@
     <string name="nmb_coursepoints">Počet značek na trase (Coursepointy):</string>
     <string name="found_devices_label">Nalezená zařízení:</string>
     <string name="found_companion">. IN FIT, Connect IQ aplikace:</string>
+
+    <string name="est_download_time">Čas stažení přes ConnectIQ (odhad):</string>
 
     <!-- Locus dir pick-->
     <string name="pick_dir_message">Vyber adresář pro export</string>

@@ -3,6 +3,7 @@ package radim.outfit
 import android.os.Parcel
 import android.os.Parcelable
 import android.text.SpannableString
+import android.text.TextUtils
 
 class ViewResultsParcel : Parcelable {
 
@@ -17,7 +18,8 @@ class ViewResultsParcel : Parcelable {
         val nmb = inParcel.readInt()
         val messagesLocally = mutableListOf<SpannableString>()
         repeat(nmb) {
-            messagesLocally.add(inParcel.readString()?:"")
+            val mSpannableString: SpannableString = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(inParcel) as SpannableString
+            messagesLocally.add(mSpannableString)
         }
         messages = messagesLocally
         val bufferSize = inParcel.readInt()
@@ -35,7 +37,7 @@ class ViewResultsParcel : Parcelable {
     }
 
     constructor(title: String,
-                messages: List<String>,
+                messages: List<SpannableString>,
                 buffer: Array<String>,
                 fileToCourseName: Map<String, String>) {
         this.title = title
@@ -47,7 +49,9 @@ class ViewResultsParcel : Parcelable {
     override fun writeToParcel(p0: Parcel?, p1: Int) {
         p0?.writeString(title)
         p0?.writeInt(messages.size)
-        messages.forEach { p0?.writeString(it) }
+        if(p0 != null) {
+            messages.forEach { TextUtils.writeToParcel(it, p0, p1) }
+        }
         p0?.writeInt(buffer.size)
         for  (i in buffer.indices){
             p0?.writeString(buffer[i])
