@@ -32,11 +32,11 @@
     <string name="frag_label_speed">"Tato trasa neobsahuje údaje\no rychlosti. Prosím vyber."</string>
     <string name="frag_label_activity_type">"Typ aktivity: "</string>
     <string name="frag_label_time_to_complete_course">Bude to trvat:</string>
-    <string name="hours">hodiny</string>
-    <string name="minutes">minuty</string>
+    <string name="hours">hod.</string>
+    <string name="minutes">min.</string>
 
 
-    <string name="seconds">sekundy</string>
+    <string name="seconds">sek.</string>
 
     <string name="ok">OK</string>
     <string name="yes">ANO</string>

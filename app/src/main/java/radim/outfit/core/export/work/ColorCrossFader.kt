@@ -41,7 +41,7 @@ class ColorCrossFader(fromColor: Int, private val toColor: Int, span: Double){
 
 class Span(private val from: Double, private val to: Double){
     init{ if(!(to > from)) Log.e("Span", "!to > from") }
-    fun getSpan():Double = (to - from)
+    fun getDelta():Double = (to - from)
     fun getInSpanRelativeToTo(inSpanAbsolute: Double): Double = (to - inSpanAbsolute)
     fun isInFrom(value: Double): Boolean = value < from
     fun isInTo(value: Double): Boolean = value > to
