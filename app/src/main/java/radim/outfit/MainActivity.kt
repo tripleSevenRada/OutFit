@@ -29,6 +29,7 @@ import locus.api.android.ActionTools
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.export.work.*
+import radim.outfit.core.export.work.locusapiextensions.WaypointsRelatedTrackPreprocessing
 import radim.outfit.core.share.work.*
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
@@ -46,9 +47,9 @@ const val EXTRA_MESSAGE_VIEW_RESULTS = "start view results activity with ViewRes
 // 1 - 7
 
 fun AppCompatActivity.getString(name: String): String {
-    return try{
+    return try {
         resources.getString(resources.getIdentifier(name, "string", packageName))
-    }catch(e: Exception){
+    } catch (e: Exception) {
         "*"
     }
 }
@@ -246,13 +247,13 @@ class MainActivity : AppCompatActivity(),
     override fun onResume() {
         super.onResume()
         val btManager = getSystemService(Context.BLUETOOTH_SERVICE)
-        if(btManager is BluetoothManager){
+        if (btManager is BluetoothManager) {
             val btAdapter = btManager.adapter
             val state = btAdapter.state
             if (state == BluetoothAdapter.STATE_OFF) {
                 Log.w("onCreateMain", "onCreate BT STATE OFF")
                 val checkboxInShare = sharedPreferences.getBoolean((getString("checkbox_cciq")), true)
-                if(checkboxInShare)
+                if (checkboxInShare)
                     Toast.makeText(this, getString("bt_may_be_needed"), Toast.LENGTH_LONG).show()
             }
         }
@@ -269,7 +270,10 @@ class MainActivity : AppCompatActivity(),
             doAsync {
                 var track: Track? = null
                 try {
-                    track = LocusUtils.handleIntentTrackTools(act, intent)
+                    track = WaypointsRelatedTrackPreprocessing(
+                            LocusUtils.handleIntentTrackTools(act, intent)
+                    ).preprocess()
+
                     // or inject a mock
                     //track = getTrackOkNoCP()
                     //track = getTrackNullEndNoCP()
@@ -378,7 +382,7 @@ class MainActivity : AppCompatActivity(),
                 if (DEBUG_MODE) cbFilenamesToCoursenamesArrayReversed.forEach { Log.i("CIRC_BUFF_F_TO_C_R", it) }
                 val filenamesToCourseNames = mutableMapOf<String, String>()
                 cbFilenamesToCoursenamesArrayReversed.forEach {
-                    if(it.isNotEmpty()) {
+                    if (it.isNotEmpty()) {
                         val pair = lab.getPair(it)
                         filenamesToCourseNames[pair.first] = pair.second
                     }
