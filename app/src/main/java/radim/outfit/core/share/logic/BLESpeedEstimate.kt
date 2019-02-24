@@ -1,11 +1,18 @@
 package radim.outfit.core.share.logic
 
+import android.content.Context
 import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
+import radim.outfit.core.export.work.ColorCrossFader
+import radim.outfit.core.export.work.Span
 import radim.outfit.getString
+
+const val START_OF_DOWNLOAD_TIME_WARNING = 15 // sec
+const val NO_MORE_DOWNLOAD_TIME_WARNING = 150 // sec
 
 fun getEstimatedDownloadTimeInSeconds(sizeB: Long): Int{
     // https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5751532/
@@ -13,11 +20,21 @@ fun getEstimatedDownloadTimeInSeconds(sizeB: Long): Int{
     return (sizeB / 500).toInt()
 }
 fun getSpannableDownloadInfo(secondsTot: Int, ctx: AppCompatActivity, size: Long): SpannableString{
-    val color = when (secondsTot) {
-        in 0..20 -> Color.GREEN
-        in 21..60 -> Color.rgb(255,140,0)
-        else -> Color.RED
+
+    //TODO
+    val colorFrom = Color.parseColor("#e3eaa7")// toLow in colors
+    val colorTo =  Color.parseColor("#eca1a6")// toHigh in colors
+
+    val colorCrossFadeSpan = Span(START_OF_DOWNLOAD_TIME_WARNING.toDouble(), NO_MORE_DOWNLOAD_TIME_WARNING.toDouble())
+    val colorCrossFader = ColorCrossFader(colorFrom, colorTo, colorCrossFadeSpan.getDelta())
+
+    val color: Int = when {
+        (colorCrossFadeSpan.isInFrom(secondsTot.toDouble())) -> colorFrom
+        (colorCrossFadeSpan.isInTo(secondsTot.toDouble())) -> colorTo
+        else -> colorCrossFader.colorCrossFade(
+                                colorCrossFadeSpan.getInSpanRelativeToTo(secondsTot.toDouble()))
     }
+
     val minsS = ctx.getString("minutes")
     val secsS = ctx.getString("seconds")
     val mins = secondsTot / 60
@@ -26,6 +43,6 @@ fun getSpannableDownloadInfo(secondsTot: Int, ctx: AppCompatActivity, size: Long
     val timeS = if(mins > 0) "$mins $minsS, $secs $secsS" else "$secs $secsS"
     val publish = "$prefix\n\t\t\t$timeS"
     val spannable = SpannableString(publish)
-    spannable.setSpan(ForegroundColorSpan(color), (publish.length - timeS.length), publish.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+    spannable.setSpan(BackgroundColorSpan(color), (publish.length - timeS.length), publish.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
     return spannable
 }

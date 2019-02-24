@@ -98,7 +98,7 @@ class SpeedPickerFragment : DialogFragment() {
             val pair = if (activitySpeeds != null) activitySpeeds
             else Pair(SPEED_MIN_UNIT_AGNOSTIC, SPEED_MAX_UNIT_AGNOSTIC)
             val span = Span(pair.first.kmhToMs().toDouble(), pair.second.kmhToMs().toDouble())
-            val colorCrossFader = ColorCrossFader(colorFrom, colorTo, span.getSpan())
+            val colorCrossFader = ColorCrossFader(colorFrom, colorTo, span.getDelta())
 
             fun disconnectSpeedOnChangeListener() {
                 npSpeed?.setOnValueChangedListener(null)
