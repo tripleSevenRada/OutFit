@@ -51,8 +51,9 @@ internal fun getCourseMesg(track: Track, filename: String, filterBundle: Message
                 filename.substring(0, filename.lastIndexOf(".")), COURSENAME_MAX_LENGTH)
         replaceNonAllowedChars(lengthAsserted,NAMES_REPLACEMENT_CHAR)
     }
-    courseMesg.sport = Sport.GENERIC
-    // courseMesg.capabilities = CourseCapabilities.NAVIGATION // Not required
+    val sport: Sport? = activityTypesToGarminSport[track.activityType]
+    courseMesg.sport = sport?: Sport.GENERIC
+    courseMesg.capabilities = CourseCapabilities.NAVIGATION // Not required
     return courseMesg
 }
 
@@ -99,7 +100,9 @@ message_index (254-1-UINT16): selected=0,reserved=0,mask=0 (0)
 
     if (track.hasAltitudeTotals()) {
         lapMesg.totalAscent = track.stats.elePositiveHeight.toInt()
-        lapMesg.totalDescent = track.stats.eleNegativeHeight.toInt()
+        lapMesg.totalDescent = if(track.stats.eleNegativeHeight.toInt() > 0)
+            track.stats.eleNegativeHeight.toInt()
+            else -(track.stats.eleNegativeHeight.toInt())
     }
 
     lapMesg.totalTimerTime = trackTimestampsBundle.totalTime / 1000F

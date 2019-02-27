@@ -1,5 +1,6 @@
 package radim.outfit.core.export.work
 
+import com.garmin.fit.Sport
 import radim.outfit.R
 
 val activityTypesToStringResourceId: Map<Int, Int> = mapOf(
@@ -33,4 +34,24 @@ val activityTypesToStringResourceId: Map<Int, Int> = mapOf(
         16 to R.string.activity_type_public_transport,
 
         0 to R.string.activity_type_generic
+)
+val activityTypesToGarminSport: Map<Int, com.garmin.fit.Sport> = mapOf(
+        19 to Sport.WALKING,
+        15 to Sport.HIKING,
+        18 to Sport.RUNNING,
+        17 to Sport.INLINE_SKATING,
+        20 to Sport.CYCLING,
+        22 to Sport.CYCLING,
+        1 to Sport.CROSS_COUNTRY_SKIING,
+        2 to Sport.ALPINE_SKIING,
+        3 to Sport.SNOWSHOEING,
+        26 to Sport.SAILING,
+        5 to Sport.ROWING,
+        4 to Sport.SWIMMING,
+        24 to Sport.HORSEBACK_RIDING,
+        28 to Sport.BOATING,
+        12 to Sport.DRIVING,
+        29 to Sport.DRIVING,
+        13 to Sport.MOTORCYCLING,
+        0 to Sport.GENERIC
 )

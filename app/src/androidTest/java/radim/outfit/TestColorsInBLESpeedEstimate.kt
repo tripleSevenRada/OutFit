@@ -21,11 +21,11 @@ class TestColorsInBLESpeedEstimate {
         val appContext = InstrumentationRegistry.getTargetContext()
         //Assert.assertEquals("radim.outfit", appContext.packageName)
         for (i in 0..300) {
-            val spannableDownloadInfo = getSpannableDownloadInfo(
-                    i,
-                    appContext,
-                    1024
-            )
+            //val spannableDownloadInfo = getSpannableDownloadInfo(
+              //      i,
+                //    appContext as AppCompatActivity,
+                  //  1024
+            //)
         }
     }
 }

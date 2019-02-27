@@ -97,6 +97,7 @@ class ConnectIQManager(
             val errorMessage = p0?.toString() ?: "ConnectIQ platform init error"
             Log.e(tag, "onInitializeError: $errorMessage")
             FailGracefullyLauncher().failGracefully(ctx, errorMessage)
+            ctx.finish()
         }
 
         // Called when the SDK has been successfully initialized

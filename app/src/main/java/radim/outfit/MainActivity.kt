@@ -116,6 +116,7 @@ class MainActivity : AppCompatActivity(),
         return if (length == null) {
             // sanity check, should never happen
             FailGracefullyLauncher().failGracefully(this, "Null track length.")
+            finish()
             200
         } else length.toInt()
     }
@@ -206,6 +207,7 @@ class MainActivity : AppCompatActivity(),
         val activeLocus = LocusUtils.getActiveVersion(this)
         if (activeLocus == null) {
             fail.failGracefully(this, this.getString("locus_not_installed") + " Error 1")
+            finish()
             return
         }
 
@@ -213,11 +215,13 @@ class MainActivity : AppCompatActivity(),
             ActionTools.getLocusInfo(this, activeLocus)
         } catch (e: RequiredVersionMissingException) {
             fail.failGracefully(this, this.getString("required_version_missing - ") + e.localizedMessage + " Error 2")
+            finish()
             return
         }
 
         if (!isExternalStorageWritable()) {
             fail.failGracefully(this, "isExternalStorageWritable() == false" + " Error 3")
+            finish()
             return
         }
 
@@ -289,6 +293,7 @@ class MainActivity : AppCompatActivity(),
                 uiThread {
                     if (doFail) {
                         fail.failGracefully(act, failMessage)
+                        finish()
                     }
                     if (track != null && track.points != null && track.points.size > 0) {
                         // do work
@@ -297,6 +302,7 @@ class MainActivity : AppCompatActivity(),
                         enableExecutive(viewModel)
                     } else {
                         fail.failGracefully(act, " null - Error 6")
+                        finish()
                     }
                 }
             }
@@ -402,6 +408,7 @@ class MainActivity : AppCompatActivity(),
             }
             is Result.Fail -> {
                 fail.failGracefully(this, result.errorMessage.toString())
+                finish()
             }
         }
     }
@@ -435,6 +442,7 @@ class MainActivity : AppCompatActivity(),
         } catch (e: ActivityNotFoundException) {
             e.printStackTrace()
             fail.failGracefully(this, e.localizedMessage)
+            finish()
         }
     }
 
@@ -452,6 +460,7 @@ class MainActivity : AppCompatActivity(),
                 }
             } catch (e: Exception) {
                 fail.failGracefully(this, " Error 7")
+                finish()
                 return
             }
         } else {

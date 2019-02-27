@@ -1,12 +1,10 @@
 package radim.outfit.core.share.logic
 
-import android.content.Context
 import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.BackgroundColorSpan
-import android.text.style.ForegroundColorSpan
 import radim.outfit.core.export.work.ColorCrossFader
 import radim.outfit.core.export.work.Span
 import radim.outfit.getString

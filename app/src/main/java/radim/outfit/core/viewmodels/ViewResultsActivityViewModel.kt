@@ -12,5 +12,6 @@ class ViewResultsActivityViewModel: ViewModel(){
     var idToFriendlyName = mutableMapOf<Long, String>()
     var dialogType: DialogType? = null
     var dialogShown = false
+    var dialogHowToInfitIncarnation = false
     var statsSpannableStringBuilder: SpannableStringBuilder? = null
 }

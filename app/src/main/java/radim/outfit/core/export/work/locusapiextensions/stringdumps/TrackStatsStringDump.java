@@ -18,6 +18,12 @@ public class TrackStatsStringDump {
         dump.add("-------------------------------getStopTime()" + stats.getStopTime());
         dump.add("-------------------------------getTotalTime()" + stats.getTotalTime());
         dump.add("-------------------------------getTotalLength()" + stats.getTotalLength());
+        dump.add("-------------------------------getAltitudeMax()" + stats.getAltitudeMax());
+        dump.add("-------------------------------getAltitudeMin()" + stats.getAltitudeMin());
+        dump.add("-------------------------------getEleNegativeDistance()" + stats.getEleNegativeDistance());
+        dump.add("-------------------------------getEleNegativeHeight()" + stats.getEleNegativeHeight());
+        dump.add("-------------------------------getElePositiveDistance()" + stats.getElePositiveDistance());
+        dump.add("-------------------------------getElePositiveHeight()" + stats.getElePositiveHeight());
         return dump;
     }
 }

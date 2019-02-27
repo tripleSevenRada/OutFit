@@ -58,7 +58,7 @@ fun Track.hasSpeed(): Boolean {
 // lap property
 fun Track.hasAltitudeTotals(): Boolean {
     val allPoints = this.stats.hasElevationValues()
-    val totals = this.stats.eleNegativeHeight > 1.0 && stats.elePositiveHeight > 1.0
+    val totals = this.stats.eleNegativeHeight < 1.0 && stats.elePositiveHeight > 1.0
     return allPoints && totals
 }
 

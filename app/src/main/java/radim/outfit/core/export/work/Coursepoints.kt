@@ -37,8 +37,8 @@ val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
 )
 
 val styleNameORIconStyleIconUrlToCoursePoints: Map<String,CoursePoint> = mapOf(
-        "Summit" to CoursePoint.SUMMIT,
-        "Dropoff" to CoursePoint.VALLEY,
+        "Summit.png" to CoursePoint.SUMMIT,
+        "Dropoff.png" to CoursePoint.VALLEY,
 
         "tourism-drinkingwater.png" to CoursePoint.WATER,
         "Drinking Water.png" to CoursePoint.WATER,
@@ -105,7 +105,7 @@ val routePointActionsPrioritized: Map<Int, List<PointRteAction>> = mapOf(
         13 to listOf(PointRteAction.PASS_PLACE)
 )
 
-const val MAX_DISTANCE_TO_CLIP_WP_TO_COURSE = 200.0F
+const val MAX_DISTANCE_TO_CLIP_WP_TO_COURSE = 260.0F
 
 class AttachWaypointsToTrack(val track: Track) {
 

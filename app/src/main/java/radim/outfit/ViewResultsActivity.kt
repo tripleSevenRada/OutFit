@@ -234,6 +234,7 @@ class ViewResultsActivity : AppCompatActivity(),
                         else enableExecutive()
                     } else {
                         FailGracefullyLauncher().failGracefully(this@ViewResultsActivity, "file operations")
+                        finish()
                     }
                 }
             }
@@ -342,6 +343,8 @@ class ViewResultsActivity : AppCompatActivity(),
     override fun getDialogVisible(): Boolean = getViewModel().dialogShown
     override fun setDialogType(type: DialogType) = let { getViewModel().dialogType = type }
     override fun getDialogType(): DialogType? = getViewModel().dialogType
+    private fun getHowToInfitThisIncarnation() = getViewModel().dialogHowToInfitIncarnation
+    private fun setHowToInfitThisIncarnation(){getViewModel().dialogHowToInfitIncarnation = true}
 
     private fun getViewModel(): ViewResultsActivityViewModel =
             ViewModelProviders.of(this).get(ViewResultsActivityViewModel::class.java)
@@ -365,12 +368,10 @@ class ViewResultsActivity : AppCompatActivity(),
         val prefs = this.getSharedPreferences(
             getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
         val dialogDisabled = prefs.getBoolean("dialog_use_infit_like_this_disabled", false)
-        if(dialogDisabled) {
-            return
-        }
-        if(getDialogVisible() && getDialogType() is DialogType.HowToInFitInfo){
-            return
-        }
+        if(dialogDisabled) return
+        if(getDialogVisible() && getDialogType() is DialogType.HowToInFitInfo) return
+        if(getHowToInfitThisIncarnation()) return
+        setHowToInfitThisIncarnation()
         val message = "${getString("firstINFITReported")} $device"
         connectIQManager.showHowToInFitDialog(message)
     }
