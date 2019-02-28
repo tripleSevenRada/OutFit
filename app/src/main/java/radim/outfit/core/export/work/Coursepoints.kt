@@ -12,8 +12,14 @@ import radim.outfit.core.export.work.locusapiextensions.getWaypointName
 const val COURSEPOINTS_LIMIT = 100
 const val COURSEPOINTS_NAME_MAX_LENGTH = 14
 const val COURSE_AND_COURSEPOINTS_REPLACEMENT_CHAR = '-'
+const val MAX_DISTANCE_TO_CLIP_WP_TO_COURSE = 260.0F
 
  /*
+
+
+    LOCUS API
+
+
     UNDEFINED(Integer.MIN_VALUE, "undefined"),
     /**
      * No maneuver occurs here.
@@ -165,6 +171,7 @@ const val COURSE_AND_COURSEPOINTS_REPLACEMENT_CHAR = '-'
 
 val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.LEFT_SLIGHT to CoursePoint.SLIGHT_LEFT,
+        PointRteAction.STAY_LEFT to CoursePoint.SLIGHT_LEFT,
         PointRteAction.RAMP_ON_LEFT to CoursePoint.LEFT_FORK,
         PointRteAction.MERGE_LEFT to CoursePoint.SLIGHT_LEFT,
         PointRteAction.LEFT to CoursePoint.LEFT,
@@ -172,6 +179,7 @@ val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.U_TURN_LEFT to CoursePoint.SHARP_LEFT,
         PointRteAction.EXIT_LEFT to CoursePoint.LEFT,
         PointRteAction.RIGHT_SLIGHT to CoursePoint.SLIGHT_RIGHT,
+        PointRteAction.STAY_RIGHT to CoursePoint.SLIGHT_RIGHT,
         PointRteAction.RAMP_ON_RIGHT to CoursePoint.RIGHT_FORK,
         PointRteAction.MERGE_RIGHT to CoursePoint.SLIGHT_RIGHT,
         PointRteAction.RIGHT to CoursePoint.RIGHT,
@@ -254,18 +262,17 @@ val routePointActionsPrioritized: Map<Int, List<PointRteAction>> = mapOf(
         2 to listOf(PointRteAction.RAMP_STRAIGHT),
         3 to listOf(PointRteAction.STAY_STRAIGHT),
         4 to listOf(PointRteAction.CONTINUE_STRAIGHT),
-        5 to listOf(PointRteAction.RAMP_ON_LEFT, PointRteAction.RAMP_ON_RIGHT),
-        6 to listOf(PointRteAction.MERGE_LEFT, PointRteAction.MERGE_RIGHT),
-        7 to listOf(PointRteAction.LEFT_SLIGHT, PointRteAction.RIGHT_SLIGHT),
-        8 to listOf(PointRteAction.EXIT_LEFT, PointRteAction.EXIT_RIGHT),
-        9 to listOf(PointRteAction.U_TURN_LEFT, PointRteAction.U_TURN_RIGHT),
-        10 to listOf(PointRteAction.U_TURN),
-        11 to listOf(PointRteAction.RIGHT_SHARP, PointRteAction.LEFT_SHARP),
-        12 to listOf(PointRteAction.RIGHT, PointRteAction.LEFT),
-        13 to listOf(PointRteAction.PASS_PLACE)
+        5 to listOf(PointRteAction.STAY_LEFT, PointRteAction.STAY_RIGHT),
+        6 to listOf(PointRteAction.RAMP_ON_LEFT, PointRteAction.RAMP_ON_RIGHT),
+        7 to listOf(PointRteAction.MERGE_LEFT, PointRteAction.MERGE_RIGHT),
+        8 to listOf(PointRteAction.LEFT_SLIGHT, PointRteAction.RIGHT_SLIGHT),
+        9 to listOf(PointRteAction.EXIT_LEFT, PointRteAction.EXIT_RIGHT),
+        10 to listOf(PointRteAction.U_TURN_LEFT, PointRteAction.U_TURN_RIGHT),
+        11 to listOf(PointRteAction.U_TURN),
+        12 to listOf(PointRteAction.RIGHT_SHARP, PointRteAction.LEFT_SHARP),
+        13 to listOf(PointRteAction.RIGHT, PointRteAction.LEFT),
+        14 to listOf(PointRteAction.PASS_PLACE)
 )
-
-const val MAX_DISTANCE_TO_CLIP_WP_TO_COURSE = 260.0F
 
 class AttachWaypointsToTrack(val track: Track) {
 
