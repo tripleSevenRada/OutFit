@@ -13,6 +13,156 @@ const val COURSEPOINTS_LIMIT = 100
 const val COURSEPOINTS_NAME_MAX_LENGTH = 14
 const val COURSE_AND_COURSEPOINTS_REPLACEMENT_CHAR = '-'
 
+ /*
+    UNDEFINED(Integer.MIN_VALUE, "undefined"),
+    /**
+     * No maneuver occurs here.
+     */
+    NO_MANEUVER(0, "no_maneuver"),
+    /**
+     * Continue straight.
+     */
+    CONTINUE_STRAIGHT(1, "straight"),
+    /**
+     * No maneuver occurs here. Road name changes.
+     */
+    NO_MANEUVER_NAME_CHANGE(2, "name_change"),
+    /**
+     * Make a slight left.
+     */
+    LEFT_SLIGHT(3, "left_slight"),
+    /**
+     * Turn left.
+     */
+    LEFT(4, "left"),
+    /**
+     * Make a sharp left.
+     */
+    LEFT_SHARP(5, "left_sharp"),
+    /**
+     * Make a slight right.
+     */
+    RIGHT_SLIGHT(6, "right_slight"),
+    /**
+     * Turn right.
+     */
+    RIGHT(7, "right"),
+    /**
+     * Make a sharp right.
+     */
+    RIGHT_SHARP(8, "right_sharp"),
+    /**
+     * Stay left.
+     */
+    STAY_LEFT(9, "stay_left"),
+    /**
+     * Stay right.
+     */
+    STAY_RIGHT(10, "stay_right"),
+    /**
+     * Stay straight.
+     */
+    STAY_STRAIGHT(11, "stay_straight"),
+    /**
+     * Make a U-turn.
+     */
+    U_TURN(12, "u-turn"),
+    /**
+     * Make a left U-turn.
+     */
+    U_TURN_LEFT(13, "u-turn_left"),
+    /**
+     * Make a right U-turn.
+     */
+    U_TURN_RIGHT(14, "u-turn_right"),
+    /**
+     * Exit left.
+     */
+    EXIT_LEFT(15, "exit_left"),
+    /**
+     * Exit right.
+     */
+    EXIT_RIGHT(16, "exit_right"),
+    /**
+     * Take the ramp on the left.
+     */
+    RAMP_ON_LEFT(17, "ramp_left"),
+    /**
+     * Take the ramp on the right.
+     */
+    RAMP_ON_RIGHT(18, "ramp_right"),
+    /**
+     * Take the ramp straight ahead.
+     */
+    RAMP_STRAIGHT(19, "ramp_straight"),
+    /**
+     * Merge left.
+     */
+    MERGE_LEFT(20, "merge_left"),
+    /**
+     * Merge right.
+     */
+    MERGE_RIGHT(21, "merge_right"),
+    /**
+     * Merge.
+     */
+    MERGE(22, "merge"),
+    /**
+     * Enter state/province.
+     */
+    ENTER_STATE(23, "enter_state"),
+    /**
+     * Arrive at your destination.
+     */
+    ARRIVE_DEST(24, "dest"),
+    /**
+     * Arrive at your destination on the left.
+     */
+    ARRIVE_DEST_LEFT(25, "dest_left"),
+    /**
+     * Arrive at your destination on the right.
+     */
+    ARRIVE_DEST_RIGHT(26, "dest_right"),
+    /**
+     * Enter the roundabout and take the 1st exit.
+     */
+    ROUNDABOUT_EXIT_1(27, "roundabout_e1"),
+    /**
+     * Enter the roundabout and take the 2nd exit.
+     */
+    ROUNDABOUT_EXIT_2(28, "roundabout_e2"),
+    /**
+     * Enter the roundabout and take the 3rd exit.
+     */
+    ROUNDABOUT_EXIT_3(29, "roundabout_e3"),
+    /**
+     * Enter the roundabout and take the 4th exit.
+     */
+    ROUNDABOUT_EXIT_4(30, "roundabout_e4"),
+    /**
+     * Enter the roundabout and take the 5th exit.
+     */
+    ROUNDABOUT_EXIT_5(31, "roundabout_e5"),
+    /**
+     * Enter the roundabout and take the 6th exit.
+     */
+    ROUNDABOUT_EXIT_6(32, "roundabout_e6"),
+    /**
+     * Enter the roundabout and take the 7th exit.
+     */
+    ROUNDABOUT_EXIT_7(33, "roundabout_e7"),
+    /**
+     * Enter the roundabout and take the 8th exit.
+     */
+    ROUNDABOUT_EXIT_8(34, "roundabout_e8"),
+    /**
+     * Pass POI.
+     */
+    PASS_PLACE(50, "pass_place");
+ */
+
+// ROUNDABOUT_EXIT - co s nima, u nas vpravo, v UK vlevo, ignoruju...
+
 val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.LEFT_SLIGHT to CoursePoint.SLIGHT_LEFT,
         PointRteAction.RAMP_ON_LEFT to CoursePoint.LEFT_FORK,
@@ -59,30 +209,40 @@ val styleNameORIconStyleIconUrlToCoursePoints: Map<String,CoursePoint> = mapOf(
 )
 
 val coursePointsDisplayOrder: List<CoursePoint> = listOf(
+        CoursePoint.DANGER,
+        
+        CoursePoint.FIRST_AID,
+        
         CoursePoint.GENERIC,
-        CoursePoint.SUMMIT,
-        CoursePoint.VALLEY,
+        
         CoursePoint.WATER,
         CoursePoint.FOOD,
-        CoursePoint.DANGER,
+        
+        CoursePoint.SUMMIT,
+        CoursePoint.VALLEY,
+
+        CoursePoint.SHARP_LEFT,        
         CoursePoint.LEFT,
+        CoursePoint.SLIGHT_LEFT,
+        CoursePoint.LEFT_FORK,
+        
+        CoursePoint.SHARP_RIGHT,
         CoursePoint.RIGHT,
+        CoursePoint.SLIGHT_RIGHT,
+        CoursePoint.RIGHT_FORK,
+
+        CoursePoint.U_TURN,
+
         CoursePoint.STRAIGHT,
-        CoursePoint.FIRST_AID,
+        CoursePoint.MIDDLE_FORK,
+
         CoursePoint.FOURTH_CATEGORY,
         CoursePoint.THIRD_CATEGORY,
         CoursePoint.SECOND_CATEGORY,
         CoursePoint.FIRST_CATEGORY,
         CoursePoint.HORS_CATEGORY,
         CoursePoint.SPRINT,
-        CoursePoint.LEFT_FORK,
-        CoursePoint.RIGHT_FORK,
-        CoursePoint.MIDDLE_FORK,
-        CoursePoint.SLIGHT_LEFT,
-        CoursePoint.SHARP_LEFT,
-        CoursePoint.SLIGHT_RIGHT,
-        CoursePoint.SHARP_RIGHT,
-        CoursePoint.U_TURN,
+
         CoursePoint.SEGMENT_START,
         CoursePoint.SEGMENT_END,
         CoursePoint.INVALID
