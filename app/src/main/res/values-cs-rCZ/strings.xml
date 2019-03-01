@@ -29,7 +29,7 @@
     <string name="nmb_waypoints_stats">Počet značek (Waypointy):</string>
 
     <!-- speed_fragment.xml-->
-    <string name="frag_label_speed">"Tato trasa neobsahuje údaje\no rychlosti. Prosím vyber."</string>
+    <string name="frag_label_speed">Jak rychle?</string>
     <string name="frag_label_activity_type">"Typ aktivity: "</string>
     <string name="frag_label_time_to_complete_course">Bude to trvat:</string>
     <string name="hours">hod.</string>

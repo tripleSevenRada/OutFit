@@ -171,7 +171,7 @@ const val MAX_DISTANCE_TO_CLIP_WP_TO_COURSE = 260.0F
 
 val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.LEFT_SLIGHT to CoursePoint.SLIGHT_LEFT,
-        PointRteAction.STAY_LEFT to CoursePoint.SLIGHT_LEFT,
+        PointRteAction.STAY_LEFT to CoursePoint.LEFT_FORK,
         PointRteAction.RAMP_ON_LEFT to CoursePoint.LEFT_FORK,
         PointRteAction.MERGE_LEFT to CoursePoint.SLIGHT_LEFT,
         PointRteAction.LEFT to CoursePoint.LEFT,
@@ -179,7 +179,7 @@ val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.U_TURN_LEFT to CoursePoint.SHARP_LEFT,
         PointRteAction.EXIT_LEFT to CoursePoint.LEFT,
         PointRteAction.RIGHT_SLIGHT to CoursePoint.SLIGHT_RIGHT,
-        PointRteAction.STAY_RIGHT to CoursePoint.SLIGHT_RIGHT,
+        PointRteAction.STAY_RIGHT to CoursePoint.RIGHT_FORK,
         PointRteAction.RAMP_ON_RIGHT to CoursePoint.RIGHT_FORK,
         PointRteAction.MERGE_RIGHT to CoursePoint.SLIGHT_RIGHT,
         PointRteAction.RIGHT to CoursePoint.RIGHT,
