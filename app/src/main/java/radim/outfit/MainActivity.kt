@@ -54,7 +54,7 @@ fun AppCompatActivity.getString(name: String): String {
     }
 }
 
-const val DEBUG_MODE = true
+const val DEBUG_MODE = false
 
 class MainActivity : AppCompatActivity(),
         TriggerActionProvider,
@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity(),
         Toaster {
 
     private val tvStatsFiller = " \n \n \n "
+    private val debugMessages = mutableListOf<String>()
 
     private lateinit var sharedPreferences: SharedPreferences
     private val fail = FailGracefullyLauncher()
@@ -160,6 +161,7 @@ class MainActivity : AppCompatActivity(),
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
 
         simpleTimer = SimpleTimer(400, TimerCallback(viewModel))
+        debugMessages.add("Debug:")
         exportListener = ExportListener(
                 ExportFunction(),
                 ExportPOJO(null, null, null),
@@ -169,7 +171,8 @@ class MainActivity : AppCompatActivity(),
                 this,
                 this,
                 this,
-                viewModel
+                viewModel,
+                debugMessages
         )
 
         Log.i(LOG_TAG_MAIN, "export in progress: ${viewModel.exportInProgress}")
@@ -275,7 +278,8 @@ class MainActivity : AppCompatActivity(),
                 var track: Track? = null
                 try {
                     track = WaypointsRelatedTrackPreprocessing(
-                            LocusUtils.handleIntentTrackTools(act, intent)
+                            LocusUtils.handleIntentTrackTools(act, intent),
+                            debugMessages
                     ).preprocess()
 
                     // or inject a mock

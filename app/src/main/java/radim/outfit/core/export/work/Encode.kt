@@ -20,7 +20,7 @@ const val MIN_TIME_TAKEN = 8
 const val MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989 = 631065600000L
 
 // Error messages 1 - 2
-class Encoder {
+class Encoder (val debugMessages: MutableList<String>) {
 
     // with great help of:
     // https://github.com/gimportexportdevs/gexporter/blob/master/app/src/main/java/org/surfsite/gexporter/Gpx2Fit.java
@@ -36,10 +36,9 @@ class Encoder {
         val start = System.currentTimeMillis()
 
         val publicMessages = mutableListOf<spString>()
-        val debugMessages = mutableListOf<String>()
         val errorMessages = mutableListOf<String>()
         publicMessages.add(spString("${ctx.getString("filename")} $filename"))
-        debugMessages.add("Debug:")
+
         errorMessages.add("Error:")
 
         val outputFile = File(dir.absolutePath + File.separatorChar + filename)

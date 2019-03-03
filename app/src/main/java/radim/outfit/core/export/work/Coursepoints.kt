@@ -10,15 +10,12 @@ import radim.outfit.core.export.work.locusapiextensions.getCoursepointEnumForced
 import radim.outfit.core.export.work.locusapiextensions.getWaypointName
 
 const val COURSEPOINTS_LIMIT = 100
-const val COURSEPOINTS_NAME_MAX_LENGTH = 14
+const val COURSEPOINTS_NAME_MAX_LENGTH = 20
 const val COURSE_AND_COURSEPOINTS_REPLACEMENT_CHAR = '-'
 const val MAX_DISTANCE_TO_CLIP_WP_TO_COURSE = 260.0F
 
  /*
-
-
     LOCUS API
-
 
     UNDEFINED(Integer.MIN_VALUE, "undefined"),
     /**
@@ -213,7 +210,8 @@ val styleNameORIconStyleIconUrlToCoursePoints: Map<String,CoursePoint> = mapOf(
         "health-emergencyphone.png" to CoursePoint.FIRST_AID,
         "Medical Facility.png" to CoursePoint.FIRST_AID,
 
-        "transport-accident.png" to CoursePoint.DANGER
+        "transport-accident.png" to CoursePoint.DANGER,
+        "Skull and Crossbones.png" to CoursePoint.DANGER
 )
 
 val coursePointsDisplayOrder: List<CoursePoint> = listOf(

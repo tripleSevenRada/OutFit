@@ -9,7 +9,7 @@ public class PointStringDump {
     public static List<String> stringDescription(Point point) {
         List<String> dump = new LinkedList<String>();
         dump.add("----------Point dump");
-        if(point == null){
+        if (point == null) {
             dump.add("NULL");
             return dump;
         }
@@ -27,5 +27,10 @@ public class PointStringDump {
         dump.add("---------------getParameterSource() " + point.getParameterSource());
         dump.add("---------------getParamRteIndex() " + point.getParamRteIndex());
         return dump;
+    }
+
+    public static String pointStringDescriptionSimple(Point point) {
+        if (point == null) return "null";
+        return "point: " + point.getName() + " " + point.getLocation().latitude + " " + point.getLocation().longitude;
     }
 }

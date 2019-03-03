@@ -25,7 +25,7 @@ interface Toaster{
 // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
 
 class ExportListener(
-        private val execute: (File?, String?, Track?, Float, AppCompatActivity) -> Result,
+        private val execute: (File?, String?, Track?, Float, AppCompatActivity, MutableList<String>) -> Result,
         var exportPOJO: ExportPOJO,
         private val onFinishCallback: (Result, MainActivityViewModel) -> Unit,
         private val onStartCallback: () -> Unit,
@@ -33,7 +33,8 @@ class ExportListener(
         private val ctx: AppCompatActivity,
         private val permInfoProvider: PermInfoProvider,
         private val toaster: Toaster,
-        private val viewModel: MainActivityViewModel
+        private val viewModel: MainActivityViewModel,
+        private val debugMessages: MutableList<String>
 ) : View.OnClickListener {
 
     private val tag = "ExportListener"
@@ -88,7 +89,9 @@ class ExportListener(
                     finalExportPojo.filename,
                     finalExportPojo.track,
                     speedMperS,
-                    ctx)
+                    ctx,
+                    debugMessages
+            )
             uiThread {
                 viewModel.exportInProgress = false
                 onFinishCallback(result, viewModel)

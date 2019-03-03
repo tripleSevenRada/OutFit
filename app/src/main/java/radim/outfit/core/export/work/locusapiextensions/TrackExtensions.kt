@@ -43,18 +43,6 @@ fun Track.hasAltitude(): Boolean {
     return !this.points.any { (it != null) && (!it.hasAltitude()) }
 }
 
-// has speed iff does not contain null elements and all points answer true to point.hasSpeed()
-fun Track.hasSpeed(): Boolean {
-    this.points.forEach {
-        if(it != null){
-            if(! it.hasSpeed()) return false
-        } else {
-            return false
-        }
-    }
-    return true
-}
-
 // lap property
 fun Track.hasAltitudeTotals(): Boolean {
     val allPoints = this.stats.hasElevationValues()

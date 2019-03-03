@@ -21,4 +21,8 @@ public class LocationStringDump {
         dump.add("alt: " + loc.hasAltitude() + ", " + loc.getAltitude());
         return dump;
     }
+    public static String locationStringDescriptionSimple(Location loc){
+        if(loc == null) return "null";
+        return "location: " + loc.latitude + " " + loc.longitude;
+    }
 }
