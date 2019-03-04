@@ -45,9 +45,14 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
         if (debugInPreprocess) {
             debugMessages.add("Not inserted WPTS - locations: ${bagOfWpts.size}")
-            bagOfWpts.forEach { debugMessages.add(locationStringDescriptionSimple(it.location)) }
+            bagOfWpts.forEach { debugMessages.add(" -- ${locationStringDescriptionSimple(it.location)}\n") }
         }
         // apply HEURISTICS on remaining WPTS in bagOfWpts
+
+        // TODO fix paramRteIndex
+        // TODO fix paramRteIndex
+        // TODO fix paramRteIndex
+        // TODO fix paramRteIndex
 
         return track
     }
