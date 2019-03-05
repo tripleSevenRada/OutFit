@@ -275,7 +275,7 @@ val routePointActionsPrioritized: Map<Int, List<PointRteAction>> = mapOf(
 class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
 
     // try to assign (trackpoints) indices to waypoints with PointRteAction.UNDEFINED
-    // that lay close enough to trackContainer
+    // that lay close enough to track
 
     var debugMessages = mutableListOf<String>()
         private set

@@ -5,7 +5,7 @@ import locus.api.objects.utils.LocationCompute
 import radim.outfit.core.export.work.routePointActionsPrioritized
 import radim.outfit.core.export.work.routePointActionsToCoursePoints
 
-// trackContainer does not contain null elements and is fully timestamped
+// track does not contain null elements and is fully timestamped
 fun extractPointTimestampsFromPoints(track: Track): List<Long> {
     val mutableListOfTimestamps = mutableListOf<Long>()
     track.points.forEach {
@@ -14,7 +14,7 @@ fun extractPointTimestampsFromPoints(track: Track): List<Long> {
     return mutableListOfTimestamps
 }
 
-// trackContainer may contain null elements and is not considered fully timestamped
+// track may contain null elements and is not considered fully timestamped
 fun assignPointTimestampsToNonNullPoints(track: Track, distances: List<Float>, speedIfNotInTrack: Float): List<Long> {
     val now: Long = System.currentTimeMillis()
     val mutableListOfTimestamps = mutableListOf<Long>()

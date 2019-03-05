@@ -146,7 +146,7 @@ class ConnectIQManager(
             return
         } else {
             if (DEBUG_MODE) Log.w(tag, "decorating device: ${device.friendlyName}")
-            // keep trackContainer of what I have seen
+            // keep track of what I have seen
             decoratedDevices.add(device.deviceIdentifier)
             // Register to receive status updates
             connectIQ.registerForDeviceEvents(device, DeviceEventListener())
