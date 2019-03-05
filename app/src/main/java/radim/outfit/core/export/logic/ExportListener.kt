@@ -5,19 +5,20 @@ import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
-import locus.api.objects.extra.Track
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import radim.outfit.core.export.work.locusapiextensions.isTimestamped
 import radim.outfit.core.export.work.getFilename
+import radim.outfit.core.export.work.locusapiextensions.TrackContainer
+import radim.outfit.core.export.work.locusapiextensions.isTimestamped
 import radim.outfit.core.viewmodels.MainActivityViewModel
 import radim.outfit.getString
 import java.io.File
 
-interface PermInfoProvider{
+interface PermInfoProvider {
     fun permWriteIsGranted(): Boolean
 }
-interface Toaster{
+
+interface Toaster {
     fun toast(key: String, length: Int)
 }
 
@@ -25,7 +26,7 @@ interface Toaster{
 // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
 
 class ExportListener(
-        private val execute: (File?, String?, Track?, Float, AppCompatActivity, MutableList<String>) -> Result,
+        private val execute: (File?, String?, TrackContainer?, Float, AppCompatActivity, MutableList<String>) -> Result,
         var exportPOJO: ExportPOJO,
         private val onFinishCallback: (Result, MainActivityViewModel) -> Unit,
         private val onStartCallback: () -> Unit,
@@ -53,9 +54,9 @@ class ExportListener(
 
     override fun onClick(v: View?) {
         if (!dataIsValid()) return
-        val track = exportPOJO.track
-        track ?: return
-        if(!permInfoProvider.permWriteIsGranted()){
+        val trackContainer = exportPOJO.trackContainer
+        trackContainer ?: return
+        if (!permInfoProvider.permWriteIsGranted()) {
             toaster.toast(ctx.getString("permission_needed"), Toast.LENGTH_LONG)
             return
         }
@@ -64,7 +65,7 @@ class ExportListener(
         // https://antonioleiva.com/anko-background-kotlin-android/
 
         doAsync {
-            val trackIsFullyTimestamped = track.isTimestamped()
+            val trackIsFullyTimestamped = trackContainer.track.isTimestamped()
             uiThread {
                 Log.i(tag, "trackIsFullyTimestamped: $trackIsFullyTimestamped")
                 if (!trackIsFullyTimestamped) {
@@ -87,7 +88,7 @@ class ExportListener(
         doAsync {
             val result = execute(finalExportPojo.file,
                     finalExportPojo.filename,
-                    finalExportPojo.track,
+                    finalExportPojo.trackContainer,
                     speedMperS,
                     ctx,
                     debugMessages
@@ -105,30 +106,34 @@ class ExportListener(
         return mergeExportPOJOS(exportPOJO,
                 ExportPOJO(exportPOJO.file,
                         mostRecentFilenameNotEmptyAsserted,
-                        exportPOJO.track))
+                        exportPOJO.trackContainer))
     }
 
     private fun dataIsValid(): Boolean {
-        val track = exportPOJO.track
-        track ?: return false
+        val trackContainer = exportPOJO.trackContainer
+        trackContainer ?: return false
         val dir = exportPOJO.file
         if (dir == null) {
             callBackResultError("9 - trackPOJO.file = null")
             return false
         }
-        if (try{!dir.isDirectory} catch (e: Exception){false}) {
+        if (try {
+                    !dir.isDirectory
+                } catch (e: Exception) {
+                    false
+                }) {
             callBackResultError("10 - trackPOJO.file non existent or non directory")
             return false
         }
-        if (track.points == null || track.points.size < 2) {
+        if (trackContainer.track.points == null || trackContainer.track.points.size < 2) {
             callBackResultError("11 - trackpoints == null or start only")
             return false
         }
-        if (track.stats == null) {
+        if (trackContainer.track.stats == null) {
             callBackResultError("12 - stats == null")
             return false
         }
-        if (track.stats.totalLength < 1.0) {
+        if (trackContainer.track.stats.totalLength < 1.0) {
             callBackResultError("13 - totalLength < 1.0")
             return false
         }

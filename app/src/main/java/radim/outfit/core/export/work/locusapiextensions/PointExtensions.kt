@@ -1,6 +1,5 @@
 package radim.outfit.core.export.work.locusapiextensions
 
-import android.util.Log
 import com.garmin.fit.CoursePoint
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Point

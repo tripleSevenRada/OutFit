@@ -1,11 +1,14 @@
 package radim.outfit.core.export.work.locusapiextensions
 
+import android.util.Log
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Location
 import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
+import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.LocationStringDump.locationStringDescriptionSimple
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.PointStringDump
+import java.lang.RuntimeException
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -20,11 +23,13 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
     private val minDistConsider = 2.0
     private val debugInPreprocess = false
+    private val tag = "WPTS preprocessing"
 
-    fun preprocess(): Track {
+    fun preprocess(): TrackContainer {
+
+        // needToConstructNewLocation have paramRteIndex = -1
         val needToConstructNewLocation: List<Point> =
-                track.waypoints.filter { it.parameterRteAction == PointRteAction.UNDEFINED }
-
+                track.waypoints.filter { it != null && it.parameterRteAction == PointRteAction.UNDEFINED }
         if (debugInPreprocess) {
             debugMessages.add("Need To Construct New Location: ")
             debugMessages.addAll(needToConstructNewLocation.map {
@@ -33,8 +38,34 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             })
         }
 
+        //
+        //
+        // we need to be able to provide indices of shifted trackpoints where
+        // defined RteActions are now, after new trackpoints were inserted
+        val definedRteActionsToLocationsInTrack = mutableMapOf<Point, Location>()
+        // rte actions waypoints have valid paramRteIndex (!= -1)
+        val definedRteActions = track.waypoints.filter {
+            it != null && it.paramRteIndex != -1 &&
+                    it.parameterRteAction != PointRteAction.UNDEFINED
+        }
+        definedRteActions.forEach {
+            if (it.paramRteIndex in 0..track.points.size) {
+                definedRteActionsToLocationsInTrack[it] = track.points[it.paramRteIndex]
+            } else {
+                val debugMessage = "ERROR: paramRteIndex"
+                Log.e(tag, debugMessage)
+                debugMessages.add(debugMessage)
+            }
+        }
+        if (DEBUG_MODE) {
+            if (definedRteActions.size != definedRteActionsToLocationsInTrack.size)
+                throw RuntimeException("definedRteActions.size != definedRteActionsToLocationsInTrack.size")
+        }
+        //
+        //
+
         // mocked stress test
-        // needToConstructNewLocation.addAll(InjectTestWaypoints(track).getMockWaypointsWithinTrackBounds(10000))
+        // needToConstructNewLocation.addAll(InjectTestWaypoints(trackContainer).getMockWaypointsWithinTrackBounds(10000))
 
         val bagOfWpts = mutableSetOf<Point>()
         bagOfWpts.addAll(needToConstructNewLocation)
@@ -44,17 +75,40 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         }
 
         if (debugInPreprocess) {
-            debugMessages.add("Not inserted WPTS - locations: ${bagOfWpts.size}")
+            val debugMessage = "Not inserted WPTS - locations: ${bagOfWpts.size}"
+            debugMessages.add(debugMessage)
+            Log.i(tag, debugMessage)
             bagOfWpts.forEach { debugMessages.add(" -- ${locationStringDescriptionSimple(it.location)}\n") }
         }
+
         // apply HEURISTICS on remaining WPTS in bagOfWpts
 
-        // TODO fix paramRteIndex
-        // TODO fix paramRteIndex
-        // TODO fix paramRteIndex
-        // TODO fix paramRteIndex
+        // TODO big O ?
 
-        return track
+        val definedRteActionsToShiftedIndices = mutableMapOf<Point, Int>()
+        definedRteActions.forEach {
+            // point.location and location in trackContainer are not the same object,
+            // although they have the same lat & lon
+            val locSearched = definedRteActionsToLocationsInTrack[it]
+            if (locSearched != null) {
+                for (i in track.points.indices) {
+                    if (track.points[i] === locSearched) {
+                        definedRteActionsToShiftedIndices[it] = i
+                        break
+                    }
+                }
+            } else {
+                val debugMessage = "INCONSISTENCY IN :definedRteActionsToLocationsInTrack"
+                Log.e(tag, debugMessage)
+                if (debugInPreprocess) debugMessages.add(debugMessage)
+            }
+        }
+        if (DEBUG_MODE) {
+            if (definedRteActions.size != definedRteActionsToShiftedIndices.size)
+                throw RuntimeException("definedRteActions.size != definedRteActionsToShiftedIndices.size")
+        }
+
+        return TrackContainer(track, definedRteActionsToShiftedIndices)
     }
 
     private fun insertProjectedLocation(location: Location): Boolean {
@@ -240,6 +294,8 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         }
     }
 }
+
+data class TrackContainer(val track: Track, val definedRteActionsToShiftedIndices: Map<Point, Int>)
 
 // mocked stress test
 class InjectTestWaypoints(val track: Track) {

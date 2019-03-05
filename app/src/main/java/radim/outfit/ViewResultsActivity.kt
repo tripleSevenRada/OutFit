@@ -104,21 +104,20 @@ class ViewResultsActivity : AppCompatActivity(),
 
         val btManager = getSystemService(Context.BLUETOOTH_SERVICE)
         content_connectiqBTIcon.imageAlpha = BT_ICON_ALPHA
-        if(btManager is BluetoothManager){
+        if (btManager is BluetoothManager) {
             val btAdapter = btManager.adapter
             val state = btAdapter.state
             if (state == BluetoothAdapter.STATE_OFF) {
                 Log.w("BTBroadcastReceiver", "onCreate BT STATE OFF")
                 content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_disabled_black_24dp)
-            }
-            else if (state == BluetoothAdapter.STATE_ON) {
+            } else if (state == BluetoothAdapter.STATE_ON) {
                 Log.w("BTBroadcastReceiver", "onCreate BT STATE ON")
                 content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_black_24dp)
             }
         }
     }
 
-    private fun buildStats(){
+    private fun buildStats() {
         if (::parcel.isInitialized) {
             val viewModel = getViewModel()
             if (viewModel.statsSpannableStringBuilder != null) return
@@ -128,17 +127,19 @@ class ViewResultsActivity : AppCompatActivity(),
                 val secondsTotal = getEstimatedDownloadTimeInSeconds(fileToShare.length())
                 if (secondsTotal > DOWNLOAD_TIME_EST_TO_REPORT) {
                     with(messagesAsSpannableStringBuilder) {
-                        append(getSpannableDownloadInfo(secondsTotal, this@ViewResultsActivity, fileToShare.length()))
+                        append(getSpannableDownloadInfo(secondsTotal, this@ViewResultsActivity))
                         append("\n")
                     }
                 }
-            } else { Log.e(tag, "fileToShare = null") }
+            } else {
+                Log.e(tag, "fileToShare = null")
+            }
             parcel.messages.forEach { with(messagesAsSpannableStringBuilder) { append(it); append("\n") } }
             viewModel.statsSpannableStringBuilder = messagesAsSpannableStringBuilder
         } else Log.e(tag, "parcel.isInitialized NOT")
     }
 
-    private fun populateStats(){
+    private fun populateStats() {
         val viewModel = getViewModel()
         if (viewModel.statsSpannableStringBuilder != null) {
             content_statsTVData.text = viewModel.statsSpannableStringBuilder
@@ -153,12 +154,11 @@ class ViewResultsActivity : AppCompatActivity(),
                 if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR) == BluetoothAdapter.STATE_OFF) {
                     Log.w("BTBroadcastReceiver", "BT STATE OFF")
                     content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_disabled_black_24dp)
-                }
-                else if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR) == BluetoothAdapter.STATE_ON) {
+                } else if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR) == BluetoothAdapter.STATE_ON) {
                     Log.w("BTBroadcastReceiver", "BT STATE ON")
                     content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_black_24dp)
-                    Handler().postDelayed({stopConnectIQServices()}, 6000)
-                    Handler().postDelayed({startConnectIQServices()}, 8000)
+                    Handler().postDelayed({ stopConnectIQServices() }, 6000)
+                    Handler().postDelayed({ startConnectIQServices() }, 8000)
                 }
             }
         }
@@ -317,6 +317,7 @@ class ViewResultsActivity : AppCompatActivity(),
             }
         }
     }
+
     override fun onDialogNegativeClick(dialog: DialogFragment) {
         Log.i(tag, "onDialogNegativeClick")
         val prefs = this.getSharedPreferences(
@@ -334,6 +335,7 @@ class ViewResultsActivity : AppCompatActivity(),
             }
         }
     }
+
     override fun onDialogNeutralClick(dialog: DialogFragment) {
         Log.i(tag, "onDialogNeutralClick")
         //TODO?
@@ -344,7 +346,9 @@ class ViewResultsActivity : AppCompatActivity(),
     override fun setDialogType(type: DialogType) = let { getViewModel().dialogType = type }
     override fun getDialogType(): DialogType? = getViewModel().dialogType
     private fun getHowToInfitThisIncarnation() = getViewModel().dialogHowToInfitIncarnation
-    private fun setHowToInfitThisIncarnation(){getViewModel().dialogHowToInfitIncarnation = true}
+    private fun setHowToInfitThisIncarnation() {
+        getViewModel().dialogHowToInfitIncarnation = true
+    }
 
     private fun getViewModel(): ViewResultsActivityViewModel =
             ViewModelProviders.of(this).get(ViewResultsActivityViewModel::class.java)
@@ -364,13 +368,13 @@ class ViewResultsActivity : AppCompatActivity(),
         content_connectiqTVDevicesData.text = spannedDeviceDisplay.getDisplay()
     }
 
-    private fun onFirstINFITDetected(device: String){
+    private fun onFirstINFITDetected(device: String) {
         val prefs = this.getSharedPreferences(
-            getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
+                getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
         val dialogDisabled = prefs.getBoolean("dialog_use_infit_like_this_disabled", false)
-        if(dialogDisabled) return
-        if(getDialogVisible() && getDialogType() is DialogType.HowToInFitInfo) return
-        if(getHowToInfitThisIncarnation()) return
+        if (dialogDisabled) return
+        if (getDialogVisible() && getDialogType() is DialogType.HowToInFitInfo) return
+        if (getHowToInfitThisIncarnation()) return
         setHowToInfitThisIncarnation()
         val message = "${getString("firstINFITReported")} $device"
         connectIQManager.showHowToInFitDialog(message)

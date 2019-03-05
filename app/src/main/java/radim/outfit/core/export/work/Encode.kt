@@ -4,7 +4,6 @@ import android.support.v7.app.AppCompatActivity
 import android.text.SpannableString as spString
 import android.util.Log
 import com.garmin.fit.*
-import locus.api.objects.extra.Track
 import radim.outfit.core.export.logic.Result
 import radim.outfit.core.export.work.locusapiextensions.*
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.TrackStringDump
@@ -20,13 +19,13 @@ const val MIN_TIME_TAKEN = 8
 const val MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989 = 631065600000L
 
 // Error messages 1 - 2
-class Encoder (val debugMessages: MutableList<String>) {
+class Encoder(val debugMessages: MutableList<String>) {
 
     // with great help of:
     // https://github.com/gimportexportdevs/gexporter/blob/master/app/src/main/java/org/surfsite/gexporter/Gpx2Fit.java
     // https://github.com/mrihtar/Garmin-FIT
 
-    fun encode(track: Track,
+    fun encode(trackContainer: TrackContainer,
                dir: File,
                filename: String,
                speedIfNotInTrack: Float,
@@ -43,13 +42,9 @@ class Encoder (val debugMessages: MutableList<String>) {
 
         val outputFile = File(dir.absolutePath + File.separatorChar + filename)
         lateinit var encoder: FileEncoder
-        lateinit var filterBundle: MessagesStringFilterBundle
         var courseName: String = "default"
         try {
             encoder = FileEncoder(outputFile, Fit.ProtocolVersion.V1_0)
-            filterBundle = MessagesStringFilterBundle(FilenameCharsFilter(),
-                    FILENAME_RESERVED_CHARS,
-                    COURSE_AND_COURSEPOINTS_REPLACEMENT_CHAR)
 
             // The course file should, at a minimum, contain the file_id, lap, record, and course FIT messages.
             // It may optionally contain the course_point messages.
@@ -70,7 +65,7 @@ class Encoder (val debugMessages: MutableList<String>) {
             encoder.write(fileIdMesg)
 
             // 'Course message'
-            val courseMesg = getCourseMesg(track, filename, filterBundle)
+            val courseMesg = getCourseMesg(trackContainer.track, filename)
             courseName = courseMesg.name
             encoder.write(courseMesg)
             with(publicMessages) {
@@ -106,21 +101,22 @@ state "isFullyTimestamped" as stamped {
             */
 
             //================================================================================
-            val trackIsFullyTimestamped = track.isTimestamped() && track.stats.isTimestamped()
+            val trackIsFullyTimestamped = trackContainer.track.isTimestamped() &&
+                    trackContainer.track.stats.isTimestamped()
             //================================================================================
 
             if (DEBUG_MODE) debugMessages.add("trackIsFullyTimestamped: $trackIsFullyTimestamped")
 
             //================================================================================
-            val trackHasAltitude = track.hasAltitude()
+            val trackHasAltitude = trackContainer.track.hasAltitude()
             //================================================================================
 
             if (DEBUG_MODE) {
                 debugMessages.add("trackHasAltitude: $trackHasAltitude")
-                debugMessages.addAll(TrackStringDump.stringDescriptionDeep(track))
+                debugMessages.addAll(TrackStringDump.stringDescriptionDeep(trackContainer.track))
             }
 
-            val distancesNonNullPoints = assignPointDistancesToNonNullPoints(track)
+            val distancesNonNullPoints = assignPointDistancesToNonNullPoints(trackContainer.track)
 
             if (DEBUG_MODE) {
                 if (!assertValuesIncreasingOrEqual(distancesNonNullPoints)) {
@@ -130,12 +126,12 @@ state "isFullyTimestamped" as stamped {
 
             val timestampsNonNullPoints = if (trackIsFullyTimestamped) {
                 if (DEBUG_MODE) {
-                    if (!assertTimestampsIncreasingOrEqualFullyTimestampedTrack(track))
+                    if (!assertTimestampsIncreasingOrEqualFullyTimestampedTrack(trackContainer.track))
                         throw RuntimeException("assertTimestampsIncreasingOrEqualFullyTimestampedTrack")
                 }
                 listOf()
             } else {
-                val timestamps = assignPointTimestampsToNonNullPoints(track, distancesNonNullPoints, speedIfNotInTrack)
+                val timestamps = assignPointTimestampsToNonNullPoints(trackContainer.track, distancesNonNullPoints, speedIfNotInTrack)
                 if (DEBUG_MODE) {
                     if (!assertValuesIncreasingOrEqual(timestamps)) {
                         throw RuntimeException("assertValuesIncreasingOrEqual - timestamps")
@@ -162,14 +158,14 @@ state "isFullyTimestamped" as stamped {
                 return Result.Fail(debugMessages, errorMessages, dir, filename)
             }
             val timeBundle = if (trackIsFullyTimestamped) {
-                //track has NO null elements
+                //trackContainer has NO null elements
                 TrackTimestampsBundle(
-                        track.stats.startTime,
-                        track.stats.totalTime.toFloat(),
-                        extractPointTimestampsFromPoints(track)
+                        trackContainer.track.stats.startTime,
+                        trackContainer.track.stats.totalTime.toFloat(),
+                        extractPointTimestampsFromPoints(trackContainer.track)
                 )
             } else {
-                //track may contain null elements and is considered not timestamped
+                //trackContainer may contain null elements and is considered not timestamped
                 TrackTimestampsBundle(
                         System.currentTimeMillis(),
                         timestampsNonNullPoints[timestampsNonNullPoints.lastIndex].toFloat() -
@@ -178,7 +174,7 @@ state "isFullyTimestamped" as stamped {
                 )
             }
 
-            val speedsNonNullPoints = assignSpeedsToNonNullPoints(track, timeBundle, distancesNonNullPoints)
+            val speedsNonNullPoints = assignSpeedsToNonNullPoints(trackContainer.track, timeBundle, distancesNonNullPoints)
 
             if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
@@ -186,7 +182,7 @@ state "isFullyTimestamped" as stamped {
             }
 
             // 'Lap message'
-            val lapMesg = getLapMesg(track,
+            val lapMesg = getLapMesg(trackContainer.track,
                     timeBundle,
                     distancesNonNullPoints
             )
@@ -226,8 +222,8 @@ event_type (1-1-ENUM): start (0)
 
             // WAYPOINTS START
 
-            val waypointsRebuilder = AttachWaypointsToTrack(track)
-            val waypointsRebuilt = waypointsRebuilder.rebuild(track.waypoints, DEBUG_MODE)
+            val waypointsRebuilder = AttachWaypointsToTrack(trackContainer)
+            val waypointsRebuilt = waypointsRebuilder.rebuild(DEBUG_MODE)
             if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
                 debugMessages.add("++++++++++++++++++++++AttachWaypointsToTrack")
@@ -235,8 +231,8 @@ event_type (1-1-ENUM): start (0)
             }
             val unsupportedRid = ridUnsupportedRtePtActions(waypointsRebuilt)
             val reducedToLimit = reduceWayPointsSizeTo(unsupportedRid, COURSEPOINTS_LIMIT)
-            val mapNonNullIndicesToTmstmp = mapNonNullPointsIndicesToTimestamps(track, timeBundle)
-            val mapNonNullIndicesToDist = mapNonNullPointsIndicesToDistances(track, distancesNonNullPoints)
+            val mapNonNullIndicesToTmstmp = mapNonNullPointsIndicesToTimestamps(trackContainer.track, timeBundle)
+            val mapNonNullIndicesToDist = mapNonNullPointsIndicesToDistances(trackContainer.track, distancesNonNullPoints)
 
             if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
@@ -252,7 +248,7 @@ event_type (1-1-ENUM): start (0)
                 // SANITY CHECKS
                 reducedToLimit.forEach {
                     if (!it.hasProperName() ||
-                            !it.hasValidRteIndex(track))
+                            !it.hasValidRteIndex(trackContainer.track))
                         throw RuntimeException("proper name or rteIndex: name: >${it.name}< rteIndex: ${it.rteIndex}")
                 }
                 if (!assertWaypointsAreLinkedToTrackpointsOneToOneIncreasing(reducedToLimit))
@@ -264,8 +260,7 @@ event_type (1-1-ENUM): start (0)
                         it,
                         mapNonNullIndicesToTmstmp,
                         mapNonNullIndicesToDist,
-                        track,
-                        filterBundle)
+                        trackContainer.track)
                 if (coursePointMesg != null) {
                     encoder.write(coursePointMesg)
                     countCP++
@@ -295,13 +290,13 @@ event_type (1-1-ENUM): start (0)
             // RECORDS START
             var index = 0
             var timestamp: DateTime? = null
-            for (i in track.points.indices) {
-                if (track.points[i] == null && DEBUG_MODE) {
+            for (i in trackContainer.track.points.indices) {
+                if (trackContainer.track.points[i] == null && DEBUG_MODE) {
                     debugMessages.add("-----------------------------------NULL PRESENT!")
                     continue
                 }
                 val recordMesg = getRecordMesg(
-                        track.points[i],
+                        trackContainer.track.points[i],
                         distancesNonNullPoints,
                         timestampsNonNullPoints,
                         speedsNonNullPoints,
@@ -314,7 +309,7 @@ event_type (1-1-ENUM): start (0)
                 encoder.write(recordMesg)
                 index++
             }
-            publicMessages.add(indexToInsertTrackpointsInfo, spString("${ctx.getString("nmb_trackpoints")} ${track.points.size}"))
+            publicMessages.add(indexToInsertTrackpointsInfo, spString("${ctx.getString("nmb_trackpoints")} ${trackContainer.track.points.size}"))
             // RECORDS END
 
             // sanity check

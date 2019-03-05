@@ -12,7 +12,6 @@ import android.os.Environment
 import android.util.Log
 import locus.api.android.utils.LocusUtils
 import locus.api.android.utils.exceptions.RequiredVersionMissingException
-import locus.api.objects.extra.Track
 import java.io.File
 import android.content.pm.PackageManager
 import android.support.v4.content.ContextCompat
@@ -29,6 +28,7 @@ import locus.api.android.ActionTools
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.export.work.*
+import radim.outfit.core.export.work.locusapiextensions.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.WaypointsRelatedTrackPreprocessing
 import radim.outfit.core.share.work.*
 import radim.outfit.core.timer.SimpleTimer
@@ -113,10 +113,10 @@ class MainActivity : AppCompatActivity(),
     override fun getLengthInM(): Int {
         val viewModel =
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
-        val length = viewModel.track?.stats?.totalLength
+        val length = viewModel.trackContainer?.track?.stats?.totalLength
         return if (length == null) {
             // sanity check, should never happen
-            FailGracefullyLauncher().failGracefully(this, "Null track length.")
+            FailGracefullyLauncher().failGracefully(this, "Null trackContainer length.")
             finish()
             200
         } else length.toInt()
@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity(),
     override fun getActivityType(): Int {
         val viewModel =
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
-        return viewModel.track?.activityType ?: 100
+        return viewModel.trackContainer?.track?.activityType ?: 100
     }
     // SpeedPickerFragment interfaces impl END
 
@@ -270,23 +270,24 @@ class MainActivity : AppCompatActivity(),
     private fun handleIntentTrackToolsMenu(act: AppCompatActivity,
                                            intent: Intent,
                                            viewModel: MainActivityViewModel) {
-        if (viewModel.track == null) {
+        if (viewModel.trackContainer == null) {
             disableExecutive()
             var doFail = false
             var failMessage = ""
             doAsync {
-                var track: Track? = null
+                var trackContainer: TrackContainer? = null
                 try {
-                    track = WaypointsRelatedTrackPreprocessing(
+                    trackContainer = WaypointsRelatedTrackPreprocessing(
                             LocusUtils.handleIntentTrackTools(act, intent),
                             debugMessages
                     ).preprocess()
 
                     // or inject a mock
-                    //track = getTrackOkNoCP()
-                    //track = getTrackNullEndNoCP()
-                    //track = getTrackNullStartNoCP()
-                    //track = getTrackRandomNullsNoCP()
+                    //trackContainer = getTrackOkNoCP()
+                    //trackContainer = getTrackNullEndNoCP()
+                    //trackContainer = getTrackNullStartNoCP()
+                    //trackContainer = getTrackRandomNullsNoCP()
+
                 } catch (e: RequiredVersionMissingException) {
                     doFail = true
                     failMessage = "${act.getString("required_version_missing")} ${e.localizedMessage} Error 4"
@@ -299,10 +300,12 @@ class MainActivity : AppCompatActivity(),
                         fail.failGracefully(act, failMessage)
                         finish()
                     }
-                    if (track != null && track.points != null && track.points.size > 0) {
+                    if (trackContainer != null &&
+                            trackContainer.track.points != null &&
+                            trackContainer.track.points.size > 0) {
                         // do work
-                        trackInit(track, act)
-                        viewModel.track = track
+                        trackInit(trackContainer, act)
+                        viewModel.trackContainer = trackContainer
                         enableExecutive(viewModel)
                     } else {
                         fail.failGracefully(act, " null - Error 6")
@@ -311,16 +314,16 @@ class MainActivity : AppCompatActivity(),
                 }
             }
         } else {
-            val track = viewModel.track
-            if (track != null) trackInit(track, act)
+            val trackContainer = viewModel.trackContainer
+            if (trackContainer != null) trackInit(trackContainer, act)
         }
     }
 
-    private fun trackInit(track: Track, act: AppCompatActivity) {
-        content_exportTVStatsData?.text = Stats().basicInfo(track, act)
-        val filename = getFilename(track.name, getString("default_filename"))
+    private fun trackInit(trackContainer: TrackContainer, act: AppCompatActivity) {
+        content_exportTVStatsData?.text = Stats().basicInfo(trackContainer.track, act)
+        val filename = getFilename(trackContainer.track.name, getString("default_filename"))
         content_pathETFilename?.setText(filename)
-        setTrack(track, exportListener)
+        setTrack(trackContainer, exportListener)
         setFilename(filename, exportListener)
     }
 

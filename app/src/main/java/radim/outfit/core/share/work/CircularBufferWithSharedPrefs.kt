@@ -8,7 +8,7 @@ const val CIRC_BUFF_SIZE = 7 // be careful, call init if changed
 const val CIRC_BUFF_KEY_PREFIX = "buffer_index_"
 const val CIRC_BUFF_POINTER_KEY_PREFIX = "buffer_pointer_"
 
-// keep track of last CIRC_BUFF_SIZE exports
+// keep trackContainer of last CIRC_BUFF_SIZE exports
 
 class CircularBufferWithSharedPrefs(val id: Int) {
 

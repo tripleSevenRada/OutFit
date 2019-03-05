@@ -14,7 +14,7 @@ fun TrackStats.isTimestamped(): Boolean {
             )
 }
 
-// track is considered fully timestamped iff does NOT contain null elements,
+// trackContainer is considered fully timestamped iff does NOT contain null elements,
 // is recent
 // and is monotonic
 fun Track.isTimestamped(): Boolean {

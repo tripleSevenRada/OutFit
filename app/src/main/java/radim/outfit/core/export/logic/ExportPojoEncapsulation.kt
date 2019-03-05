@@ -2,16 +2,17 @@ package radim.outfit.core.export.logic
 
 import android.content.SharedPreferences
 import locus.api.objects.extra.Track
+import radim.outfit.core.export.work.locusapiextensions.TrackContainer
 import java.io.File
 
-data class ExportPOJO (val file: File?, val filename: String?, val track: Track?)
+data class ExportPOJO (val file: File?, val filename: String?, val trackContainer: TrackContainer?)
 
 // merges non null values from the old POJO and the new one
 fun mergeExportPOJOS(old: ExportPOJO, new: ExportPOJO): ExportPOJO{
     val file = new.file ?: old.file
     val filename = new.filename ?: old.filename
-    val track = new.track ?: old.track
-    return ExportPOJO(file,filename, track)
+    val trackContainer = new.trackContainer ?: old.trackContainer
+    return ExportPOJO(file,filename, trackContainer)
 }
 
 // EXPORT POJO UTILS
@@ -30,8 +31,8 @@ fun getRoot(listener: ExportListener): File?{
     return listener.exportPOJO.file
 }
 
-fun setTrack(track: Track?, listener: ExportListener){
-    listener.exportPOJO = mergeExportPOJOS(listener.exportPOJO, ExportPOJO(null, null, track))
+fun setTrack(trackContainer: TrackContainer?, listener: ExportListener){
+    listener.exportPOJO = mergeExportPOJOS(listener.exportPOJO, ExportPOJO(null, null, trackContainer))
 }
 
 fun setFilename(filename: String, listener: ExportListener){

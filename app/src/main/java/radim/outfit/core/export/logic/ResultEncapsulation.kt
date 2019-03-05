@@ -3,14 +3,15 @@ package radim.outfit.core.export.logic
 import android.text.SpannableString
 import java.io.File
 
-sealed class Result{
+sealed class Result {
     data class Success(
             val publicMessage: List<SpannableString>,
             val debugMessage: List<String>,
             val fileDir: File,
             val filename: String,
             val coursename: String
-    ): Result()
+    ) : Result()
+
     data class Fail(
             val debugMessage: List<String>,
             val errorMessage: List<String>,
@@ -18,6 +19,6 @@ sealed class Result{
             val filename: String? = null,
             val coursename: String? = null,
             val exception: Throwable = RuntimeException("default")
-    ): Result()
+    ) : Result()
 }
 
