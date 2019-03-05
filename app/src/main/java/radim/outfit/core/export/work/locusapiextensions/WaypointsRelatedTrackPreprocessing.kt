@@ -49,7 +49,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                     it.parameterRteAction != PointRteAction.UNDEFINED
         }
         definedRteActions.forEach {
-            if (it.paramRteIndex in 0..track.points.size) {
+            if (it.paramRteIndex in track.points.indices) {
                 definedRteActionsToLocationsInTrack[it] = track.points[it.paramRteIndex]
             } else {
                 val debugMessage = "ERROR: paramRteIndex"
@@ -57,15 +57,14 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                 debugMessages.add(debugMessage)
             }
         }
-        if (DEBUG_MODE) {
-            if (definedRteActions.size != definedRteActionsToLocationsInTrack.size)
-                throw RuntimeException("definedRteActions.size != definedRteActionsToLocationsInTrack.size")
+        if (DEBUG_MODE && definedRteActions.size != definedRteActionsToLocationsInTrack.size) {
+            throw RuntimeException("definedRteActions.size != definedRteActionsToLocationsInTrack.size")
         }
         //
         //
 
         // mocked stress test
-        // needToConstructNewLocation.addAll(InjectTestWaypoints(trackContainer).getMockWaypointsWithinTrackBounds(10000))
+        // needToConstructNewLocation.addAll(InjectTestWaypoints(track).getMockWaypointsWithinTrackBounds(10000))
 
         val bagOfWpts = mutableSetOf<Point>()
         bagOfWpts.addAll(needToConstructNewLocation)
@@ -106,6 +105,14 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         if (DEBUG_MODE) {
             if (definedRteActions.size != definedRteActionsToShiftedIndices.size)
                 throw RuntimeException("definedRteActions.size != definedRteActionsToShiftedIndices.size")
+            debugMessages.add("definedRteActionsToLocationsInTrack before processing ++++++++++++++++++++++++++++++++++++++++++++++++")
+            definedRteActionsToLocationsInTrack.forEach {
+                debugMessages.add(" location -- ${locationStringDescriptionSimple(it.value)}")
+            }
+            debugMessages.add("size definedRteActions: ${definedRteActions.size}")
+            debugMessages.add("size definedRteActionsToLocationsInTrack: ${definedRteActionsToLocationsInTrack.size}")
+            debugMessages.add("size definedRteActionsToShiftedIndices: ${definedRteActionsToShiftedIndices.size}")
+            debugMessages.add("++++++++++++++++++++++++++++++++++++++++++++++++")
         }
 
         return TrackContainer(track, definedRteActionsToShiftedIndices)

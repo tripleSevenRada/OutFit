@@ -10,6 +10,7 @@ import org.junit.runner.RunWith
 import org.junit.Assert.*
 import radim.outfit.core.export.logic.ExportPOJO
 import radim.outfit.core.export.logic.mergeExportPOJOS
+import radim.outfit.core.export.work.locusapiextensions.TrackContainer
 import java.io.File
 
 /**
@@ -25,13 +26,13 @@ class ExportPOJOTest {
         val appContext = InstrumentationRegistry.getTargetContext()
         assertEquals("radim.outfit", appContext.packageName)
 
-        val pojo1 = ExportPOJO(File("/"),"filename.fit", Track() )
+        val pojo1 = ExportPOJO(File("/"),"filename.fit", TrackContainer(Track(), mutableMapOf()) )
         val pojo2 = ExportPOJO(null, null, null)
 
         val pojo3 = mergeExportPOJOS(pojo1, pojo2)
         assertEquals(pojo1, pojo3)
 
-        val pojo4 = ExportPOJO(File("/doc"),"filename.fit", Track() )
+        val pojo4 = ExportPOJO(File("/doc"),"filename.fit", TrackContainer(Track(), mutableMapOf()) )
         val pojo5 = mergeExportPOJOS(pojo1, pojo4)
         assertEquals(pojo4, pojo5)
     }

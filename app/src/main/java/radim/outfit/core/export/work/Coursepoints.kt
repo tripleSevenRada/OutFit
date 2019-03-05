@@ -4,10 +4,13 @@ import android.util.Log
 import com.garmin.fit.CoursePoint
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Point
+import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.locusapiextensions.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.WaypointSimplified
 import radim.outfit.core.export.work.locusapiextensions.getCoursepointEnumForced
 import radim.outfit.core.export.work.locusapiextensions.getWaypointName
+import radim.outfit.core.export.work.locusapiextensions.stringdumps.LocationStringDump
+import java.lang.RuntimeException
 
 const val COURSEPOINTS_LIMIT = 100
 const val COURSEPOINTS_NAME_MAX_LENGTH = 20
@@ -298,28 +301,51 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
         }
         waypointsUndefined.forEach { waypoints.remove(it) }
 
+        if(debug){
+            debugMessages.add("locations of waypoints got from shiftedRteIndex++++++++++++++++++++++++++++++++++++++++")
+            trackContainer.definedRteActionsToShiftedIndices.forEach{
+                val index = it.value
+                val loc = trackContainer.track.points[index]
+                debugMessages.add(" location -- ${LocationStringDump.locationStringDescriptionSimple(loc)}")
+            }
+            debugMessages.add("size: ${trackContainer.definedRteActionsToShiftedIndices.size}")
+            debugMessages.add("++++++++++++++++++++++++++++++++++++++++")
+        }
+
         // copy waypoints to waypointsSimplified
         waypoints.forEach {
-            // constructor calls this(point.paramRteIndex, getWaypointName(point),
-            // point.parameterRteAction, getCoursepointEnumForced(point))
-            waypointsSimplified.add(WaypointSimplified(it))
+            val shiftedRteIndex: Int? = trackContainer.definedRteActionsToShiftedIndices[it]
+            if(shiftedRteIndex != null) {
+                waypointsSimplified.add(WaypointSimplified(
+                        shiftedRteIndex,
+                        it.name,
+                        it.parameterRteAction,
+                        it.getCoursepointEnumForced()
+                        ))
+            } else if (DEBUG_MODE){
+                val message = "shiftedRteIndex = null!"
+                debugMessages.add(message)
+                Log.e(tag, message)
+                throw RuntimeException(message)
+            }
         }
 
         if (debug) debugMessages.add("Size of waypoints after UNDEFINED removed ${waypoints.size}")
         if (debug) debugMessages.add("Size of waypointsUndefined removed from waypoints ${waypointsUndefined.size}")
 
         // mark trackpoints indices of waypoints as taken
-        waypoints.forEach {
-            if (it.paramRteIndex == -1) {
-                Log.w(tag, "rebuild - unexpected -1 from it.paramRteIndex")
-                if (debug) debugMessages.add("rebuild - unexpected -1 from it.paramRteIndex")
+        waypointsSimplified.forEach {
+            if (it.rteIndex == -1) {
+                val message = "rebuild - unexpected -1 from it.rteIndex"
+                Log.w(tag, message)
+                if (debug) debugMessages.add(message)
             }
-            indicesTaken.add(it.paramRteIndex)
+            indicesTaken.add(it.rteIndex)
         }
 
         // now try to attach waypointsUndefined to not yet taken route indices
-        for (i in waypointsUndefined.indices) {
-            val waypoint = waypointsUndefined[i]
+        waypointsUndefined.forEach {
+            val waypoint = it
             val listIndicesCloseEnough = getSortedListOfIndicesCloseEnough(waypoint)
             var indexAssigned = false
             listIndicesCloseEnough.forEach {
@@ -329,16 +355,20 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
                     indicesTaken.add(it)
 
                     // build new simplified waypoint, add it to attachedWaypoints
-                    val attachedWaypoint = WaypointSimplified(
-                            it,
-                            waypoint.getWaypointName(),
-                            PointRteAction.PASS_PLACE,
-                            waypoint.getCoursepointEnumForced()
-                    )
-                    waypointsSimplified.add(attachedWaypoint)
-
-                    if (debug) debugMessages.add("Attached new simplified waypoint: $attachedWaypoint")
-
+                    if(it in trackContainer.track.points.indices) {
+                        val attachedWaypoint = WaypointSimplified(
+                                it,
+                                waypoint.getWaypointName(),
+                                PointRteAction.PASS_PLACE,
+                                waypoint.getCoursepointEnumForced()
+                        )
+                        waypointsSimplified.add(attachedWaypoint)
+                        if (debug) debugMessages.add("Attached new simplified waypoint: $attachedWaypoint")
+                    } else if(debug) {
+                        val debugMessage = "ERROR: index NOT IN trackContainer.track.points.indices"
+                        debugMessages.add(debugMessage)
+                        Log.e(tag, debugMessage)
+                    }
                     indexAssigned = true
                 }
             }
