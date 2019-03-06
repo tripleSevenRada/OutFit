@@ -4,7 +4,6 @@ import android.util.Log
 import com.garmin.fit.CoursePoint
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Point
-import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.locusapiextensions.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.WaypointSimplified
 import radim.outfit.core.export.work.locusapiextensions.getCoursepointEnumForced
@@ -318,7 +317,7 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
                         it.parameterRteAction,
                         it.getCoursepointEnumForced()
                 ))
-            } else if (DEBUG_MODE) {
+            } else if (debug) {
                 val message = "shiftedRteIndex = null!"
                 debugMessages.add(message)
                 Log.e(tag, message)
@@ -348,16 +347,18 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
             for (i in listIndicesCloseEnough.indices) {
                 val consideredRteIndex = listIndicesCloseEnough[i]
                 if (!indicesTaken.contains(consideredRteIndex)) {
-                    // build new simplified waypoint, add it to attachedWaypoints
                     if (consideredRteIndex in trackContainer.track.points.indices &&
                             trackContainer.track.points[consideredRteIndex] != null) {
+                        // mark index as taken
                         indicesTaken.add(consideredRteIndex)
+                        // build new simplified waypoint
                         val attachedWaypoint = WaypointSimplified(
                                 consideredRteIndex,
                                 waypoint.getWaypointName(),
                                 PointRteAction.PASS_PLACE,
                                 waypoint.getCoursepointEnumForced()
                         )
+                        // add it to attachedWaypoints
                         waypointsSimplified.add(attachedWaypoint)
                         if (debug) debugMessages.add("Attached new simplified waypoint: $attachedWaypoint")
                     } else if (debug) {
