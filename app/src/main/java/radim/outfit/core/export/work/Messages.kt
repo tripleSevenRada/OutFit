@@ -172,8 +172,8 @@ internal fun getCoursepointMesg(wp: WaypointSimplified,
     val cp = CoursePointMesg()
     cp.localNum = 5
     val indexOfTrackpoint = wp.rteIndex
-    if (indexOfTrackpoint == -1) {
-        Log.e(tag, "unexpected wp.rteIndex == -1")
+    if (indexOfTrackpoint == -1 || indexOfTrackpoint !in track.points.indices) {
+        Log.e(tag, "unexpected wp.rteIndex: -1 or out of bounds")
         return null
     }
     val tmstmp: Long? = mapNonNullIndicesToTmstmp[indexOfTrackpoint]
