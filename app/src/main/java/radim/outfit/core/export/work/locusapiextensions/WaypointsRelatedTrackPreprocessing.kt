@@ -85,39 +85,36 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
         // apply HEURISTICS on remaining WPTS in bagOfWpts
 
+        if (debugInPreprocess) {
+            val message1 = "HEURISTICS"
+            debugMessages.add(message1)
+            Log.w(tag, message1)
+            val message2 = "bagOfWpts.size: ${bagOfWpts.size}"
+            debugMessages.add(message2)
+            Log.w(tag, message2)
+        }
 
-
-            if(debugInPreprocess){
-                val message1 = "HEURISTICS"
-                debugMessages.add(message1)
-                Log.w(tag, message1)
-                val message2 = "bagOfWpts.size: ${bagOfWpts.size}"
-                debugMessages.add(message2)
-                Log.w(tag, message2)
-            }
-
-            val bagOfWptsCopy = mutableSetOf<Point>()
-            bagOfWptsCopy.addAll(bagOfWpts)
-            bagOfWptsCopy.forEach {
-                val starIt = StarIterator(it.location)
-                var inserted = 0
-                for (i in 0..300) {
-                    val movedLoc = starIt.next()
-                    movedLoc ?: break
-                    if(it.location.distanceTo(movedLoc) > MAX_DISTANCE_TO_CLIP_WP_TO_COURSE * 2) break
-                    if (insertProjectedLocation(movedLoc)) {
-                        bagOfWpts.remove(it)
-                        if(++inserted > 3) {
-                            Log.w(tag, "breaking @ $inserted")
-                            break
-                        }
+        val bagOfWptsCopy = mutableSetOf<Point>()
+        bagOfWptsCopy.addAll(bagOfWpts)
+        bagOfWptsCopy.forEach {
+            val starIt = StarIterator(it.location)
+            var inserted = 0
+            for (i in 0..300) {
+                val movedLoc = starIt.next()
+                movedLoc ?: break
+                if (it.location.distanceTo(movedLoc) > MAX_DISTANCE_TO_CLIP_WP_TO_COURSE * 2) break
+                if (insertProjectedLocation(movedLoc)) {
+                    if (++inserted > 3) {
+                        Log.w(tag, "breaking @ $inserted")
+                        break
                     }
-                    Log.e(tag, " iter. = $i")
                 }
+                Log.e(tag, " iter. = $i")
             }
+            if (inserted > 0) bagOfWpts.remove(it)
+        }
 
-
-        if(debugInPreprocess){
+        if (debugInPreprocess) {
             val message1 = "AFTER HEURISTIC bagOfWpts.size: ${bagOfWpts.size}"
             debugMessages.add(message1)
             Log.w(tag, message1)
