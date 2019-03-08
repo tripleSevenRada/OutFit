@@ -13,7 +13,7 @@ import java.lang.RuntimeException
 
 const val COURSEPOINTS_LIMIT = 100
 const val COURSEPOINTS_NAME_MAX_LENGTH = 20
-const val MAX_DISTANCE_TO_CLIP_WP_TO_COURSE = 360.0F
+const val MAX_DISTANCE_TO_CLIP_WP_TO_COURSE = 260.0F
 
 /*
    LOCUS API

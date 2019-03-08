@@ -2,6 +2,7 @@ package radim.outfit
 
 import android.app.Activity
 import android.content.Context
+import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
@@ -22,6 +23,7 @@ const val DEFAULT_UNITS_RADIO_BUTTON_ID = R.id.content_speed_picker_speedBTNKmh
 
 interface TriggerActionProvider {
     fun getTriggerAction(): (Float) -> Unit
+    fun onDialogDismissed()
 }
 
 interface LastSelectedValuesProvider {
@@ -220,12 +222,18 @@ class SpeedPickerFragment : DialogFragment() {
                 val valueToBeInCourseMperS: Float = (npSpeed?.value
                         ?: 10).speedInCheckedUnitToMperS()
                 providerOfTriggerAction.getTriggerAction().invoke(valueToBeInCourseMperS)
+                providerOfTriggerAction.onDialogDismissed()
                 dialog.dismiss()
             }
         } else {
             Log.e("SPF", "Init error...")
         }
         return mView
+    }
+
+    override fun onDismiss(dialog: DialogInterface?) {
+        super.onDismiss(dialog)
+        providerOfTriggerAction.onDialogDismissed()
     }
 
     private fun readStoredSpeed(): Int =

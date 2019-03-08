@@ -54,7 +54,7 @@ fun AppCompatActivity.getString(name: String): String {
     }
 }
 
-const val DEBUG_MODE = true
+const val DEBUG_MODE = false
 
 class MainActivity : AppCompatActivity(),
         TriggerActionProvider,
@@ -70,6 +70,10 @@ class MainActivity : AppCompatActivity(),
     private val fail = FailGracefullyLauncher()
 
     private fun showSpeedPickerDialog() {
+        val viewModel =
+                ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
+        if(viewModel.speedPickerFragmentShown) return
+        viewModel.speedPickerFragmentShown = true
         val fm = supportFragmentManager
         val spf = SpeedPickerFragment()
         spf.show(fm, "speed_picker_fragment")
@@ -82,9 +86,13 @@ class MainActivity : AppCompatActivity(),
         val speed = sharedPreferences.getFloat(getString("last_seen_speed_value_m_s"), SPEED_DEFAULT_M_S)
         return speed
     }
-
     override fun setSpeedMperS(value: Float) {
         persistInSharedPreferences(getString("last_seen_speed_value_m_s"), value)
+    }
+    override fun onDialogDismissed(){
+        val viewModel =
+                ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
+        viewModel.speedPickerFragmentShown = false
     }
 
     override fun getUnitsButtonId() = sharedPreferences.getInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
