@@ -55,7 +55,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             } else {
                 val debugMessage = "ERROR: paramRteIndex"
                 Log.e(tag, debugMessage)
-                debugMessages.add(debugMessage)
+                if (debugInPreprocess) debugMessages.add(debugMessage)
             }
         }
         if (DEBUG_MODE && definedRteActions.size != definedRteActionsToLocationsInTrack.size) {
@@ -69,9 +69,9 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
         val bagOfWpts = mutableSetOf<Point>()
         bagOfWpts.addAll(needToConstructNewLocation)
-
+        val n = 7 //how many closest locations to use as tree roots for insertion candidate
         needToConstructNewLocation.forEach {
-            if (insertProjectedLocation(it.location)) {
+            if (insertProjectedLocations(it.location, n)) {
                 bagOfWpts.remove(it)
             }
         }
@@ -103,13 +103,13 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                 val movedLoc = starIt.next()
                 movedLoc ?: break
                 if (it.location.distanceTo(movedLoc) > MAX_DISTANCE_TO_CLIP_WP_TO_COURSE * 2) break
-                if (insertProjectedLocation(movedLoc)) {
+                if (insertProjectedLocations(movedLoc, n)) {
                     if (++inserted > 3) {
-                        Log.w(tag, "breaking @ $inserted")
+                        if (debugInPreprocess) Log.w(tag, "breaking @ $inserted")
                         break
                     }
                 }
-                Log.e(tag, " iter. = $i")
+                if (debugInPreprocess) Log.e(tag, " iter. = $i")
             }
             if (inserted > 0) bagOfWpts.remove(it)
         }
@@ -161,65 +161,69 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         return TrackContainer(track, definedRteActionsToShiftedIndices)
     }
 
-    private fun insertProjectedLocation(location: Location): Boolean {
+    private fun insertProjectedLocations(location: Location, n: Int): Boolean {
         var inserted = false
-        val indexClosestLoc = getClosestLocationIndex(location)
+        // list of n closest locations in track, sorted by distance to param location
+        val closestLocations = getListOfClosestLocations(location, n)
         val insertCandidates = mutableListOf<InsertCandidate>()
-        if (indexClosestLoc != -1) {
-            if (debugInPreprocess) {
-                debugMessages.add("\n\n\n\n\nPOINT--------------------------------------------------")
-                debugMessages.add(locationStringDescriptionSimple(location))
-                debugMessages.add("distance to closest: ${location.distanceTo(track.points[indexClosestLoc])}")
-                debugMessages.add("closest: ${locationStringDescriptionSimple(track.points[indexClosestLoc])}")
-            }
-            // START tree
-            val indexLeft = if (indexClosestLoc > 0 && track.points[indexClosestLoc - 1] != null)
-                indexClosestLoc - 1 else -1
-            val indexRight = if (indexClosestLoc < (track.points.size - 1) && track.points[indexClosestLoc + 1] != null)
-                indexClosestLoc + 1 else -1
-            val tree = ClosestTree(indexClosestLoc, track.points[indexClosestLoc],
-                    indexLeft, if (indexLeft != -1) track.points[indexLeft] else null,
-                    indexRight, if (indexRight != -1) track.points[indexRight] else null)
-            // END tree
-            if (debugInPreprocess) {
-                debugMessages.add("TREE------------------------")
-                debugMessages.add(tree.toString())
-                debugMessages.add("----------------------------")
-            }
-            if (
-                    tree.leftInd != -1 &&
-                    tree.leftLoc != null &&
-                    tree.leftLoc.distanceTo(location) > minDistConsider
-            ) {
-                val A = tree.closestLoc
-                val B = tree.leftLoc
-                val C = location
-                val candidate = getInsertCandidate(A, B, C, tree.closestInd,
-                        "LEFT branch of the closest tree")
-                if (candidate != null) insertCandidates.add(candidate)
-            }
-            if (
-                    tree.rightInd != -1 &&
-                    tree.rightLoc != null &&
-                    tree.rightLoc.distanceTo(location) > minDistConsider
-            ) {
-                val A = tree.closestLoc
-                val B = tree.rightLoc
-                val C = location
-                val candidate = getInsertCandidate(A, B, C, tree.rightInd,
-                        "RIGHT branch of the closest tree")
-                if (candidate != null) insertCandidates.add(candidate)
+
+        closestLocations.forEach {
+            val oneOfTheCloseLocsIndex = it.index
+            if (oneOfTheCloseLocsIndex != -1) {
+                if (debugInPreprocess) {
+                    debugMessages.add("\n\n\n\n\nPOINT--------------------------------------------------")
+                    debugMessages.add(locationStringDescriptionSimple(location))
+                    debugMessages.add("distance to closest: ${location.distanceTo(track.points[oneOfTheCloseLocsIndex])}")
+                    debugMessages.add("closest: ${locationStringDescriptionSimple(track.points[oneOfTheCloseLocsIndex])}")
+                }
+                // START tree
+                val indexLeft = if (oneOfTheCloseLocsIndex > 0 && track.points[oneOfTheCloseLocsIndex - 1] != null)
+                    oneOfTheCloseLocsIndex - 1 else -1
+                val indexRight = if (oneOfTheCloseLocsIndex < (track.points.size - 1) && track.points[oneOfTheCloseLocsIndex + 1] != null)
+                    oneOfTheCloseLocsIndex + 1 else -1
+                val tree = ClosestTree(oneOfTheCloseLocsIndex, track.points[oneOfTheCloseLocsIndex],
+                        indexLeft, if (indexLeft != -1) track.points[indexLeft] else null,
+                        indexRight, if (indexRight != -1) track.points[indexRight] else null)
+                // END tree
+                if (debugInPreprocess) {
+                    debugMessages.add("TREE------------------------")
+                    debugMessages.add(tree.toString())
+                    debugMessages.add("----------------------------")
+                }
+                if (
+                        tree.leftInd != -1 &&
+                        tree.leftLoc != null &&
+                        tree.leftLoc.distanceTo(location) > minDistConsider
+                ) {
+                    val A = tree.closestLoc
+                    val B = tree.leftLoc
+                    val C = location
+                    val candidate = getInsertCandidate(A, B, C,
+                            "LEFT branch of the closest tree", A)
+                    if (candidate != null) insertCandidates.add(candidate)
+                }
+                if (
+                        tree.rightInd != -1 &&
+                        tree.rightLoc != null &&
+                        tree.rightLoc.distanceTo(location) > minDistConsider
+                ) {
+                    val A = tree.closestLoc
+                    val B = tree.rightLoc
+                    val C = location
+                    val candidate = getInsertCandidate(A, B, C,
+                            "RIGHT branch of the closest tree", B)
+                    if (candidate != null) insertCandidates.add(candidate)
+                }
             }
         }
-        val winnerCandidate = insertCandidates.minWith(InsertCandidatesComparator)
         if (debugInPreprocess) {
             debugMessages.add("Insert Candidates size: ${insertCandidates.size}")
             debugMessages.add("Candidates: $insertCandidates")
-            debugMessages.add("Winner candidate: ${winnerCandidate?.toString()}\n\n")
         }
-        if (winnerCandidate != null) {
-            track.points.add(winnerCandidate.indexOfInsert, winnerCandidate.location)
-            Log.e(tag, "winnerCandidate $winnerCandidate")
+
+        insertCandidates.forEach {
+            track.points.add(getCurrentIndexOf(it.locationToReplace), it.location)
+            if (debugInPreprocess) Log.e(tag, "Inserted Candidate $it")
             inserted = true
         }
         return inserted
@@ -230,8 +234,29 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                 c1.distanceToPoint.compareTo(c2.distanceToPoint)
     }
 
-    private fun getInsertCandidate(A: Location, B: Location, C: Location, insertIndex:
-    Int, desc: String): InsertCandidate? {
+    private object LocationDistanceIndexComparator : Comparator<LocationDistanceIndex> {
+        override fun compare(o1: LocationDistanceIndex, o2: LocationDistanceIndex): Int =
+                o1.distanceToPoint.compareTo(o2.distanceToPoint)
+    }
+
+    private fun getListOfClosestLocations(waypoint: Location, n: Int): List<LocationDistanceIndex> {
+        val locationDistanceIndexList = mutableListOf<LocationDistanceIndex>()
+        for (i in track.points.indices) {
+            if (track.points[i] != null) {
+                locationDistanceIndexList.add(
+                        LocationDistanceIndex(track.points[i],
+                                track.points[i].distanceTo(waypoint).toDouble(),
+                                i))
+            }
+        }
+        locationDistanceIndexList.sortWith(LocationDistanceIndexComparator)
+        return if (n < locationDistanceIndexList.size)
+            locationDistanceIndexList.subList(0, n)
+        else locationDistanceIndexList
+    }
+
+    private fun getInsertCandidate(A: Location, B: Location, C: Location,
+                                   desc: String, locationToReplace: Location): InsertCandidate? {
         val D = pointOnALineSegmentClosestToPoint(A, B, C)
         if (D.isWithinBounds(A, B) && D.isNotTooCloseTo(A, B)) {
             // D isWithinBounds ON LEFT OR RIGHT
@@ -256,7 +281,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                         debugMessages.add("Interpolation result: D.time: ${D.time}\n")
                     }
                 } else if (debugInPreprocess) debugMessages.add("no timestamps to interpolate\n")
-                val candidate = InsertCandidate(D, D.distanceTo(C).toDouble(), insertIndex)
+                val candidate = InsertCandidate(D, D.distanceTo(C).toDouble(), locationToReplace)
                 if (debugInPreprocess) debugMessages.add("$candidate")
                 return candidate
             }
@@ -280,6 +305,14 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             }
         }
         return closest
+    }
+
+    private fun getCurrentIndexOf(location: Location): Int {
+        var index = -1
+        for (i in track.points.indices) {
+            if (track.points[i] == location) index = i
+        }
+        return index
     }
 
     fun pointOnALineSegmentClosestToPoint(A: Location, B: Location, C: Location): Location {
@@ -336,14 +369,17 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
     private data class InsertCandidate(val location: Location,
                                        val distanceToPoint: Double,
-                                       val indexOfInsert: Int) {
+                                       val locationToReplace: Location) {
         override fun toString(): String {
             return "InsertCandidate:\n" +
                     "location: ${locationStringDescriptionSimple(location)}\n" +
-                    "distanceToPoint: $distanceToPoint\n" +
-                    "indexOfInsert: $indexOfInsert\n"
+                    "distanceToPoint: $distanceToPoint\n"
         }
     }
+
+    private data class LocationDistanceIndex(val location: Location,
+                                             val distanceToPoint: Double,
+                                             val index: Int)
 }
 
 data class TrackContainer(val track: Track, val definedRteActionsToShiftedIndices: Map<Point, Int>)
