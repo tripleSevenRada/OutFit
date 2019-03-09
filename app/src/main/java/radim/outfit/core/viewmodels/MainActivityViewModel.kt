@@ -1,7 +1,7 @@
 package radim.outfit.core.viewmodels
 
 import android.arch.lifecycle.ViewModel
-import radim.outfit.core.export.work.locusapiextensions.TrackContainer
+import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 
 class MainActivityViewModel: ViewModel(){
 

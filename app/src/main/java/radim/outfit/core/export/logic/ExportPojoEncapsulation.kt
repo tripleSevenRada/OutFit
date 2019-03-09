@@ -1,8 +1,7 @@
 package radim.outfit.core.export.logic
 
 import android.content.SharedPreferences
-import locus.api.objects.extra.Track
-import radim.outfit.core.export.work.locusapiextensions.TrackContainer
+import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import java.io.File
 
 data class ExportPOJO (val file: File?, val filename: String?, val trackContainer: TrackContainer?)

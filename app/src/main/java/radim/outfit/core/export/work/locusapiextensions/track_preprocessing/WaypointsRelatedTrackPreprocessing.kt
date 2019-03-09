@@ -1,4 +1,4 @@
-package radim.outfit.core.export.work.locusapiextensions
+package radim.outfit.core.export.work.locusapiextensions.track_preprocessing
 
 import android.util.Log
 import locus.api.objects.enums.PointRteAction
@@ -8,6 +8,7 @@ import locus.api.objects.extra.Track
 import locus.api.objects.utils.LocationCompute.computeDistanceFast
 import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.MAX_DISTANCE_TO_CLIP_WP_TO_COURSE
+import radim.outfit.core.export.work.locusapiextensions.StarIterator
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.LocationStringDump.locationStringDescriptionSimple
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.PointStringDump
 import java.lang.RuntimeException
@@ -102,7 +103,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             for (i in 0..80) {
                 val movedLoc = starIt.next()
                 movedLoc ?: break
-                if (it.location.distanceTo(movedLoc) > MAX_DISTANCE_TO_CLIP_WP_TO_COURSE * 3) break
+                if (computeDistanceFast(it.location, movedLoc) > MAX_DISTANCE_TO_CLIP_WP_TO_COURSE * 3) break
                 if (insertProjectedLocations(movedLoc, n)) {
                     if (++inserted > 2) {
                         if (debugInPreprocess) Log.w(tag, "breaking @ $inserted")
@@ -172,7 +173,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                 if (debugInPreprocess) {
                     debugMessages.add("\n\n\n\n\nPOINT--------------------------------------------------")
                     debugMessages.add(locationStringDescriptionSimple(location))
-                    debugMessages.add("distance to closest: ${location.distanceTo(track.points[root])}")
+                    debugMessages.add("distance to closest: ${computeDistanceFast(location, track.points[root])}")
                     debugMessages.add("closest: ${locationStringDescriptionSimple(track.points[root])}")
                 }
 
@@ -194,7 +195,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                 if (
                         tree.leftInd != -1 &&
                         tree.leftLoc != null &&
-                        tree.leftLoc.distanceTo(location) > minDistConsider
+                        computeDistanceFast(tree.leftLoc, location) > minDistConsider
                 ) {
                     val A = tree.closestLoc
                     val B = tree.leftLoc
@@ -206,7 +207,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                 if (
                         tree.rightInd != -1 &&
                         tree.rightLoc != null &&
-                        tree.rightLoc.distanceTo(location) > minDistConsider
+                        computeDistanceFast(tree.rightLoc,location) > minDistConsider
                 ) {
                     val A = tree.closestLoc
                     val B = tree.rightLoc
@@ -243,23 +244,13 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                 c1.distanceToPoint.compareTo(c2.distanceToPoint)
     }
 
-    // not used
-    private fun trackpointCloseEnoughExists(point: Point, factor: Double): Boolean {
-        track.points.forEach { trackpoint ->
-            if (computeDistanceFast( point.location, trackpoint ) < MAX_DISTANCE_TO_CLIP_WP_TO_COURSE * factor)
-                return true
-        }
-        return false
-    }
-
     private fun getListOfClosestLocations(waypoint: Location, n: Int): List<LocationDistanceIndex> {
         val locationDistanceIndexList = mutableListOf<LocationDistanceIndex>()
         for (i in track.points.indices) {
             if (track.points[i] != null) {
                 locationDistanceIndexList.add(
                         LocationDistanceIndex(track.points[i],
-                                //track.points[i].distanceTo(waypoint).toDouble(),
-                                computeDistanceFast(track.points[i],waypoint),
+                                computeDistanceFast(track.points[i], waypoint),
                                 i))
             }
         }
@@ -295,7 +286,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                         debugMessages.add("Interpolation result: D.time: ${D.time}\n")
                     }
                 } else if (debugInPreprocess) debugMessages.add("no timestamps to interpolate\n")
-                val candidate = InsertCandidate(D, D.distanceTo(C).toDouble(), locationToReplace)
+                val candidate = InsertCandidate(D, computeDistanceFast(D, C).toDouble(), locationToReplace)
                 if (debugInPreprocess) debugMessages.add("$candidate")
                 return candidate
             }
@@ -304,23 +295,8 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
     }
 
     private fun Location.isNotTooCloseTo(A: Location, B: Location): Boolean =
-            this.distanceTo(A) > minDistConsider / 2 &&
-                    this.distanceTo(B) > minDistConsider / 2
-
-    //unused
-    private fun getClosestLocationIndex(location: Location): Int {
-        var closest = -1
-        var closestDist = Float.MAX_VALUE
-        for (i in track.points.indices) {
-            if (track.points[i] == null) continue
-            val dist = track.points[i].distanceTo(location)
-            if (dist < closestDist) {
-                closestDist = dist
-                closest = i
-            }
-        }
-        return closest
-    }
+            computeDistanceFast(this, A) > minDistConsider / 2 &&
+                    computeDistanceFast(this, B) > minDistConsider / 2
 
     private fun getCurrentIndexOf(location: Location): Int {
         for (i in track.points.indices) if (track.points[i] === location) return i
@@ -348,8 +324,8 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
     }
 
     fun interpolationCoef(A: Location, B: Location, C: Location): Double {
-        val AB: Double = A.distanceTo(B).toDouble()
-        val AC: Double = A.distanceTo(C).toDouble()
+        val AB: Double = computeDistanceFast(A, B)
+        val AC: Double = computeDistanceFast(A, C)
         if (AC < (minDistConsider / 2) || AB < (minDistConsider / 2)) return -1.0
         return AC / AB
     }
@@ -388,12 +364,11 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                     "distanceToPoint: $distanceToPoint\n"
         }
     }
-
-    private data class LocationDistanceIndex(val location: Location,
-                                             val distanceToPoint: Double,
-                                             val index: Int)
 }
 
+data class LocationDistanceIndex(val location: Location,
+                                         val distanceToPoint: Double,
+                                         val index: Int)
 data class TrackContainer(val track: Track, val definedRteActionsToShiftedIndices: Map<Point, Int>)
 
 // mocked stress test
