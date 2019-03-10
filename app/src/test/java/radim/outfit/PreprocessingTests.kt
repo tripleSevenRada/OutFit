@@ -2,10 +2,9 @@ package radim.outfit
 
 import org.junit.Assert.*
 import locus.api.objects.extra.Location
-import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
 import org.junit.Test
-import radim.outfit.core.export.work.locusapiextensions.WaypointsRelatedTrackPreprocessing
+import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.WaypointsRelatedTrackPreprocessing
 
 class PreprocessingTests{
     @Test

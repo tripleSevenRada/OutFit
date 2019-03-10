@@ -2,7 +2,7 @@ package radim.outfit.core.export.logic
 
 import android.support.v7.app.AppCompatActivity
 import radim.outfit.core.export.work.Encoder
-import radim.outfit.core.export.work.locusapiextensions.TrackContainer
+import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import java.io.File
 
 class ExportFunction : (File?, String?, TrackContainer?, Float, AppCompatActivity, MutableList<String>) -> Result {

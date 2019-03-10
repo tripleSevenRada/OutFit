@@ -28,8 +28,8 @@ import locus.api.android.ActionTools
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.export.work.*
-import radim.outfit.core.export.work.locusapiextensions.TrackContainer
-import radim.outfit.core.export.work.locusapiextensions.WaypointsRelatedTrackPreprocessing
+import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
+import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.WaypointsRelatedTrackPreprocessing
 import radim.outfit.core.share.work.*
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer

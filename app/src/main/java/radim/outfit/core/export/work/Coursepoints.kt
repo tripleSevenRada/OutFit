@@ -4,7 +4,7 @@ import android.util.Log
 import com.garmin.fit.CoursePoint
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Point
-import radim.outfit.core.export.work.locusapiextensions.TrackContainer
+import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.WaypointSimplified
 import radim.outfit.core.export.work.locusapiextensions.getCoursepointEnumForced
 import radim.outfit.core.export.work.locusapiextensions.getWaypointName
