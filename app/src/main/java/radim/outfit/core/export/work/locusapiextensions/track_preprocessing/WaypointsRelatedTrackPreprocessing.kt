@@ -296,22 +296,16 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             computeDistanceFast(this, A) > minDistConsider / 2 &&
                     computeDistanceFast(this, B) > minDistConsider / 2
 
-    private fun getCurrentIndexOf(location: Location, lastKnownLocationToIndex: MutableMap<Location, Int>): Int {
-        val start = lastKnownLocationToIndex[location]?: return -1
+    private fun getCurrentIndexOf(location: Location,
+                                  LocationToLastKnownIndex: MutableMap<Location, Int>): Int {
+        val start = LocationToLastKnownIndex[location]?: return -1
         if(track.points[start] === location) return start
         var count = 1
         while(true){
-            val left = start - count
-            val right = start + count
-            val leftInd = if(left >= 0) left else -1
-            val rightInd = if(right <= track.points.lastIndex) right else -1
-            if(leftInd != -1 && track.points[leftInd] === location) {
-                lastKnownLocationToIndex[location] = leftInd; return leftInd
+            val rightInd = if(start + count <= track.points.lastIndex) start + count else return -1
+            if(track.points[rightInd] === location) {
+                LocationToLastKnownIndex[location] = rightInd; return rightInd
             }
-            if(rightInd != -1 && track.points[rightInd] === location) {
-                lastKnownLocationToIndex[location] = rightInd; return rightInd
-            }
-            if(leftInd == -1 && rightInd == -1) return -1
             count ++
         }
     }
@@ -344,12 +338,6 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
     }
 
     private fun Location.isWithinBounds(A: Location, B: Location): Boolean {
-        if (debugInPreprocess) {
-            debugMessages.add("isWithinBounds:")
-            debugMessages.add("A ${locationStringDescriptionSimple(A)}")
-            debugMessages.add("B ${locationStringDescriptionSimple(B)}")
-            debugMessages.add("this ${locationStringDescriptionSimple(this)}")
-        }
         val latMin = min(A.latitude, B.latitude)
         val latMax = max(A.latitude, B.latitude)
         val lonMin = min(A.longitude, B.longitude)
