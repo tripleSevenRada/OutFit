@@ -115,7 +115,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         }
 
         if (debugInPreprocess) {
-            val message1 = "AFTER HEURISTIC bagOfWpts.size: ${bagOfWpts.size}"
+            val message1 = "AFTER HEURISTICS bagOfWpts.size: ${bagOfWpts.size}"
             debugMessages.add(message1)
             Log.w(tag, message1)
             bagOfWpts.forEach {
