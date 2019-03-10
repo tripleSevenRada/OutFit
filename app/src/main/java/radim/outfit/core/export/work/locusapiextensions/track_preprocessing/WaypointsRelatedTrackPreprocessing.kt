@@ -30,6 +30,8 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
     fun preprocess(): TrackContainer {
 
+        val clusters = Clustering(debugInPreprocess).clusterize(track)
+
         // needToConstructNewLocation have paramRteIndex = -1
         val needToConstructNewLocation: List<Point> =
                 track.waypoints.filter { it != null && it.parameterRteAction == PointRteAction.UNDEFINED }
@@ -105,17 +107,13 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         bagOfWptsCopy.forEach {
             val starIt = StarIterator(it.location)
             var inserted = 0
-            for (i in 0..80) {
+            for (i in 0 until 80) {
                 val movedLoc = starIt.next()
                 movedLoc ?: break
                 if (computeDistanceFast(it.location, movedLoc) > MAX_DISTANCE_TO_CLIP_WP_TO_COURSE * 5) break
                 if (insertProjectedLocations(movedLoc, n, lastKnownLocationToIndex)) {
-                    if (++inserted > 2) {
-                        if (debugInPreprocess) Log.i(tag, "breaking @ $inserted")
-                        break
-                    }
+                    if (++inserted > 2) break
                 }
-                if (debugInPreprocess) Log.i(tag, " iter. = $i")
             }
             if (inserted > 0) bagOfWpts.remove(it)
         }
@@ -156,7 +154,6 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             debugMessages.add("size definedRteActionsToShiftedIndices: ${definedRteActionsToShiftedIndices.size}")
             debugMessages.add("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
         }
-
         return TrackContainer(track, definedRteActionsToShiftedIndices)
     }
 

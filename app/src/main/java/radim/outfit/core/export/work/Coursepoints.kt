@@ -4,6 +4,7 @@ import android.util.Log
 import com.garmin.fit.CoursePoint
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Point
+import locus.api.objects.utils.LocationCompute.computeDistanceFast
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.WaypointSimplified
 import radim.outfit.core.export.work.locusapiextensions.getCoursepointEnumForced
@@ -165,11 +166,9 @@ const val MAX_DISTANCE_TO_CLIP_WP_TO_COURSE = 320.0F
    PASS_PLACE(50, "pass_place");
 */
 
-// ROUNDABOUT_EXIT - co s nima, u nas vpravo, v UK vlevo, ignoruju...
-
 val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.LEFT_SLIGHT to CoursePoint.SLIGHT_LEFT,
-        PointRteAction.STAY_LEFT to CoursePoint.LEFT_FORK,
+        PointRteAction.STAY_LEFT to CoursePoint.SLIGHT_LEFT,
         PointRteAction.RAMP_ON_LEFT to CoursePoint.LEFT_FORK,
         PointRteAction.MERGE_LEFT to CoursePoint.SLIGHT_LEFT,
         PointRteAction.LEFT to CoursePoint.LEFT,
@@ -177,13 +176,21 @@ val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.U_TURN_LEFT to CoursePoint.SHARP_LEFT,
         PointRteAction.EXIT_LEFT to CoursePoint.LEFT,
         PointRteAction.RIGHT_SLIGHT to CoursePoint.SLIGHT_RIGHT,
-        PointRteAction.STAY_RIGHT to CoursePoint.RIGHT_FORK,
+        PointRteAction.STAY_RIGHT to CoursePoint.SLIGHT_RIGHT,
         PointRteAction.RAMP_ON_RIGHT to CoursePoint.RIGHT_FORK,
         PointRteAction.MERGE_RIGHT to CoursePoint.SLIGHT_RIGHT,
         PointRteAction.RIGHT to CoursePoint.RIGHT,
         PointRteAction.RIGHT_SHARP to CoursePoint.SHARP_RIGHT,
         PointRteAction.U_TURN_RIGHT to CoursePoint.SHARP_RIGHT,
         PointRteAction.EXIT_RIGHT to CoursePoint.RIGHT,
+        PointRteAction.ROUNDABOUT_EXIT_1 to CoursePoint.GENERIC,
+        PointRteAction.ROUNDABOUT_EXIT_2 to CoursePoint.GENERIC,
+        PointRteAction.ROUNDABOUT_EXIT_3 to CoursePoint.GENERIC,
+        PointRteAction.ROUNDABOUT_EXIT_4 to CoursePoint.GENERIC,
+        PointRteAction.ROUNDABOUT_EXIT_5 to CoursePoint.GENERIC,
+        PointRteAction.ROUNDABOUT_EXIT_6 to CoursePoint.GENERIC,
+        PointRteAction.ROUNDABOUT_EXIT_7 to CoursePoint.GENERIC,
+        PointRteAction.ROUNDABOUT_EXIT_8 to CoursePoint.GENERIC,
         PointRteAction.U_TURN to CoursePoint.U_TURN,
         PointRteAction.CONTINUE_STRAIGHT to CoursePoint.STRAIGHT,
         PointRteAction.STAY_STRAIGHT to CoursePoint.STRAIGHT,
@@ -271,16 +278,24 @@ val routePointActionsPrioritized: Map<Int, List<PointRteAction>> = mapOf(
         2 to listOf(PointRteAction.RAMP_STRAIGHT),
         3 to listOf(PointRteAction.STAY_STRAIGHT),
         4 to listOf(PointRteAction.CONTINUE_STRAIGHT),
-        5 to listOf(PointRteAction.STAY_LEFT, PointRteAction.STAY_RIGHT),
-        6 to listOf(PointRteAction.RAMP_ON_LEFT, PointRteAction.RAMP_ON_RIGHT),
-        7 to listOf(PointRteAction.MERGE_LEFT, PointRteAction.MERGE_RIGHT),
-        8 to listOf(PointRteAction.LEFT_SLIGHT, PointRteAction.RIGHT_SLIGHT),
-        9 to listOf(PointRteAction.EXIT_LEFT, PointRteAction.EXIT_RIGHT),
-        10 to listOf(PointRteAction.U_TURN_LEFT, PointRteAction.U_TURN_RIGHT),
-        11 to listOf(PointRteAction.U_TURN),
-        12 to listOf(PointRteAction.RIGHT_SHARP, PointRteAction.LEFT_SHARP),
-        13 to listOf(PointRteAction.RIGHT, PointRteAction.LEFT),
-        14 to listOf(PointRteAction.PASS_PLACE, PointRteAction.UNDEFINED)
+        5 to listOf(PointRteAction.ROUNDABOUT_EXIT_1,
+                PointRteAction.ROUNDABOUT_EXIT_2,
+                PointRteAction.ROUNDABOUT_EXIT_3,
+                PointRteAction.ROUNDABOUT_EXIT_4,
+                PointRteAction.ROUNDABOUT_EXIT_5,
+                PointRteAction.ROUNDABOUT_EXIT_6,
+                PointRteAction.ROUNDABOUT_EXIT_7,
+                PointRteAction.ROUNDABOUT_EXIT_8),
+        6 to listOf(PointRteAction.STAY_LEFT, PointRteAction.STAY_RIGHT),
+        7 to listOf(PointRteAction.RAMP_ON_LEFT, PointRteAction.RAMP_ON_RIGHT),
+        8 to listOf(PointRteAction.MERGE_LEFT, PointRteAction.MERGE_RIGHT),
+        9 to listOf(PointRteAction.LEFT_SLIGHT, PointRteAction.RIGHT_SLIGHT),
+        10 to listOf(PointRteAction.EXIT_LEFT, PointRteAction.EXIT_RIGHT),
+        11 to listOf(PointRteAction.U_TURN_LEFT, PointRteAction.U_TURN_RIGHT),
+        12 to listOf(PointRteAction.U_TURN),
+        13 to listOf(PointRteAction.RIGHT_SHARP, PointRteAction.LEFT_SHARP),
+        14 to listOf(PointRteAction.RIGHT, PointRteAction.LEFT),
+        15 to listOf(PointRteAction.PASS_PLACE, PointRteAction.UNDEFINED)
 )
 
 class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
@@ -335,7 +350,7 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
             }
         }
 
-        if (debug){
+        if (debug) {
             debugMessages.add("Size of waypoints after UNDEFINED removed ${waypoints.size}")
             debugMessages.add("Size of waypointsUndefined removed from waypoints ${waypointsUndefined.size}")
         }
@@ -391,10 +406,10 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
     private fun getSortedListOfIndicesCloseEnough(waypoint: Point): List<Int> {
         val list = mutableListOf<Int>()
         val listDistInd = mutableListOf<IndexDistance>()
-        var dist: Float
+        var dist: Double
         for (i in trackContainer.track.points.indices) {
             if (trackContainer.track.points[i] == null) continue
-            dist = waypoint.location.distanceTo(trackContainer.track.points[i])
+            dist = computeDistanceFast(waypoint.location, trackContainer.track.points[i])
             if (dist < MAX_DISTANCE_TO_CLIP_WP_TO_COURSE)
                 listDistInd.add(IndexDistance(i, dist))
         }
@@ -403,6 +418,6 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
     }
 }
 
-data class IndexDistance(val index: Int, val distance: Float) : Comparable<IndexDistance> {
+data class IndexDistance(val index: Int, val distance: Double) : Comparable<IndexDistance> {
     override fun compareTo(other: IndexDistance): Int = this.distance.compareTo(other.distance)
 }
