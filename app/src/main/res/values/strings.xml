@@ -149,4 +149,11 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
 
     <string name="activity_type_generic">Generic</string>
 
+    <!-- menu -->
+    <string name="menu_custom_waypoints">Custom wpts.</string>
+
+    <!-- ExplainWaypointsActivity -->
+    <string name="activity_explain_waypoints_label">OUT FIT - coursepoints</string>
+
+
 </resources>

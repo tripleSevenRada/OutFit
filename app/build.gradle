@@ -53,7 +53,7 @@ dependencies {
     implementation 'com.asamm:locus-api-android:0.3.2'
 
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
-    
+
     // https://antonioleiva.com/anko-background-kotlin-android/
     // https://github.com/Kotlin/anko
     implementation 'org.jetbrains.anko:anko-common:0.9'
@@ -65,3 +65,6 @@ dependencies {
     implementation 'android.arch.lifecycle:extensions:1.+'
 }
 
+dependencies {
+    implementation 'com.android.support.constraint:constraint-layout:+'
+}

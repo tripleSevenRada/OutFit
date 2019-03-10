@@ -13,7 +13,7 @@ import java.lang.RuntimeException
 
 const val COURSEPOINTS_LIMIT = 100
 const val COURSEPOINTS_NAME_MAX_LENGTH = 20
-const val MAX_DISTANCE_TO_CLIP_WP_TO_COURSE = 260.0F
+const val MAX_DISTANCE_TO_CLIP_WP_TO_COURSE = 320.0F
 
 /*
    LOCUS API
@@ -197,13 +197,23 @@ val styleNameORIconStyleIconUrlToCoursePoints: Map<String, CoursePoint> = mapOf(
         "Dropoff.png" to CoursePoint.VALLEY,
 
         "tourism-drinkingwater.png" to CoursePoint.WATER,
+        "restaurant-teahouse.png" to CoursePoint.WATER,
+        "restaurant-coffee.png" to CoursePoint.WATER,
+        "restaurant-bar.png" to CoursePoint.WATER,
+        "restaurant-winery.png" to CoursePoint.WATER,
         "Drinking Water.png" to CoursePoint.WATER,
+        "Bar.png" to CoursePoint.WATER,
+        "Winery.png" to CoursePoint.WATER,
+        "Fast Food.png" to CoursePoint.WATER,
 
-        "restaurant-restaurant.png" to CoursePoint.FOOD,
         "Restaurant.png" to CoursePoint.FOOD,
-        "restaurant-fastfood.png" to CoursePoint.FOOD,
         "Pizza.png" to CoursePoint.FOOD,
+        "restaurant-bandb.png" to CoursePoint.FOOD,
+        "restaurant-restaurant.png" to CoursePoint.FOOD,
+        "restaurant-fastfood.png" to CoursePoint.FOOD,
+        "restaurant-icecream.png" to CoursePoint.FOOD,
         "restaurant-pizza.png" to CoursePoint.FOOD,
+        "stores-convenience.png" to CoursePoint.FOOD,
 
         "sport-firstaid.png" to CoursePoint.FIRST_AID,
         "sport-hospital.png" to CoursePoint.FIRST_AID,
@@ -270,7 +280,7 @@ val routePointActionsPrioritized: Map<Int, List<PointRteAction>> = mapOf(
         11 to listOf(PointRteAction.U_TURN),
         12 to listOf(PointRteAction.RIGHT_SHARP, PointRteAction.LEFT_SHARP),
         13 to listOf(PointRteAction.RIGHT, PointRteAction.LEFT),
-        14 to listOf(PointRteAction.PASS_PLACE)
+        14 to listOf(PointRteAction.PASS_PLACE, PointRteAction.UNDEFINED)
 )
 
 class AttachWaypointsToTrack(val trackContainer: TrackContainer) {

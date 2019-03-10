@@ -116,21 +116,21 @@ fun ridUnsupportedRtePtActions(waypoints: List<WaypointSimplified>): List<Waypoi
 
 fun reduceWayPointsSizeTo(points: List<WaypointSimplified>, limit: Int): List<WaypointSimplified>{
     var toReduce = points.toMutableList()
-    val range = IntRange(1, routePointActionsPrioritized.size - 1) // allways keep all PASS_PLACE waypoints here 
+    val range = IntRange(1, routePointActionsPrioritized.size - 1) // allways keep all PASS_PLACE and UNDEFINED waypoints here
     for (i in range){
         if (toReduce.size <= limit) break
         val rteActionsToRid = routePointActionsPrioritized[i] ?: listOf()
         toReduce = toReduce.filter { ! rteActionsToRid.contains(it.rteAction) }.toMutableList()
     }
-    // now reduce even PASS_PLACE if necessary
-    if (toReduce.size <= limit) return toReduce
+    // now reduce even PASS_PLACE and UNDEFINED if necessary
+    return if (toReduce.size <= limit) toReduce
     else {
         val over = toReduce.size - limit
         val pre: Int
         val post: Int
         if(over % 2 == 0){pre = over / 2; post = over / 2}
         else{pre = (over / 2) + 1; post = over/2}
-        return toReduce.subList(pre, toReduce.size - post)
+        toReduce.subList(pre, toReduce.size - post)
     }
 }
 

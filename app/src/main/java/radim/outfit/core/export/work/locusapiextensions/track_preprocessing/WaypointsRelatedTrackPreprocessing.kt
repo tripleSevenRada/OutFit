@@ -25,7 +25,7 @@ import kotlin.math.roundToLong
 class WaypointsRelatedTrackPreprocessing(private val track: Track, private val debugMessages: MutableList<String>) {
 
     private val minDistConsider = 2.0
-    private val debugInPreprocess = false
+    private val debugInPreprocess = true
     private val tag = "WPTS preprocessing"
 
     fun preprocess(): TrackContainer {
@@ -108,14 +108,14 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             for (i in 0..80) {
                 val movedLoc = starIt.next()
                 movedLoc ?: break
-                if (computeDistanceFast(it.location, movedLoc) > MAX_DISTANCE_TO_CLIP_WP_TO_COURSE * 3) break
+                if (computeDistanceFast(it.location, movedLoc) > MAX_DISTANCE_TO_CLIP_WP_TO_COURSE * 5) break
                 if (insertProjectedLocations(movedLoc, n, lastKnownLocationToIndex)) {
                     if (++inserted > 2) {
-                        if (debugInPreprocess) Log.w(tag, "breaking @ $inserted")
+                        if (debugInPreprocess) Log.i(tag, "breaking @ $inserted")
                         break
                     }
                 }
-                if (debugInPreprocess) Log.e(tag, " iter. = $i")
+                if (debugInPreprocess) Log.i(tag, " iter. = $i")
             }
             if (inserted > 0) bagOfWpts.remove(it)
         }
@@ -161,14 +161,14 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
     }
 
     //TODO Big O
-    private fun insertProjectedLocations(location: Location, n: Int, lastKnownLocationToIndex: MutableMap<Location, Int>): Boolean {
+    private fun insertProjectedLocations(location: Location, n: Int, locationToLastKnownIndex: MutableMap<Location, Int>): Boolean {
         var inserted = false
         // list of n closest locations in track, sorted by distance to param location
         val closestLocations = getListOfClosestLocations(location, n)
         val insertCandidates = mutableListOf<InsertCandidate>()
 
         closestLocations.forEach {
-            val root = getCurrentIndexOf(it.location, lastKnownLocationToIndex)
+            val root = getCurrentIndexOf(it.location, locationToLastKnownIndex)
             if (root != -1) {
                 if (debugInPreprocess) {
                     debugMessages.add("\n\n\n\n\nPOINT--------------------------------------------------")
@@ -224,8 +224,10 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
         // we accept all candidates, no filter
         insertCandidates.forEach {
-            track.points.add(getCurrentIndexOf(it.locationToReplace, lastKnownLocationToIndex), it.location)
-            if (debugInPreprocess) Log.e(tag, "Inserted Candidate $it")
+            val currentIndex = getCurrentIndexOf(it.locationToReplace, locationToLastKnownIndex)
+            track.points.add(currentIndex, it.location)
+            locationToLastKnownIndex[it.location] = currentIndex
+            if (debugInPreprocess) Log.i(tag, "Inserted Candidate $it")
             inserted = true
         }
         return inserted

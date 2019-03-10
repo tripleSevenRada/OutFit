@@ -17,6 +17,9 @@ import android.content.pm.PackageManager
 import android.support.v4.content.ContextCompat
 import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.widget.ProgressBar
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
@@ -78,6 +81,24 @@ class MainActivity : AppCompatActivity(),
         val spf = SpeedPickerFragment()
         spf.show(fm, "speed_picker_fragment")
     }
+
+    // Menu START
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+            R.id.explain_waypoints -> {
+                startActivity(Intent(this, ExplainWaypointsActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+    // Menu END
 
     // SpeedPickerFragment interfaces impl START
     override fun getTriggerAction(): (Float) -> Unit = exportListener.getOkAction()
