@@ -28,6 +28,8 @@ import kotlinx.android.synthetic.main.content_path.*
 import locus.api.android.utils.LocusInfo
 import radim.outfit.core.export.logic.*
 import locus.api.android.ActionTools
+import locus.api.objects.enums.PointRteAction
+import locus.api.objects.extra.Point
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.export.work.*
@@ -76,7 +78,7 @@ class MainActivity : AppCompatActivity(),
     private fun showSpeedPickerDialog() {
         val viewModel =
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
-        if(viewModel.speedPickerFragmentShown) return
+        if (viewModel.speedPickerFragmentShown) return
         viewModel.speedPickerFragmentShown = true
         val fm = supportFragmentManager
         val spf = SpeedPickerFragment()
@@ -89,6 +91,7 @@ class MainActivity : AppCompatActivity(),
         inflater.inflate(R.menu.main_menu, menu)
         return true
     }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle item selection
         return when (item.itemId) {
@@ -108,10 +111,12 @@ class MainActivity : AppCompatActivity(),
         val speed = sharedPreferences.getFloat(getString("last_seen_speed_value_m_s"), SPEED_DEFAULT_M_S)
         return speed
     }
+
     override fun setSpeedMperS(value: Float) {
         persistInSharedPreferences(getString("last_seen_speed_value_m_s"), value)
     }
-    override fun onDialogDismissed(){
+
+    override fun onDialogDismissed() {
         val viewModel =
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
         viewModel.speedPickerFragmentShown = false
@@ -308,13 +313,26 @@ class MainActivity : AppCompatActivity(),
                 var trackContainer: TrackContainer? = null
                 try {
                     val track = LocusUtils.handleIntentTrackTools(act, intent)
-                    trackContainer = if(track.hasUndefinedWaypoints()){
-                            WaypointsRelatedTrackPreprocessing(
-                            track,
-                            debugMessages
-                    ).preprocess()
+                    trackContainer = if (track.hasUndefinedWaypoints()) {
+                        val message = "Track has undefined waypoints"
+                        Log.w(LOG_TAG_MAIN, message)
+                        debugMessages.add(message)
+                        WaypointsRelatedTrackPreprocessing(
+                                track,
+                                debugMessages
+                        ).preprocess()
                     } else {
-                        TrackContainer(track,TODO())
+                        val definedRteActionsToIndices = mutableMapOf<Point, Int>()
+                        track.waypoints.forEach { wpt ->
+                            if (wpt.paramRteIndex != -1)
+                                definedRteActionsToIndices[wpt] = wpt.paramRteIndex
+                            else {
+                                val message = "Unexpected paramRteIndex -1"
+                                Log.e(LOG_TAG_MAIN, message)
+                                debugMessages.add(message)
+                            }
+                        }
+                        TrackContainer(track, definedRteActionsToIndices)
                     }
 
                     // or inject a mock

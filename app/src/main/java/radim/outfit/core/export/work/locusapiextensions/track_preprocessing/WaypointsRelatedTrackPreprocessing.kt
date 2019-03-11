@@ -142,6 +142,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                 if (debugInPreprocess) debugMessages.add(debugMessage)
             }
         }
+
         if (DEBUG_MODE) {
             if (definedRteActions.size != definedRteActionsToShiftedIndices.size)
                 throw RuntimeException("definedRteActions.size != definedRteActionsToShiftedIndices.size")
