@@ -12,8 +12,8 @@ class Clustering(val debug: Boolean) {
 
     fun clusterize(track: Track): List<Cluster> {
         // k-clusters
-        val clusters = mutableListOf<Cluster>()
         val k = (track.points.size / clustersSize) + 1
+        val clusters = mutableListOf<Cluster>()
         val locationsCentroids = mutableSetOf<Location>()
         val locationToDistFromSelectedCentroids = mutableMapOf<Location, Double>()
         track.points.forEach { if (it != null) locationToDistFromSelectedCentroids[it] = Double.MAX_VALUE }
@@ -24,8 +24,10 @@ class Clustering(val debug: Boolean) {
             if (debug) Log.i(tag, "ADDING $centroid")
         }
 
-        //first
+        // first
         val middle = track.points.size / 2
+        
+        // TODO null safety
         var latestCentroid: Location = track.points[middle]
 
         addToClusters(latestCentroid)
@@ -61,14 +63,13 @@ class Clustering(val debug: Boolean) {
         // only updates locationToDistFromSelectedCentroids
         var farthest = latestCentroid
         var maxDist = 0.0
-        var oldDist: Double
         track.points.forEach { current ->
             if (current != null && !locationsCentroids.contains(current)) {
 
                 // first update (farthest first traversal)
                 // For each remaining not-yet-selected NodeEntity n, replace the distance stored
                 // for n by the minimum of its oldDist and the distance from latestCentroid to n.
-                oldDist = locationToDistFromSelectedCentroids[current] ?: Double.MAX_VALUE
+                val oldDist = locationToDistFromSelectedCentroids[current] ?: Double.MAX_VALUE
                 val update = Math.min(oldDist, computeDistanceFast(latestCentroid, current))
                 locationToDistFromSelectedCentroids[current] = update
 

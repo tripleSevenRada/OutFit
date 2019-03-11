@@ -31,6 +31,7 @@ import locus.api.android.ActionTools
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.export.work.*
+import radim.outfit.core.export.work.locusapiextensions.hasUndefinedWaypoints
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.WaypointsRelatedTrackPreprocessing
 import radim.outfit.core.share.work.*
@@ -306,10 +307,15 @@ class MainActivity : AppCompatActivity(),
             doAsync {
                 var trackContainer: TrackContainer? = null
                 try {
-                    trackContainer = WaypointsRelatedTrackPreprocessing(
-                            LocusUtils.handleIntentTrackTools(act, intent),
+                    val track = LocusUtils.handleIntentTrackTools(act, intent)
+                    trackContainer = if(track.hasUndefinedWaypoints()){
+                            WaypointsRelatedTrackPreprocessing(
+                            track,
                             debugMessages
                     ).preprocess()
+                    } else {
+                        TrackContainer(track,TODO())
+                    }
 
                     // or inject a mock
                     //trackContainer = getTrackOkNoCP()

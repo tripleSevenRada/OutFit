@@ -1,5 +1,6 @@
 package radim.outfit.core.export.work.locusapiextensions
 
+import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Location
 import locus.api.objects.extra.Track
 import locus.api.objects.extra.TrackStats
@@ -56,6 +57,9 @@ fun Track.hasAltitudeBounds(): Boolean {
     val boundsVals = listOf(this.stats.altitudeMin, this.stats.altitudeMax)
     return boundsVals.all{it > -100 && it < 9000} && allPoints
 }
+
+fun Track.hasUndefinedWaypoints(): Boolean =
+        this.waypoints.any{ it.parameterRteAction == PointRteAction.UNDEFINED }
 
 // lap properties
 fun Track.maxLat(): Double? = points.maxBy{it.latitude}?.latitude
