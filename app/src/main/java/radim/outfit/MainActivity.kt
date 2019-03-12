@@ -50,7 +50,7 @@ const val EXTRA_MESSAGE_FINISH = "start finish gracefully activity to explain wh
 const val EXTRA_MESSAGE_VIEW_RESULTS = "start view results activity with ViewResultParcel extra"
 
 // error codes:
-// 1 - 7
+// 1 - 8
 
 fun AppCompatActivity.getString(name: String): String {
     return try {
@@ -314,22 +314,23 @@ class MainActivity : AppCompatActivity(),
                 try {
                     val track = LocusUtils.handleIntentTrackTools(act, intent)
                     trackContainer = if (track.hasUndefinedWaypoints()) {
-                        val message = "Track has undefined waypoints"
-                        Log.w(LOG_TAG_MAIN, message)
-                        debugMessages.add(message)
+                        if(DEBUG_MODE){
+                            val message = "Track has undefined waypoints"
+                            Log.w(LOG_TAG_MAIN, message)
+                            debugMessages.add(message)
+                        }
                         WaypointsRelatedTrackPreprocessing(
                                 track,
                                 debugMessages
-                        ).preprocess()
+                        ).preprocess() // returns TrackContainer 
                     } else {
                         val definedRteActionsToIndices = mutableMapOf<Point, Int>()
                         track.waypoints.forEach { wpt ->
                             if (wpt.paramRteIndex != -1)
                                 definedRteActionsToIndices[wpt] = wpt.paramRteIndex
-                            else {
-                                val message = "Unexpected paramRteIndex -1"
-                                Log.e(LOG_TAG_MAIN, message)
-                                debugMessages.add(message)
+                            else if (DEBUG_MODE) {
+                                failMessage = "Unexpected paramRteIndex = -1 Error 8"
+                                doFail = true
                             }
                         }
                         TrackContainer(track, definedRteActionsToIndices)
