@@ -27,6 +27,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
     private val minDistConsider = 2.0
     private val debugInPreprocess = true
     private val tag = "WPTS preprocessing"
+    private val howManyClustersExamine = 5
 
     fun preprocess(): TrackContainer {
 
@@ -79,10 +80,10 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         val bagOfWpts = mutableSetOf<Point>()
         bagOfWpts.addAll(needToConstructNewLocation)
 
-        val n = 7 //how many closest locations to use as tree roots for insertion candidate
+        val n = 9 //how many closest locations to use as tree roots for insertion candidate
 
         needToConstructNewLocation.forEach {
-            if (insertProjectedLocations(it.location, n, lastKnownLocationToIndex)) {
+            if (insertProjectedLocations(it.location, n, lastKnownLocationToIndex, clusters)) {
                 bagOfWpts.remove(it)
             }
         }
@@ -111,7 +112,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                 val movedLoc = starIt.next()
                 movedLoc ?: break
                 if (computeDistanceFast(it.location, movedLoc) > MAX_DISTANCE_TO_CLIP_WP_TO_COURSE * 5) break
-                if (insertProjectedLocations(movedLoc, n, lastKnownLocationToIndex)) {
+                if (insertProjectedLocations(movedLoc, n, lastKnownLocationToIndex, clusters)) {
                     if (++inserted > 2) break
                 }
             }
@@ -158,11 +159,19 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         return TrackContainer(track, definedRteActionsToShiftedIndices)
     }
 
-    //TODO Big O
-    private fun insertProjectedLocations(location: Location, n: Int, locationToLastKnownIndex: MutableMap<Location, Int>): Boolean {
+    private fun insertProjectedLocations(location: Location,
+                                         n: Int,
+                                         locationToLastKnownIndex: MutableMap<Location, Int>,
+                                         clusters: MutableList<Cluster>
+    ): Boolean {
         var inserted = false
         // list of n closest locations in track, sorted by distance to param location
-        val closestLocations = getListOfClosestLocations(location, n)
+        val closestLocations = getListOfClosestLocations(location, clusters, n)
+
+        // TEST
+        // val closestLocationsRef = getListOfClosestLocationsTestReference(location, n)
+        // val same = compareLocationDistanceListTest(closestLocations, closestLocationsRef)
+
         val insertCandidates = mutableListOf<InsertCandidate>()
 
         closestLocations.forEach {
@@ -203,7 +212,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                 }
                 if (
                         tree.rightLoc != null &&
-                        computeDistanceFast(tree.rightLoc,location) > minDistConsider
+                        computeDistanceFast(tree.rightLoc, location) > minDistConsider
                 ) {
                     val A = tree.closestLoc
                     val B = tree.rightLoc
@@ -225,64 +234,56 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             val currentIndex = getCurrentIndexOf(it.locationToReplace, locationToLastKnownIndex)
             track.points.add(currentIndex, it.location)
             locationToLastKnownIndex[it.location] = currentIndex
+            val closestCluster = getClosestCluster(it.location, clusters)
+            closestCluster?.members?.add(it.location)
             if (debugInPreprocess) Log.i(tag, "Inserted Candidate $it")
             inserted = true
         }
         return inserted
     }
 
-    private object LocationDistanceComparator : Comparator<LocationDistance> {
-        override fun compare(o1: LocationDistance, o2: LocationDistance): Int =
-                o1.distanceToPoint.compareTo(o2.distanceToPoint)
+    private object DistanceProviderComparator: Comparator<DistanceProvider> {
+        override fun compare(dp0: DistanceProvider, dp1: DistanceProvider): Int =
+                dp0.getDistance().compareTo(dp1.getDistance())
     }
 
-    // not used
-    private object InsertCandidatesComparator : Comparator<InsertCandidate> {
-        override fun compare(c1: InsertCandidate, c2: InsertCandidate): Int =
-                c1.distanceToPoint.compareTo(c2.distanceToPoint)
+    private fun getListOfClosestLocations(
+            point: Location,
+            clusters: MutableList<Cluster>,
+            n: Int): List<LocationDistance> {
+
+        val clusterDistanceList = mutableListOf<ClusterDistance>()
+        clusters.forEach { clusterDistanceList.add(ClusterDistance(it, computeDistanceFast(it.centroid, point))) }
+        clusterDistanceList.sortWith(DistanceProviderComparator)
+
+        val topClusterDistances = if (clusterDistanceList.size < howManyClustersExamine) clusterDistanceList
+        else clusterDistanceList.subList(0, howManyClustersExamine)
+
+        val closestLocationDistanceList = mutableListOf<LocationDistance>()
+        topClusterDistances.flatMap { it.cluster.members }.forEach {
+            closestLocationDistanceList.add(LocationDistance(it, computeDistanceFast(it, point)))
+        }
+
+        closestLocationDistanceList.sortWith(DistanceProviderComparator)
+
+        return if (closestLocationDistanceList.size < n) closestLocationDistanceList
+        else closestLocationDistanceList.subList(0, n)
     }
 
-    private fun OLDgetListOfClosestLocations(waypoint: Location, n: Int): List<LocationDistance> {
+    // TEST REFERENCE, does not use clusters
+    private fun getListOfClosestLocationsTestReference(locationWpt: Location, n: Int): List<LocationDistance> {
         val locationDistanceList = mutableListOf<LocationDistance>()
-        for (i in track.points.indices) {
-            if (track.points[i] != null) {
-                locationDistanceList.add(
-                        LocationDistance(track.points[i],
-                                computeDistanceFast(track.points[i], waypoint)
-                        ))
-            }
-        }
-        locationDistanceList.sortWith(LocationDistanceComparator)
-        return if (n < locationDistanceList.size)
-            locationDistanceList.subList(0, n)
-        else locationDistanceList
+        track.points.forEach { locationDistanceList.add(LocationDistance(it, computeDistanceFast(it, locationWpt))) }
+        locationDistanceList.sortWith(DistanceProviderComparator)
+        return if (locationDistanceList.size < n) locationDistanceList
+        else locationDistanceList.subList(0, n)
     }
 
-
-
-
-    private fun getListOfClosestLocations(waypoint: Location, clusters: List<Cluster>, n: Int): List<LocationDistance>{
-
-        for (i in track.points.indices) {
-            if (track.points[i] != null) {
-                locationDistanceList.add(
-                        LocationDistance(track.points[i],
-                                computeDistanceFast(track.points[i], waypoint)
-                        ))
-            }
-        }
-        locationDistanceList.sortWith(LocationDistanceComparator)
-        return if (n < locationDistanceList.size)
-            locationDistanceList.subList(0, n)
-        else locationDistanceList
+    // TEST COMPARE
+    private fun compareLocationDistanceListTest(l1: List<LocationDistance>, l2: List<LocationDistance>): Boolean {
+        Log.w(tag, (" - ${l1.hashCode()} - ${l1.hashCode()} ${l1 == l2}"))
+        return l1 == l2
     }
-
-
-
-
-
-
-
 
     private fun getInsertCandidate(A: Location, B: Location, C: Location,
                                    desc: String, locationToReplace: Location): InsertCandidate? {
@@ -324,15 +325,15 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
     private fun getCurrentIndexOf(location: Location,
                                   LocationToLastKnownIndex: MutableMap<Location, Int>): Int {
-        val start = LocationToLastKnownIndex[location]?: return -1
-        if(track.points[start] === location) return start
+        val start = LocationToLastKnownIndex[location] ?: return -1
+        if (track.points[start] === location) return start
         var count = 1
-        while(true){
-            val rightInd = if(start + count <= track.points.lastIndex) start + count else return -1
-            if(track.points[rightInd] === location) {
+        while (true) {
+            val rightInd = if (start + count <= track.points.lastIndex) start + count else return -1
+            if (track.points[rightInd] === location) {
                 LocationToLastKnownIndex[location] = rightInd; return rightInd
             }
-            count ++
+            count++
         }
     }
 
@@ -393,9 +394,27 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
     }
 }
 
+interface DistanceProvider{
+    fun getDistance(): Double
+}
+// we want to call computeDistanceFast(from: Location, to: Location) only n times
+// not n*log(n) times during sorting
 data class LocationDistance(val location: Location,
-                            val distanceToPoint: Double)
+                            val distanceToPoint: Double): DistanceProvider{
+    override fun getDistance(): Double  = distanceToPoint
+}
+
+data class ClusterDistance(val cluster: Cluster,
+                           val distanceToPoint: Double): DistanceProvider{
+    override fun getDistance(): Double = distanceToPoint
+}
+
 data class TrackContainer(val track: Track, val definedRteActionsToShiftedIndices: Map<Point, Int>)
+
+
+
+
+
 
 // mocked stress test
 class InjectTestWaypoints(val track: Track) {

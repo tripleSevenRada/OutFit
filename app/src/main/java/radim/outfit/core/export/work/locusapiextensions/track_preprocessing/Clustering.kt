@@ -10,7 +10,7 @@ class Clustering(val debug: Boolean) {
     private val tag = "CLUSTERING"
     private val clustersSize = 60
 
-    fun clusterize(track: Track, debugMessages: MutableList<String>): List<Cluster> {
+    fun clusterize(track: Track, debugMessages: MutableList<String>): MutableList<Cluster> {
         // k-clusters
         val k = (track.points.size / clustersSize) + 1
         val clusters = mutableListOf<Cluster>()
@@ -43,7 +43,7 @@ class Clustering(val debug: Boolean) {
         //now attach all trackpoints to their closest clusters
         track.points.forEach { currentTrackpoint ->
             if(currentTrackpoint != null) {
-                val closestCluster = clusters.minBy { cluster -> computeDistanceFast(cluster.centroid, currentTrackpoint) }
+                val closestCluster = getClosestCluster(currentTrackpoint, clusters)
                 closestCluster?.members?.add(currentTrackpoint)
             }
         }
@@ -55,10 +55,6 @@ class Clustering(val debug: Boolean) {
             clusters.forEach { debugMessages.add("Cluster size: ${it.members.size}") }
         }
         return clusters
-    }
-
-    fun getClosestLocations(n: Int): List<Location> {
-        TODO()
     }
 
     // impl
@@ -89,5 +85,8 @@ class Clustering(val debug: Boolean) {
         return farthest
     }
 }
+
+fun getClosestCluster(location: Location, clusters: List<Cluster>)
+        = clusters.minBy { cluster -> computeDistanceFast(cluster.centroid, location) }
 
 data class Cluster(val centroid: Location, val members: MutableList<Location>)
