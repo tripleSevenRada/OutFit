@@ -30,7 +30,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
     fun preprocess(): TrackContainer {
 
-        val clusters = Clustering(debugInPreprocess).clusterize(track)
+        val clusters = Clustering(debugInPreprocess).clusterize(track, debugMessages)
 
         // needToConstructNewLocation have paramRteIndex = -1
         val needToConstructNewLocation: List<Point> =
@@ -242,7 +242,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                 c1.distanceToPoint.compareTo(c2.distanceToPoint)
     }
 
-    private fun getListOfClosestLocations(waypoint: Location, n: Int): List<LocationDistance> {
+    private fun OLDgetListOfClosestLocations(waypoint: Location, n: Int): List<LocationDistance> {
         val locationDistanceList = mutableListOf<LocationDistance>()
         for (i in track.points.indices) {
             if (track.points[i] != null) {
@@ -257,6 +257,32 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             locationDistanceList.subList(0, n)
         else locationDistanceList
     }
+
+
+
+
+    private fun getListOfClosestLocations(waypoint: Location, clusters: List<Cluster>, n: Int): List<LocationDistance>{
+
+        for (i in track.points.indices) {
+            if (track.points[i] != null) {
+                locationDistanceList.add(
+                        LocationDistance(track.points[i],
+                                computeDistanceFast(track.points[i], waypoint)
+                        ))
+            }
+        }
+        locationDistanceList.sortWith(LocationDistanceComparator)
+        return if (n < locationDistanceList.size)
+            locationDistanceList.subList(0, n)
+        else locationDistanceList
+    }
+
+
+
+
+
+
+
 
     private fun getInsertCandidate(A: Location, B: Location, C: Location,
                                    desc: String, locationToReplace: Location): InsertCandidate? {

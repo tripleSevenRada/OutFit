@@ -10,7 +10,7 @@ class Clustering(val debug: Boolean) {
     private val tag = "CLUSTERING"
     private val clustersSize = 60
 
-    fun clusterize(track: Track): List<Cluster> {
+    fun clusterize(track: Track, debugMessages: MutableList<String>): List<Cluster> {
         // k-clusters
         val k = (track.points.size / clustersSize) + 1
         val clusters = mutableListOf<Cluster>()
@@ -24,15 +24,10 @@ class Clustering(val debug: Boolean) {
             if (debug) Log.i(tag, "ADDING $centroid")
         }
 
-        // first
-        val middle = track.points.size / 2
-        
-        // TODO null safety
-        var latestCentroid: Location = track.points[middle]
+        // assume null is not comming from Locus
+        var latestCentroid: Location = track.points[track.points.size / 2]
 
         addToClusters(latestCentroid)
-
-        if (debug) Log.i(tag, "We want $k clusters from ${track.points.size} elements.")
 
         for (i in 1 until k) {
             val farthestLocation = getFarthestLocation(
@@ -43,11 +38,22 @@ class Clustering(val debug: Boolean) {
 
             latestCentroid = farthestLocation
             addToClusters(latestCentroid)
-
         }
 
-        if (debug) Log.i(tag, "Size: ${clusters.size}")
+        //now attach all trackpoints to their closest clusters
+        track.points.forEach { currentTrackpoint ->
+            if(currentTrackpoint != null) {
+                val closestCluster = clusters.minBy { cluster -> computeDistanceFast(cluster.centroid, currentTrackpoint) }
+                closestCluster?.members?.add(currentTrackpoint)
+            }
+        }
 
+        if (debug) {
+            debugMessages.add("We wanted $k clusters from ${track.points.size} elements.")
+            debugMessages.add("Actual size: ${clusters.size}")
+            clusters.forEach{ debugMessages.add ("<trkpt lat=\"${it.centroid.latitude}\" lon=\"${it.centroid.longitude}\">\n</trkpt>") }
+            clusters.forEach { debugMessages.add("Cluster size: ${it.members.size}") }
+        }
         return clusters
     }
 
@@ -76,8 +82,7 @@ class Clustering(val debug: Boolean) {
                 // Scan the list of not-yet-selected NodeEntities to find a NodeEntity farthest, that
                 // has the maximum distance from the selected Centroids (Locations)
                 if (update > maxDist) {
-                    maxDist = update
-                    farthest = current
+                    maxDist = update; farthest = current
                 }
             }
         }
