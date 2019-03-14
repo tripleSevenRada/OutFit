@@ -28,7 +28,6 @@ import kotlinx.android.synthetic.main.content_path.*
 import locus.api.android.utils.LocusInfo
 import radim.outfit.core.export.logic.*
 import locus.api.android.ActionTools
-import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Point
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -305,8 +304,14 @@ class MainActivity : AppCompatActivity(),
     private fun handleIntentTrackToolsMenu(act: AppCompatActivity,
                                            intent: Intent,
                                            viewModel: MainActivityViewModel) {
+
+        Log.i(LOG_TAG_MAIN, "handleIntentTrackToolsMenu main activity: $this")
+
+        if (viewModel.preprocessInProgress) {this.disableExecutive(); return}
+
         if (viewModel.trackContainer == null) {
-            disableExecutive()
+            viewModel.preprocessInProgress = true
+            this.disableExecutive()
             var doFail = false
             var failMessage = ""
             doAsync {
@@ -350,6 +355,7 @@ class MainActivity : AppCompatActivity(),
                     failMessage = "${e.localizedMessage} Error 5"
                 }
                 uiThread {
+                    viewModel.preprocessInProgress = false
                     if (doFail) {
                         fail.failGracefully(act, failMessage)
                         finish()
@@ -358,6 +364,7 @@ class MainActivity : AppCompatActivity(),
                             trackContainer.track.points != null &&
                             trackContainer.track.points.size > 0) {
                         // do work
+                        Log.i(LOG_TAG_MAIN, "uiThread: main activity: $it")
                         trackInit(trackContainer, act)
                         viewModel.trackContainer = trackContainer
                         enableExecutive(viewModel)
@@ -483,8 +490,8 @@ class MainActivity : AppCompatActivity(),
 
     private fun enableExecutive(viewModel: MainActivityViewModel) {
         if (DEBUG_MODE) Log.i(LOG_TAG_MAIN, "ENABLE_Executive; Activity: $this")
-        // enable executive UI if export is not running
-        if (!viewModel.exportInProgress) {
+        // enable executive UI if export is not running and preprocess is not running
+        if (!viewModel.exportInProgress && !viewModel.preprocessInProgress) {
             content_exportBTNExport?.isEnabled = true
             activity_mainPB?.visibility = ProgressBar.INVISIBLE
         }

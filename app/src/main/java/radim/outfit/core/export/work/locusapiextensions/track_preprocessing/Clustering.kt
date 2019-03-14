@@ -21,7 +21,7 @@ class Clustering(val debug: Boolean) {
         fun addToClusters(centroid: Location) {
             clusters.add(Cluster(centroid, mutableListOf()))
             locationsCentroids.add(centroid)
-            if (debug) Log.i(tag, "ADDING $centroid")
+            if (debug && clusters.size % 10 == 0) Log.i(tag, "ADDING $centroid")
         }
 
         // assume null is not comming from Locus

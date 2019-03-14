@@ -27,14 +27,15 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
     private val minDistConsider = 2.0
     private val debugInPreprocess = true
     private val tag = "WPTS preprocessing"
-    private val howManyClustersExamine = 5
+    private val howManyClustersExamine = 3
 
     fun preprocess(): TrackContainer {
 
-        val n = 9 //how many closest locations to use as tree roots for insertion candidate
+        val n = 7 //how many closest locations to use as tree roots for insertion candidate
 
         val clusters = Clustering(debugInPreprocess).clusterize(track, debugMessages)
 
+        // tests - as MutableLists
         // needToConstructNewLocation have paramRteIndex = -1
         val needToConstructNewLocation: List<Point> =
                 track.waypoints.filter { it != null && it.parameterRteAction == PointRteAction.UNDEFINED }
@@ -77,7 +78,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         //
 
         // mocked stress test
-        // needToConstructNewLocation.addAll(InjectTestWaypoints(track).getMockWaypointsWithinTrackBounds(10000))
+        // needToConstructNewLocation.addAll(InjectTestWaypoints(track).getMockWaypointsWithinTrackBounds(100))
 
         val bagOfWpts = mutableSetOf<Point>()
         bagOfWpts.addAll(needToConstructNewLocation)
@@ -101,20 +102,23 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
         // apply HEURISTICS on remaining WPTS in bagOfWpts
 
-        val bagOfWptsCopy = mutableSetOf<Point>()
-        bagOfWptsCopy.addAll(bagOfWpts)
-        bagOfWptsCopy.forEach {
-            val starIt = StarIterator(it.location)
-            var inserted = 0
-            for (i in 0 until 80) {
-                val movedLoc = starIt.next()
-                movedLoc ?: break
-                if (computeDistanceFast(it.location, movedLoc) > MAX_DISTANCE_TO_CLIP_WP_TO_COURSE * 5) break
-                if (insertProjectedLocations(movedLoc, n, lastKnownLocationToIndex, clusters)) {
-                    if (++inserted > 2) break
+        if(bagOfWpts.size > 0) {
+            val starIt = StarIterator(bagOfWpts.first().location)
+            val bagOfWptsCopy = mutableSetOf<Point>()
+            bagOfWptsCopy.addAll(bagOfWpts)
+            bagOfWptsCopy.forEach {
+                starIt.reset(it.location)
+                var inserted = 0
+                for (i in 0 until 80) {
+                    val movedLoc = starIt.next()
+                    movedLoc ?: break
+                    if (computeDistanceFast(it.location, movedLoc) > MAX_DISTANCE_TO_CLIP_WP_TO_COURSE * 5) break
+                    if (insertProjectedLocations(movedLoc, n, lastKnownLocationToIndex, clusters)) {
+                        if (++inserted > 2) break
+                    }
                 }
+                if (inserted > 0) bagOfWpts.remove(it)
             }
-            if (inserted > 0) bagOfWpts.remove(it)
         }
 
         if (debugInPreprocess) {
@@ -249,7 +253,6 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             point: Location,
             clusters: MutableList<Cluster>,
             n: Int): List<LocationDistance> {
-
         val clusterDistanceList = mutableListOf<ClusterDistance>()
         clusters.forEach { clusterDistanceList.add(ClusterDistance(it, computeDistanceFast(it.centroid, point))) }
         clusterDistanceList.sortWith(DistanceProviderComparator)
@@ -266,21 +269,6 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
         return if (closestLocationDistanceList.size < n) closestLocationDistanceList
         else closestLocationDistanceList.subList(0, n)
-    }
-
-    // STRESS TEST REFERENCE, does not use clusters
-    private fun getListOfClosestLocationsTestReference(locationWpt: Location, n: Int): List<LocationDistance> {
-        val locationDistanceList = mutableListOf<LocationDistance>()
-        track.points.forEach { locationDistanceList.add(LocationDistance(it, computeDistanceFast(it, locationWpt))) }
-        locationDistanceList.sortWith(DistanceProviderComparator)
-        return if (locationDistanceList.size < n) locationDistanceList
-        else locationDistanceList.subList(0, n)
-    }
-
-    // TEST COMPARE
-    private fun compareLocationDistanceListTest(l1: List<LocationDistance>, l2: List<LocationDistance>): Boolean {
-        Log.w(tag, (" - ${l1.hashCode()} - ${l1.hashCode()} ${l1 == l2}"))
-        return l1 == l2
     }
 
     private fun getInsertCandidate(A: Location, B: Location, C: Location,
@@ -390,6 +378,22 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                     "distanceToPoint: $distanceToPoint\n"
         }
     }
+
+    // STRESS TEST REFERENCE, does not use clusters
+    private fun getListOfClosestLocationsTestReference(locationWpt: Location, n: Int): List<LocationDistance> {
+        val locationDistanceList = mutableListOf<LocationDistance>()
+        track.points.forEach { locationDistanceList.add(LocationDistance(it, computeDistanceFast(it, locationWpt))) }
+        locationDistanceList.sortWith(DistanceProviderComparator)
+        return if (locationDistanceList.size < n) locationDistanceList
+        else locationDistanceList.subList(0, n)
+    }
+
+    // TEST COMPARE
+    private fun compareLocationDistanceListTest(l1: List<LocationDistance>, l2: List<LocationDistance>): Boolean {
+        Log.w(tag, (" - ${l1.hashCode()} - ${l1.hashCode()} ${l1 == l2}"))
+        return l1 == l2
+    }
+
 }
 
 interface DistanceProvider{
@@ -409,11 +413,6 @@ data class ClusterDistance(val cluster: Cluster,
 }
 
 data class TrackContainer(val track: Track, val definedRteActionsToShiftedIndices: Map<Point, Int>)
-
-
-
-
-
 
 // mocked stress test
 class InjectTestWaypoints(val track: Track) {

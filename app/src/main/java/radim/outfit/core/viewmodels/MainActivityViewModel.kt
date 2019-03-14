@@ -7,6 +7,7 @@ class MainActivityViewModel: ViewModel(){
 
     var exportInProgress = false
     var trackContainer: TrackContainer? = null
+    var preprocessInProgress = false
     var speedPickerFragmentShown = false
 
     //override fun onCleared() {
