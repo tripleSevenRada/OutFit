@@ -412,7 +412,9 @@ data class ClusterDistance(val cluster: Cluster,
     override fun getDistance(): Double = distanceToPoint
 }
 
-data class TrackContainer(val track: Track, val definedRteActionsToShiftedIndices: Map<Point, Int>)
+data class TrackContainer(val track: Track,
+                          val definedRteActionsToShiftedIndices: Map<Point, Int>,
+                          var failedMessage: String = "")
 
 // mocked stress test
 class InjectTestWaypoints(val track: Track) {

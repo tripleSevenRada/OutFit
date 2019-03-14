@@ -2,6 +2,7 @@ package radim.outfit
 
 import android.Manifest
 import android.app.Activity
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -28,13 +29,10 @@ import kotlinx.android.synthetic.main.content_path.*
 import locus.api.android.utils.LocusInfo
 import radim.outfit.core.export.logic.*
 import locus.api.android.ActionTools
-import locus.api.objects.extra.Point
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.export.work.*
-import radim.outfit.core.export.work.locusapiextensions.hasUndefinedWaypoints
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
-import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.WaypointsRelatedTrackPreprocessing
 import radim.outfit.core.share.work.*
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
@@ -147,7 +145,7 @@ class MainActivity : AppCompatActivity(),
     override fun getLengthInM(): Int {
         val viewModel =
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
-        val length = viewModel.trackContainer?.track?.stats?.totalLength
+        val length: Double? = viewModel.trackTotalLength
         return if (length == null) {
             // sanity check, should never happen
             FailGracefullyLauncher().failGracefully(this, "Null trackContainer length.")
@@ -159,7 +157,7 @@ class MainActivity : AppCompatActivity(),
     override fun getActivityType(): Int {
         val viewModel =
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
-        return viewModel.trackContainer?.track?.activityType ?: 100
+        return viewModel.activityType ?: 100
     }
     // SpeedPickerFragment interfaces impl END
 
@@ -193,6 +191,15 @@ class MainActivity : AppCompatActivity(),
 
         val viewModel =
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
+
+        // Create the observer of trackContainer
+        val trackContainerObserver = Observer<TrackContainer> { changed ->
+            // Action
+            changed?.let { onTrackContainerChanged(changed, viewModel) }
+        }
+
+        // Observe the LiveData, passing in this activity as the LifecycleOwner and the observer.
+        viewModel.trackContainer.observe(this, trackContainerObserver)
 
         simpleTimer = SimpleTimer(400, TimerCallback(viewModel))
         debugMessages.add("Debug:")
@@ -304,84 +311,27 @@ class MainActivity : AppCompatActivity(),
     private fun handleIntentTrackToolsMenu(act: AppCompatActivity,
                                            intent: Intent,
                                            viewModel: MainActivityViewModel) {
-
         Log.i(LOG_TAG_MAIN, "handleIntentTrackToolsMenu main activity: $this")
-
-        if (viewModel.preprocessInProgress) {this.disableExecutive(); return}
-
-        if (viewModel.trackContainer == null) {
-            viewModel.preprocessInProgress = true
-            this.disableExecutive()
-            var doFail = false
-            var failMessage = ""
-            doAsync {
-                var trackContainer: TrackContainer? = null
-                try {
-                    val track = LocusUtils.handleIntentTrackTools(act, intent)
-                    trackContainer = if (track.hasUndefinedWaypoints()) {
-                        if(DEBUG_MODE){
-                            val message = "Track has undefined waypoints"
-                            Log.w(LOG_TAG_MAIN, message)
-                            debugMessages.add(message)
-                        }
-                        WaypointsRelatedTrackPreprocessing(
-                                track,
-                                debugMessages
-                        ).preprocess() // returns TrackContainer 
-                    } else {
-                        val definedRteActionsToIndices = mutableMapOf<Point, Int>()
-                        track.waypoints.forEach { wpt ->
-                            if (wpt.paramRteIndex != -1)
-                                definedRteActionsToIndices[wpt] = wpt.paramRteIndex
-                            else if (DEBUG_MODE) {
-                                failMessage = "Unexpected paramRteIndex = -1 Error 8"
-                                doFail = true
-                            }
-                        }
-                        TrackContainer(track, definedRteActionsToIndices)
-                    }
-
-                    // or inject a mock
-                    //trackContainer = getTrackOkNoCP()
-                    //trackContainer = getTrackNullEndNoCP()
-                    //trackContainer = getTrackNullStartNoCP()
-                    //trackContainer = getTrackRandomNullsNoCP()
-
-                } catch (e: RequiredVersionMissingException) {
-                    doFail = true
-                    failMessage = "${act.getString("required_version_missing")} ${e.localizedMessage} Error 4"
-                } catch (e: Exception) {
-                    doFail = true
-                    failMessage = "${e.localizedMessage} Error 5"
-                }
-                uiThread {
-                    viewModel.preprocessInProgress = false
-                    if (doFail) {
-                        fail.failGracefully(act, failMessage)
-                        finish()
-                    }
-                    if (trackContainer != null &&
-                            trackContainer.track.points != null &&
-                            trackContainer.track.points.size > 0) {
-                        // do work
-                        Log.i(LOG_TAG_MAIN, "uiThread: main activity: $it")
-                        trackInit(trackContainer, act)
-                        viewModel.trackContainer = trackContainer
-                        enableExecutive(viewModel)
-                    } else {
-                        fail.failGracefully(act, " null - Error 6")
-                        finish()
-                    }
-                }
-            }
-        } else {
-            val trackContainer = viewModel.trackContainer
-            if (trackContainer != null) trackInit(trackContainer, act)
+        if (viewModel.trackContainerFinished) return
+        if (viewModel.preprocessInProgress) {
+            this.disableExecutive(); return
         }
+        this.disableExecutive()
+        viewModel.buildTrackContainer(act, intent, debugMessages)
     }
 
-    private fun trackInit(trackContainer: TrackContainer, act: AppCompatActivity) {
-        content_exportTVStatsData?.text = Stats().basicInfo(trackContainer.track, act)
+    private fun onTrackContainerChanged(newTrackContainer: TrackContainer, viewModel: MainActivityViewModel) {
+        if (newTrackContainer.failedMessage.isEmpty()) {
+            trackInit(newTrackContainer)
+        } else {
+            fail.failGracefully(this, newTrackContainer.failedMessage)
+            finish()
+        }
+        this.enableExecutive(viewModel)
+    }
+
+    private fun trackInit(trackContainer: TrackContainer) {
+        content_exportTVStatsData?.text = Stats().basicInfo(trackContainer.track, this)
         val filename = getFilename(trackContainer.track.name, getString("default_filename"))
         content_pathETFilename?.setText(filename)
         setTrack(trackContainer, exportListener)
