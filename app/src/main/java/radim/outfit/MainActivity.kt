@@ -29,15 +29,12 @@ import kotlinx.android.synthetic.main.content_path.*
 import locus.api.android.utils.LocusInfo
 import radim.outfit.core.export.logic.*
 import locus.api.android.ActionTools
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import radim.outfit.core.export.work.*
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import radim.outfit.core.share.work.*
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
 import radim.outfit.core.viewmodels.MainActivityViewModel
-import radim.outfit.debugdumps.writeTextFile
 import java.lang.RuntimeException
 
 const val LOG_TAG_MAIN = "MAIN"
@@ -45,9 +42,6 @@ const val REQUEST_CODE_OPEN_DIRECTORY = 9999
 const val REQUEST_CODE_PERM_WRITE_EXTERNAL = 7777
 const val EXTRA_MESSAGE_FINISH = "start finish gracefully activity to explain what happened"
 const val EXTRA_MESSAGE_VIEW_RESULTS = "start view results activity with ViewResultParcel extra"
-
-// error codes:
-// 1 - 8
 
 fun AppCompatActivity.getString(name: String): String {
     return try {
@@ -317,7 +311,7 @@ class MainActivity : AppCompatActivity(),
             this.disableExecutive(); return
         }
         this.disableExecutive()
-        viewModel.buildTrackContainer(act, intent, debugMessages)
+        viewModel.buildTrackContainer(intent, debugMessages)
     }
 
     private fun onTrackContainerChanged(newTrackContainer: TrackContainer, viewModel: MainActivityViewModel) {
@@ -346,43 +340,7 @@ class MainActivity : AppCompatActivity(),
 
         if (DEBUG_MODE) {
             //fire and forget writing log file
-            doAsync {
-                var savedOK = true
-                try {
-                    when (result) {
-                        is Result.Success -> {
-                            writeTextFile(File(result.fileDir.absolutePath +
-                                    File.separatorChar +
-                                    result.filename +
-                                    ".DEBUG_MODE.log"
-                            ), result.debugMessage)
-                        }
-                        is Result.Fail -> {
-                            if (result.fileDir != null &&
-                                    try {
-                                        result.fileDir.exists()
-                                    } catch (e: Exception) {
-                                        false
-                                    } &&
-                                    result.filename != null) {
-                                val rootPath = result.fileDir.absolutePath + File.separatorChar + result.filename
-                                writeTextFile(File("$rootPath.DEBUG_MODE.dump"), result.debugMessage)
-                                writeTextFile(File("$rootPath.error.dump"), result.errorMessage)
-                            } else {
-                                savedOK = false
-                                Log.e(LOG_TAG_MAIN, result.errorMessage.toString())
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    savedOK = false
-                }
-                uiThread {
-                    if (savedOK) toast(getString("logs_written"), Toast.LENGTH_SHORT)
-                    else toast(getString("logs_write_error"), Toast.LENGTH_SHORT)
-                }
-            }
+            writeLog(result, this)
         }
 
         when (result) {

@@ -1,24 +1,27 @@
 package radim.outfit.core.viewmodels
 
+import android.app.Application
+import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.ViewModel
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import locus.api.android.utils.LocusUtils
 import locus.api.android.utils.exceptions.RequiredVersionMissingException
 import locus.api.objects.extra.Point
-import org.jetbrains.anko.alert
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.DEBUG_MODE
 import radim.outfit.LOG_TAG_MAIN
+import radim.outfit.R
 import radim.outfit.core.export.work.locusapiextensions.hasUndefinedWaypoints
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.WaypointsRelatedTrackPreprocessing
-import radim.outfit.getString
 
-class MainActivityViewModel : ViewModel() {
+class MainActivityViewModel (application: Application): AndroidViewModel (application){
+
+    // Repository pattern? No need, IMO
+
+    val app = application
 
     var exportInProgress = false
     var trackContainerFinished = false
@@ -27,18 +30,18 @@ class MainActivityViewModel : ViewModel() {
 
     var trackContainer = MutableLiveData<TrackContainer>()
 
-    //TODO?
+    // Encapsulation?
     var trackTotalLength: Double? = null
     var activityType: Int? = null
 
-    fun buildTrackContainer(act: AppCompatActivity, intent: Intent, debugMessages: MutableList<String>) {
+    fun buildTrackContainer(intent: Intent, debugMessages: MutableList<String>) {
         preprocessInProgress = true
 
         var failMessage = ""
         doAsync {
             var trackContainerBuilt: TrackContainer? = null
             try {
-                val track = LocusUtils.handleIntentTrackTools(act, intent)
+                val track = LocusUtils.handleIntentTrackTools(app, intent)
                 trackContainerBuilt = if (track.hasUndefinedWaypoints()) {
                     if (DEBUG_MODE) {
                         val message = "Track has undefined waypoints"
@@ -68,7 +71,7 @@ class MainActivityViewModel : ViewModel() {
                 //trackContainer = getTrackRandomNullsNoCP()
 
             } catch (e: RequiredVersionMissingException) {
-                failMessage = "${act.getString("required_version_missing")} ${e.localizedMessage} Error 4"
+                failMessage = "${app.getString(R.string.required_version_missing)} ${e.localizedMessage} Error 4" //"required_version_missing"
             } catch (e: Exception) {
                 failMessage = "${e.localizedMessage} Error 5"
             }
