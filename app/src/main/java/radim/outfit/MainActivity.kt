@@ -397,7 +397,7 @@ class MainActivity : AppCompatActivity(),
                             writeTextFile(File(result.fileDir.absolutePath +
                                     File.separatorChar +
                                     result.filename +
-                                    ".DEBUG_MODE.dump"
+                                    ".DEBUG_MODE.log"
                             ), result.debugMessage)
                         }
                         is Result.Fail -> {

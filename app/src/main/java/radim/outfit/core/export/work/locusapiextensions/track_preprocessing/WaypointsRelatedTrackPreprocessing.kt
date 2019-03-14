@@ -31,6 +31,8 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
     fun preprocess(): TrackContainer {
 
+        val n = 9 //how many closest locations to use as tree roots for insertion candidate
+
         val clusters = Clustering(debugInPreprocess).clusterize(track, debugMessages)
 
         // needToConstructNewLocation have paramRteIndex = -1
@@ -80,8 +82,6 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         val bagOfWpts = mutableSetOf<Point>()
         bagOfWpts.addAll(needToConstructNewLocation)
 
-        val n = 9 //how many closest locations to use as tree roots for insertion candidate
-
         needToConstructNewLocation.forEach {
             if (insertProjectedLocations(it.location, n, lastKnownLocationToIndex, clusters)) {
                 bagOfWpts.remove(it)
@@ -93,15 +93,13 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             debugMessages.add(debugMessage)
             Log.i(tag, debugMessage)
             bagOfWpts.forEach { debugMessages.add(" -- ${locationStringDescriptionSimple(it.location)}\n") }
-        }
 
-        // apply HEURISTICS on remaining WPTS in bagOfWpts
-
-        if (debugInPreprocess) {
             val message1 = "HEURISTICS bagOfWpts.size: ${bagOfWpts.size}"
             debugMessages.add(message1)
             Log.w(tag, message1)
         }
+
+        // apply HEURISTICS on remaining WPTS in bagOfWpts
 
         val bagOfWptsCopy = mutableSetOf<Point>()
         bagOfWptsCopy.addAll(bagOfWpts)
@@ -270,7 +268,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         else closestLocationDistanceList.subList(0, n)
     }
 
-    // TEST REFERENCE, does not use clusters
+    // STRESS TEST REFERENCE, does not use clusters
     private fun getListOfClosestLocationsTestReference(locationWpt: Location, n: Int): List<LocationDistance> {
         val locationDistanceList = mutableListOf<LocationDistance>()
         track.points.forEach { locationDistanceList.add(LocationDistance(it, computeDistanceFast(it, locationWpt))) }
@@ -397,6 +395,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 interface DistanceProvider{
     fun getDistance(): Double
 }
+
 // we want to call computeDistanceFast(from: Location, to: Location) only n times
 // not n*log(n) times during sorting
 data class LocationDistance(val location: Location,
