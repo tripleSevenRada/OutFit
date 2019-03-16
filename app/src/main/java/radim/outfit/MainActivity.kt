@@ -295,8 +295,12 @@ class MainActivity : AppCompatActivity(),
             if (state == BluetoothAdapter.STATE_OFF) {
                 Log.w("onCreateMain", "onCreate BT STATE OFF")
                 val checkboxInShare = sharedPreferences.getBoolean((getString("checkbox_cciq")), true)
-                if (checkboxInShare)
+                val viewModel =
+                        ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
+                if (checkboxInShare && viewModel.btWarningShownCounter < 3) {
                     Toast.makeText(this, getString("bt_may_be_needed"), Toast.LENGTH_LONG).show()
+                    viewModel.btWarningShownCounter ++
+                }
             }
         }
     }

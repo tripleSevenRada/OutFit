@@ -6,7 +6,8 @@ import locus.api.objects.extra.Location
 class StarIterator(baseLocInit: Location){
 
     private val tag = "StarIterator"
-    private val expectedStepInM = 80.0
+    private val expectedStepInM = 65.0
+    private val layers = 6
     private var baseLoc: Location
 
     init {
@@ -27,7 +28,7 @@ class StarIterator(baseLocInit: Location){
         val additionLat = layer * indicesLat[index] * stepLat
         val additionLon = layer * indicesLon[index] * stepLon
         count++
-        return if(count > 80) null else Location(baseLoc.latitude + additionLat, baseLoc.longitude + additionLon)
+        return if(count > indicesLat.size * layers) null else Location(baseLoc.latitude + additionLat, baseLoc.longitude + additionLon)
     }
 
     fun reset(newLocation: Location){
@@ -36,12 +37,12 @@ class StarIterator(baseLocInit: Location){
     }
 
     private fun setUpSteps(){
-        val stepIncrement = 0.00005
+        val stepIncrement = 0.000025
         val baseLat = baseLoc.latitude
         val baseLon = baseLoc.longitude
         var latDone = false
         var lonDone = false
-        for (i in 1..60){
+        for (i in 1..180){
             val angleIncremented = stepIncrement * i
             if(!latDone) {
                 val locMovedLat = Location(baseLat + angleIncremented, baseLon)

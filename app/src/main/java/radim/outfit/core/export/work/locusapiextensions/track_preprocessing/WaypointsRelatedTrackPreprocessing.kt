@@ -7,7 +7,6 @@ import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
 import locus.api.objects.utils.LocationCompute.computeDistanceFast
 import radim.outfit.DEBUG_MODE
-import radim.outfit.core.export.work.MAX_DISTANCE_TO_CLIP_WP_TO_COURSE
 import radim.outfit.core.export.work.locusapiextensions.StarIterator
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.LocationStringDump.locationStringDescriptionSimple
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.PointStringDump
@@ -109,10 +108,9 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             bagOfWptsCopy.forEach {
                 starIt.reset(it.location)
                 var inserted = 0
-                for (i in 0 until 80) {
+                for (i in 0 until 100) {
                     val movedLoc = starIt.next()
                     movedLoc ?: break
-                    if (computeDistanceFast(it.location, movedLoc) > MAX_DISTANCE_TO_CLIP_WP_TO_COURSE * 5) break
                     if (insertProjectedLocations(movedLoc, n, lastKnownLocationToIndex, clusters)) {
                         if (++inserted > 2) break
                     }
@@ -335,7 +333,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
     // https://discuss.kotlinlang.org/t/how-to-write-generic-functions-for-all-numeric-types/7367
     // There’s no completely satisfactory way to write generic functions for all numeric types.
-    // val double = linearInterpolatorGeneric(1.0, 2.0, 0.5)
+    // val double = linearInterpolatorGeneric(1.0, 2.0, 0.5) // returns 1.5
     @Suppress("Unchecked_cast")
     private fun <T> linearInterpolatorGeneric(A: T, B: T, coef: Double): T where T : Number {
         return if (A is Double && B is Double) (A + ((B - A) * coef)) as T

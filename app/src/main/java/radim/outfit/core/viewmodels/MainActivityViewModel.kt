@@ -28,6 +28,8 @@ class MainActivityViewModel (application: Application): AndroidViewModel (applic
     var preprocessInProgress = false
     var speedPickerFragmentShown = false
 
+    var btWarningShownCounter = 0
+
     var trackContainer = MutableLiveData<TrackContainer>()
 
     // Encapsulation?
