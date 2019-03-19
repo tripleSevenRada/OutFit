@@ -24,7 +24,7 @@ import kotlin.math.roundToLong
 class WaypointsRelatedTrackPreprocessing(private val track: Track, private val debugMessages: MutableList<String>) {
 
     private val minDistConsider = 2.0
-    private val debugInPreprocess = true
+    private val debugInPreprocess = false
     private val tag = "WPTS preprocessing"
     private val howManyClustersExamine = 3
 
