@@ -15,6 +15,9 @@ import android.support.v4.app.DialogFragment
 import android.support.v4.content.FileProvider
 import android.text.SpannableStringBuilder
 import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.widget.ProgressBar
 import kotlinx.android.synthetic.main.content_stats.*
 import android.view.View
@@ -54,6 +57,29 @@ class ViewResultsActivity : AppCompatActivity(),
     private var shareFitReady = false
     private val btBroadcastReceiver = BTBroadcastReceiver()
 
+    // Menu START
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.view_results, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+            R.id.explain_waypoints -> {
+                startActivity(Intent(this, ExplainWaypointsActivity::class.java))
+                true
+            }
+            R.id.share_standard -> {
+                shareCourse()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+    // Menu END
+
     fun onCheckBoxCCIQClicked(checkboxCCIQ: View) {
         if (checkboxCCIQ is CheckBox) {
             setCheckBoxStatus(checkboxCCIQ.isChecked)
@@ -73,6 +99,8 @@ class ViewResultsActivity : AppCompatActivity(),
         setContentView(R.layout.activity_view_results)
 
         supportActionBar?.title = getString("activity_view_results_label")
+
+        content_connectiqTVTextBoxInfo.text = "All Connect IQ apps require a manifest file."
 
         content_connectiqCHCKBOX.isChecked = this.getSharedPreferences(
                 getString(R.string.main_activity_preferences),
@@ -357,6 +385,12 @@ class ViewResultsActivity : AppCompatActivity(),
     private val spannedDeviceDisplay = SpannedDeviceDisplay()
 
     private fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus) {
+
+        // IQDevice.IQDeviceStatus.NOT_CONNECTED
+        // IQDevice.IQDeviceStatus.CONNECTED
+        // IQDevice.IQDeviceStatus.NOT_PAIRED
+        // IQDevice.IQDeviceStatus.UNKNOWN
+
         spannedDeviceDisplay.onDeviceEvent(device, status, getViewModel())
         if (DEBUG_MODE) Log.i(tag, "onDeviceEvent display after call ${device.friendlyName} $status")
         content_connectiqTVDevicesData.text = spannedDeviceDisplay.getDisplay()
@@ -416,7 +450,7 @@ class ViewResultsActivity : AppCompatActivity(),
     }
     // INDICATOR END
 
-    fun shareCourse(v: View?) {
+    fun shareCourse() {
         if (!shareFitReady) return
         val viewModel = getViewModel()
         val fileToShare: File? = viewModel.bufferHead

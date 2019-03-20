@@ -125,6 +125,9 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
     <!-- menu -->
     <string name="menu_custom_waypoints">Uživatelské wpts.</string>
 
+    <!-- menu view_results-->
+    <string name="menu_share_standard">Sdílet mimo CIQ</string>
+
     <!-- ExplainWaypointsActivity -->
     <string name="activity_explain_waypoints_label">OUT FIT - coursepointy</string>
 

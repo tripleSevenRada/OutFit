@@ -40,6 +40,8 @@
         android:id="@+id/content_pathETFilename"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/custom_side_margins"
+        android:layout_marginEnd="@dimen/custom_side_margins"
         android:layout_marginTop="2dp"
         android:importantForAutofill="no"
         android:hint="@string/filename_hint"

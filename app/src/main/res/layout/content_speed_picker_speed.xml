@@ -14,15 +14,23 @@
         android:layout_marginTop="@dimen/speed_picker_margin"
         android:layout_marginEnd="@dimen/speed_picker_margin"
         android:text="@string/frag_label_speed" />
-    <TextView
-        android:id="@+id/content_speed_picker_speedTVActivityType"
+
+    <LinearLayout
+        android:id="@+id/content_speed_picker_speedTVActivityTypeHeightDefinedWrapper"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        style="@style/labelTextViewSmall"
-        android:layout_marginStart="@dimen/speed_picker_margin"
-        android:layout_marginEnd="@dimen/speed_picker_margin"
-        android:layout_marginTop="@dimen/speed_picker_margin"
-        android:layout_marginBottom="@dimen/speed_picker_margin" />
+        android:layout_height="28dp"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/content_speed_picker_speedTVActivityType"
+            style="@style/labelTextViewSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/speed_picker_margin"
+            android:layout_marginEnd="@dimen/speed_picker_margin" />
+
+    </LinearLayout>
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/content_speed_picker_speedLLHorizontalWrapper"
@@ -34,10 +42,10 @@
             android:id="@+id/content_speed_picker_speedNPSpeed"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:descendantFocusability="blocksDescendants"
             android:layout_marginStart="@dimen/speed_picker_margin"
             android:layout_marginTop="@dimen/speed_picker_margin"
-            android:layout_marginBottom="@dimen/speed_picker_margin" />
+            android:layout_marginBottom="@dimen/speed_picker_margin"
+            android:descendantFocusability="blocksDescendants" />
 
         <RadioGroup
             android:id="@+id/content_speed_picker_speedRGSpeedSelection"

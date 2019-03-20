@@ -1,6 +1,5 @@
 package radim.outfit.core.share.work
 
-import android.arch.lifecycle.ViewModel
 import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.text.Spannable
@@ -13,18 +12,20 @@ import com.garmin.android.connectiq.IQDevice
 import radim.outfit.core.viewmodels.ViewResultsActivityViewModel
 import radim.outfit.getString
 
+val deviceStatusToColor: Map<IQDevice.IQDeviceStatus, Int> = mapOf(
+        IQDevice.IQDeviceStatus.CONNECTED to Color.GREEN,
+        IQDevice.IQDeviceStatus.NOT_CONNECTED to Color.RED,
+        IQDevice.IQDeviceStatus.NOT_PAIRED to Color.BLACK,
+        IQDevice.IQDeviceStatus.UNKNOWN to Color.BLACK
+)
+
 class SpannedDeviceDisplay {
 
     private var devicesIdsOrder = mutableListOf<Long>()
     private val devicesIdsToSpannable = mutableMapOf<Long, SpannableString>()
     private val tag = "spannDisplay"
 
-    private val deviceStatusToColor: Map<IQDevice.IQDeviceStatus, Int> = mapOf(
-            IQDevice.IQDeviceStatus.CONNECTED to Color.GREEN,
-            IQDevice.IQDeviceStatus.NOT_CONNECTED to Color.RED,
-            IQDevice.IQDeviceStatus.NOT_PAIRED to Color.BLACK,
-            IQDevice.IQDeviceStatus.UNKNOWN to Color.BLACK
-    )
+
     private val appStatusToColor: Map<IQApp.IQAppStatus, Int> = mapOf(
             IQApp.IQAppStatus.INSTALLED to Color.GREEN,
             IQApp.IQAppStatus.NOT_INSTALLED to Color.RED,

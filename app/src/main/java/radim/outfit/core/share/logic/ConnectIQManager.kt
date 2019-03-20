@@ -27,8 +27,8 @@ class ConnectIQManager(
     private val connectionType = ConnectIQ.IQConnectType.WIRELESS
     private val connectIQ: ConnectIQ = ConnectIQ.getInstance(ctx, connectionType)
     private val connectIQListener: ConnectIQ.ConnectIQListener = ConnectIQLifecycleListener()
-    private val companionAppId = ""
-    private val companionAppRequiredVersion = 100
+    private val companionAppId = "8c055fc4-ec4b-455b-a106-822f8bb340de"
+    private val companionAppRequiredVersion = 1
 
     private var connectIQIsInitialized = false
     private var connectIQIsBeingInitialized = false
@@ -189,6 +189,7 @@ class ConnectIQManager(
                                     if (DEBUG_MODE) {
                                         Log.w(tag, "my current required version is: $companionAppRequiredVersion")
                                         Log.w(tag, "detected app version on $device: ${app.version()}")
+                                        Log.w(tag, "app id: ${app.applicationId}")
                                     }
                                 }
                                 if (DEBUG_MODE) {
@@ -197,16 +198,29 @@ class ConnectIQManager(
                                     Log.w(tag, "device friendlyName: ${device.friendlyName}")
                                     Log.w(tag, "device status: ${device.status}")
                                 }
+
+                                /*
+                                // CIQ app detection does not seem to work reliably on different setups
                                 onAppEvent(device, app.status)
                                 if (app.status == IQApp.IQAppStatus.INSTALLED) {
                                     if (!firstINFITReported) onFirstINFITDetected(getFriendlyName(device))
                                     firstINFITReported = true
                                 }
+                                */
+
                             }
                         }
                     }
 
                     override fun onApplicationNotInstalled(applicationId: String) {
+
+                        if (DEBUG_MODE) {
+                            Log.w(tag, "app not installed on ${device.friendlyName}")
+                            Log.w(tag, "id: $applicationId")
+                        }
+
+                        /*
+                        // CIQ app detection does not seem to work reliably on different setups
                         // Prompt user with information only if not disabled by Never ask again
                         val prefs = ctx.getSharedPreferences(
                                 ctx.getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
@@ -238,8 +252,8 @@ class ConnectIQManager(
                             mListener.setDialogType(DialogType.NotInstalled("say not installed"))
                             showDialog(dialog)
                         }
-                        if (DEBUG_MODE) Log.w(tag, "app not installed on ${device.friendlyName}")
                         onAppEvent(device, IQApp.IQAppStatus.NOT_INSTALLED)
+                        */
                     }
 
                     fun getFriendlyName(deviceToQuery: IQDevice): String {

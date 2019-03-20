@@ -16,6 +16,16 @@ import android.widget.RadioButton
 import android.widget.TextView
 import radim.outfit.core.export.work.*
 import java.lang.Exception
+import android.content.Context.WINDOW_SERVICE
+import android.content.res.Configuration
+import android.support.v4.content.ContextCompat.getSystemService
+import android.view.WindowManager
+import android.view.Display
+import kotlinx.android.synthetic.main.content_speed_picker_duration.*
+import android.util.TypedValue
+
+
+
 
 const val DEFAULT_UNITS_RADIO_BUTTON_ID = R.id.content_speed_picker_speedBTNKmh
 
@@ -229,6 +239,23 @@ class SpeedPickerFragment : DialogFragment() {
             Log.e("SPF", "Init error...")
         }
         return mView
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val currentOrientation = resources.configuration.orientation
+        val params = content_speed_picker_durationLLSpacer?.layoutParams
+        if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+            // Landscape
+            val dip = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                    28.toFloat(), resources.displayMetrics).toInt()
+            params?.height = dip
+        } else {
+            // Portrait
+            val dip = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                    8.toFloat(), resources.displayMetrics).toInt()
+            params?.height = dip
+        }
     }
 
     override fun onDismiss(dialog: DialogInterface?) {

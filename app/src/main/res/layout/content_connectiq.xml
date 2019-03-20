@@ -2,24 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/content_connectiqLLTopLevel"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical">
-
-    <Button
-        android:id="@+id/content_connectiqBTNShareCourse"
-        style="@style/customButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:onClick="shareCourse"
-        android:text="@string/btn_share_course" />
-
-    <View
-        android:id="@+id/content_connectiqVIEWDivider"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="16dp"
-        android:background="?android:attr/listDivider" />
 
     <LinearLayout
         android:id="@+id/content_connectiqLLLogoCheckboxHorizontal"
@@ -39,26 +23,28 @@
 
         <CheckBox
             android:id="@+id/content_connectiqCHCKBOX"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="16dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="onCheckBoxCCIQClicked"/>
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="16dp"
+            android:onClick="onCheckBoxCCIQClicked" />
 
         <ImageView
             android:id="@+id/content_connectiqBTIcon"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="16dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="16dp"
             android:contentDescription="@string/bluetooth_status_icon" />
 
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/content_connectiqLLIndicatorHorizontal"
+        android:layout_marginStart="@dimen/custom_side_margins"
+        android:layout_marginEnd="@dimen/custom_side_margins"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="2dp"
         android:layout_marginTop="2dp"
         android:orientation="horizontal">
 
@@ -86,36 +72,57 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/content_connectiqLLGroupDevicecVertical"
+        android:id="@+id/content_connectiqLLTextBoxInfoWrapper"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="32"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:baselineAligned="false"
+        android:orientation="vertical" >
 
-        <TextView
-            android:id="@+id/content_connectiqTVDevicesLabel"
-            style="@style/labelTextView"
+        <LinearLayout
+            android:id="@+id/content_connectiqLLTextBoxInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/found_devices_label"
-            android:textColor="@color/black" />
-
-        <ScrollView
-            android:id="@+id/content_connectiqSCRLVIEWDevices"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/content_connectiqTVDevicesData"
+                android:id="@+id/content_connectiqTVTextBoxInfo"
                 style="@style/mainTextView"
-                android:textSize="14sp"
+                android:layout_marginTop="16dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/content_connectiqLLGroupDevicesVertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/content_connectiqTVDevicesLabel"
+                style="@style/labelTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp" />
+                android:layout_marginTop="16dp"
+                android:text="@string/found_devices_label"
+                android:textColor="@color/black" />
 
-        </ScrollView>
+            <ScrollView
+                android:id="@+id/content_connectiqSCRLVIEWDevices"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
+                <TextView
+                    android:id="@+id/content_connectiqTVDevicesData"
+                    style="@style/mainTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textSize="14sp" />
+
+            </ScrollView>
+
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

@@ -51,7 +51,7 @@ fun AppCompatActivity.getString(name: String): String {
     }
 }
 
-const val DEBUG_MODE = false
+const val DEBUG_MODE = true
 
 class MainActivity : AppCompatActivity(),
         TriggerActionProvider,

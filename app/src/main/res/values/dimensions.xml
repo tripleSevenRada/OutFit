@@ -3,4 +3,5 @@
     <dimen name="speed_picker_margin">8dp</dimen>
     <dimen name="speed_picker_margin_left_of_radio_buttons">12dp</dimen>
     <dimen name="explain_waypoints_side_margins">24dp</dimen>
+    <dimen name="custom_side_margins">6dp</dimen>
 </resources>

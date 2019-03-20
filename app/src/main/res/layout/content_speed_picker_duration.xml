@@ -14,11 +14,16 @@
         android:layout_marginEnd="@dimen/speed_picker_margin"
         android:text="@string/frag_label_time_to_complete_course" />
 
+    <LinearLayout
+        android:id="@+id/content_speed_picker_durationLLSpacer"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="8dp"/>
+
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/content_speed_picker_durationLLWrapperHorizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/speed_picker_margin"
         android:layout_marginBottom="@dimen/speed_picker_margin"
         android:orientation="horizontal">
 
@@ -26,6 +31,7 @@
             android:id="@+id/content_speed_picker_durationNPHours"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/speed_picker_margin"
             android:descendantFocusability="blocksDescendants"
             android:layout_marginStart="@dimen/speed_picker_margin" />
 
@@ -41,6 +47,7 @@
             android:id="@+id/content_speed_picker_durationNPMinutes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/speed_picker_margin"
             android:descendantFocusability="blocksDescendants"
             android:layout_marginStart="@dimen/speed_picker_margin" />
 
