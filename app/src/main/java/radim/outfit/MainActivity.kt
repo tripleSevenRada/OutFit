@@ -282,7 +282,7 @@ class MainActivity : AppCompatActivity(),
 
         if (LocusUtils.isIntentTrackTools(this.intent)) {
             // event performed if user tap on your app icon in tools menu of 'Track'
-            handleIntentTrackToolsMenu(this, this.intent, viewModel)
+            handleIntentTrackToolsMenu(this.intent, viewModel)
         }
     }
 
@@ -306,8 +306,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     // isIntentTrackTools(intent) = true
-    private fun handleIntentTrackToolsMenu(act: AppCompatActivity,
-                                           intent: Intent,
+    private fun handleIntentTrackToolsMenu(intent: Intent,
                                            viewModel: MainActivityViewModel) {
         Log.i(LOG_TAG_MAIN, "handleIntentTrackToolsMenu main activity: $this")
         if (viewModel.trackContainerFinished) return

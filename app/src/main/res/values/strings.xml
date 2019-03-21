@@ -81,8 +81,10 @@
 
     <string name="est_download_time">Estimated ConnectIQ download time:</string>
 
-    <!-- ViewResultsActivity toasts -->
-    <string name="firstINFITReported">Please keep OUT FIT in foreground and use IN FIT on</string>
+    <!-- ViewResultsActivity-->
+    <string name="how_to_use_infit">Please keep OUT FIT in foreground for and use IN FIT on</string>
+    <string name="try_to_get_a_device_connected">Try to get a CIQ device connected.</string>
+    <string name="ciq_service_off">CIQ service is off.</string>
 
     <!-- Locus dir pick-->
     <string name="pick_dir_message">Select export folder</string>

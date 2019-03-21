@@ -14,37 +14,51 @@
         android:layout_marginTop="16dp"
         android:text="@string/root_folder_label" />
 
-    <TextView
-        android:id="@+id/content_pathTVRootDirPath"
-        style="@style/mainTextView"
+    <ScrollView
+        android:id="@+id/content_pathSV"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp" />
+        android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/content_pathBTNDirPick"
-        style="@style/customButton"
-        android:layout_marginTop="16dp"
-        android:onClick="directoryPick"
-        android:text="@string/btn_directory_picker" />
+        <LinearLayout
+            android:id="@+id/content_pathLLScrollable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/blueBackground"
+            android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/content_pathTVFilenameLabel"
-        style="@style/labelTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/filename_label" />
+            <TextView
+                android:id="@+id/content_pathTVRootDirPath"
+                style="@style/mainTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp" />
 
-    <EditText
-        android:id="@+id/content_pathETFilename"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/custom_side_margins"
-        android:layout_marginEnd="@dimen/custom_side_margins"
-        android:layout_marginTop="2dp"
-        android:importantForAutofill="no"
-        android:hint="@string/filename_hint"
-        android:inputType="text" />
+            <Button
+                android:id="@+id/content_pathBTNDirPick"
+                style="@style/customButton"
+                android:layout_marginTop="16dp"
+                android:onClick="directoryPick"
+                android:text="@string/btn_directory_picker" />
 
+            <TextView
+                android:id="@+id/content_pathTVFilenameLabel"
+                style="@style/labelTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/filename_label" />
+
+            <EditText
+                android:id="@+id/content_pathETFilename"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/custom_side_margins"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="@dimen/custom_side_margins"
+                android:hint="@string/filename_hint"
+                android:importantForAutofill="no"
+                android:inputType="text" />
+
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

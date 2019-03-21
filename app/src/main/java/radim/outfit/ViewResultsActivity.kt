@@ -56,6 +56,7 @@ class ViewResultsActivity : AppCompatActivity(),
     private lateinit var connectIQManager: ConnectIQManager
     private var shareFitReady = false
     private val btBroadcastReceiver = BTBroadcastReceiver()
+    private val seenDevices: MutableMap<IQDevice, IQDevice.IQDeviceStatus> = mutableMapOf()
 
     // Menu START
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -301,6 +302,7 @@ class ViewResultsActivity : AppCompatActivity(),
             indicatorIQTimer.stop()
             if (::indicatorIQTimerCallback.isInitialized) indicatorIQTimerCallback.restart(View.VISIBLE)
         }
+        content_connectiqTVTextBoxInfo.text = getString("ciq_service_off")
         content_connectiqTVDevicesData.text = ""
     }
 
@@ -328,6 +330,7 @@ class ViewResultsActivity : AppCompatActivity(),
         indicatorIQTimerCallback = IndicatorIQTimerCallback()
         indicatorIQTimer = SimpleTimer(220, indicatorIQTimerCallback)
         indicatorIQTimer.start()
+        content_connectiqTVTextBoxInfo.text = getString("try_to_get_a_device_connected")
     }
     // ConnectIQ init loop END
 
@@ -391,6 +394,28 @@ class ViewResultsActivity : AppCompatActivity(),
         // IQDevice.IQDeviceStatus.NOT_PAIRED
         // IQDevice.IQDeviceStatus.UNKNOWN
 
+        seenDevices[device] = status
+        val connected: Map<IQDevice, IQDevice.IQDeviceStatus> =
+                seenDevices.filter { it.value == IQDevice.IQDeviceStatus.CONNECTED }
+        if(connected.isNotEmpty()){
+            // compose and display message saying "Use INFIT on these devices"
+            val coreMessage = this.getString("how_to_use_infit")
+            val devicesMessageStringBuilder = StringBuilder()
+            var count = 0
+            val lastItem = connected.size - 1
+            connected.forEach{
+                devicesMessageStringBuilder.append(" ").append(it.key.friendlyName)
+                if(count < lastItem) devicesMessageStringBuilder.append(",")
+                count++
+            }
+            val message = "$coreMessage$devicesMessageStringBuilder"
+            content_connectiqTVTextBoxInfo.text = message
+        } else {
+            // compose and display message saying "Connect a device"
+            content_connectiqTVTextBoxInfo.text = getString("try_to_get_a_device_connected")
+        }
+
+
         spannedDeviceDisplay.onDeviceEvent(device, status, getViewModel())
         if (DEBUG_MODE) Log.i(tag, "onDeviceEvent display after call ${device.friendlyName} $status")
         content_connectiqTVDevicesData.text = spannedDeviceDisplay.getDisplay()
@@ -410,7 +435,7 @@ class ViewResultsActivity : AppCompatActivity(),
         if (getDialogVisible() && getDialogType() is DialogType.HowToInFitInfo) return
         if (getHowToInfitThisIncarnation()) return
         setHowToInfitThisIncarnation()
-        val message = "${getString("firstINFITReported")} $device"
+        val message = "${getString("how_to_use_infit")} $device"
         connectIQManager.showHowToInFitDialog(message)
     }
     // CALLBACKS END

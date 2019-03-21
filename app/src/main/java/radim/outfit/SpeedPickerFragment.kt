@@ -23,8 +23,7 @@ import android.view.WindowManager
 import android.view.Display
 import kotlinx.android.synthetic.main.content_speed_picker_duration.*
 import android.util.TypedValue
-
-
+import kotlinx.android.synthetic.main.content_speed_picker_speed.*
 
 
 const val DEFAULT_UNITS_RADIO_BUTTON_ID = R.id.content_speed_picker_speedBTNKmh
@@ -244,17 +243,16 @@ class SpeedPickerFragment : DialogFragment() {
     override fun onStart() {
         super.onStart()
         val currentOrientation = resources.configuration.orientation
+        val actualHeightPx = content_speed_picker_speedTVActivityTypeHeightWrapper.height
         val params = content_speed_picker_durationLLSpacer?.layoutParams
         if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
             // Landscape
             val dip = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    28.toFloat(), resources.displayMetrics).toInt()
+                    actualHeightPx.toFloat(), resources.displayMetrics).toInt()
             params?.height = dip
         } else {
             // Portrait
-            val dip = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    8.toFloat(), resources.displayMetrics).toInt()
-            params?.height = dip
+            params?.height = R.dimen.speed_picker_margin
         }
     }
 

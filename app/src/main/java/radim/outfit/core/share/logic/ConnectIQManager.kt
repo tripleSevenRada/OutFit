@@ -199,9 +199,10 @@ class ConnectIQManager(
                                     Log.w(tag, "device status: ${device.status}")
                                 }
 
-                                /*
                                 // CIQ app detection does not seem to work reliably on different setups
-                                onAppEvent(device, app.status)
+                                // I only report installed status with no subsequent action
+                                if (app.status == IQApp.IQAppStatus.INSTALLED) onAppEvent(device, app.status)
+                                /*
                                 if (app.status == IQApp.IQAppStatus.INSTALLED) {
                                     if (!firstINFITReported) onFirstINFITDetected(getFriendlyName(device))
                                     firstINFITReported = true

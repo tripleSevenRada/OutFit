@@ -13,17 +13,30 @@
         android:layout_marginTop="16dp"
         android:text="@string/stats_label" />
 
-    <TextView
-        android:id="@+id/content_exportTVStatsData"
-        style="@style/mainTextView"
+    <ScrollView
+        android:id="@+id/content_exportSV"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp" />
+        android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/content_exportBTNExport"
-        style="@style/customButton"
-        android:layout_marginTop="16dp"
-        android:text="@string/btn_export" />
+        <LinearLayout
+            android:id="@+id/content_exportLLScrollable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/content_exportTVStatsData"
+                style="@style/mainTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp" />
+
+            <Button
+                android:id="@+id/content_exportBTNExport"
+                style="@style/customButton"
+                android:layout_marginTop="16dp"
+                android:text="@string/btn_export" />
+
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>
