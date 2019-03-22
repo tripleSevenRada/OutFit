@@ -34,7 +34,7 @@
     <string name="frag_label_time_to_complete_course">Bude to trvat:</string>
     <string name="hours">hod.</string>
     <string name="minutes">min.</string>
-
+    <string name="speed">rychlost</string>
 
     <string name="seconds">sek.</string>
 

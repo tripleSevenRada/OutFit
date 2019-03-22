@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -56,7 +57,9 @@ class ViewResultsActivity : AppCompatActivity(),
     private lateinit var connectIQManager: ConnectIQManager
     private var shareFitReady = false
     private val btBroadcastReceiver = BTBroadcastReceiver()
-    private val seenDevices: MutableMap<IQDevice, IQDevice.IQDeviceStatus> = mutableMapOf()
+
+    private val idToFriendlyName: MutableMap<Long, String> = mutableMapOf()
+    private val idToStatus: MutableMap<Long, IQDevice.IQDeviceStatus> = mutableMapOf()
 
     // Menu START
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -101,7 +104,8 @@ class ViewResultsActivity : AppCompatActivity(),
 
         supportActionBar?.title = getString("activity_view_results_label")
 
-        content_connectiqTVTextBoxInfo.text = "All Connect IQ apps require a manifest file."
+        content_connectiqTVTextBoxInfo.text = this.getString("ciq_service_off")
+        content_connectiqTVTextBoxInfo.setTextColor(Color.GRAY)
 
         content_connectiqCHCKBOX.isChecked = this.getSharedPreferences(
                 getString(R.string.main_activity_preferences),
@@ -186,8 +190,8 @@ class ViewResultsActivity : AppCompatActivity(),
                 } else if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR) == BluetoothAdapter.STATE_ON) {
                     Log.w("BTBroadcastReceiver", "BT STATE ON")
                     content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_black_24dp)
-                    Handler().postDelayed({ stopConnectIQServices() }, 6000)
-                    Handler().postDelayed({ startConnectIQServices() }, 8000)
+                    Handler().postDelayed({ stopConnectIQServices() }, 1000)
+                    Handler().postDelayed({ startConnectIQServices() }, 4000)
                 }
             }
         }
@@ -200,6 +204,7 @@ class ViewResultsActivity : AppCompatActivity(),
         try {
             val filenamesOnly = mutableListOf<String>()
             parcel.buffer.forEach {
+                //TODO what if file does not exist anymore?
                 filenamesOnly.add(it.substring(it.lastIndexOf(File.separator) + 1))
             }
             server = LocalHostServer(NANOHTTPD_PORT,
@@ -241,6 +246,7 @@ class ViewResultsActivity : AppCompatActivity(),
                         dirToServeCreated = dirToServeFromFile.mkdir()
                         if (!emptyTarget(dirToServeFromPath)) dataToServeReady = false
                         val existingFiles = getListOfExistingFiles(parcel.buffer)
+                        //TODO take care when buffer contains links to non-existing files
                         if (existingFiles.isEmpty()) dataToServeReady = false
                         if (!copyFilesIntoTarget(dirToServeFromPath, existingFiles)) dataToServeReady = false
                     } else dataToServeReady = false
@@ -303,7 +309,11 @@ class ViewResultsActivity : AppCompatActivity(),
             if (::indicatorIQTimerCallback.isInitialized) indicatorIQTimerCallback.restart(View.VISIBLE)
         }
         content_connectiqTVTextBoxInfo.text = getString("ciq_service_off")
+        content_connectiqTVTextBoxInfo.setTextColor(Color.GRAY)
         content_connectiqTVDevicesData.text = ""
+        textBoxInfoTouched = false
+        idToStatus.clear()
+        idToFriendlyName.clear()
     }
 
     // CALLBACKS START
@@ -324,13 +334,19 @@ class ViewResultsActivity : AppCompatActivity(),
         disableExecutive()
     }
 
+    // device event comes sooner!
+    private var textBoxInfoTouched = false
+
     // called back after cca 10 - 30 ms from startConnectIQServices()
     private fun onFinnishCIQInit() {
         enableExecutive()
         indicatorIQTimerCallback = IndicatorIQTimerCallback()
         indicatorIQTimer = SimpleTimer(220, indicatorIQTimerCallback)
         indicatorIQTimer.start()
-        content_connectiqTVTextBoxInfo.text = getString("try_to_get_a_device_connected")
+        if (!textBoxInfoTouched) {
+            content_connectiqTVTextBoxInfo.text = getString("try_to_get_a_device_connected")
+            content_connectiqTVTextBoxInfo.setTextColor(Color.GRAY)
+        }
     }
     // ConnectIQ init loop END
 
@@ -394,27 +410,34 @@ class ViewResultsActivity : AppCompatActivity(),
         // IQDevice.IQDeviceStatus.NOT_PAIRED
         // IQDevice.IQDeviceStatus.UNKNOWN
 
-        seenDevices[device] = status
-        val connected: Map<IQDevice, IQDevice.IQDeviceStatus> =
-                seenDevices.filter { it.value == IQDevice.IQDeviceStatus.CONNECTED }
-        if(connected.isNotEmpty()){
-            // compose and display message saying "Use INFIT on these devices"
-            val coreMessage = this.getString("how_to_use_infit")
-            val devicesMessageStringBuilder = StringBuilder()
+        // Log.i(tag,"onDeviceEvent -- ${device.hashCode()} " +
+        //     "-- ${device.deviceIdentifier} -- ${device.friendlyName} -- ${status}")
+
+        // update
+        idToFriendlyName[device.deviceIdentifier] = device.friendlyName
+        idToStatus[device.deviceIdentifier] = status
+
+        val connectedEntries = idToStatus.filter { it.value == IQDevice.IQDeviceStatus.CONNECTED }
+        if (connectedEntries.isNotEmpty()) {
+            // compose message
+            val builder = StringBuilder()
+            builder.append(getString("how_to_use_infit"))
             var count = 0
-            val lastItem = connected.size - 1
-            connected.forEach{
-                devicesMessageStringBuilder.append(" ").append(it.key.friendlyName)
-                if(count < lastItem) devicesMessageStringBuilder.append(",")
+            val last = connectedEntries.size - 1
+            connectedEntries.forEach {
+                val friendlyName = idToFriendlyName[it.key]
+                builder.append(" $friendlyName")
+                if (count < last) builder.append(",")
                 count++
             }
-            val message = "$coreMessage$devicesMessageStringBuilder"
-            content_connectiqTVTextBoxInfo.text = message
+            content_connectiqTVTextBoxInfo.text = builder.toString()
+            content_connectiqTVTextBoxInfo.setTextColor(Color.GREEN)
+            textBoxInfoTouched = true
         } else {
-            // compose and display message saying "Connect a device"
             content_connectiqTVTextBoxInfo.text = getString("try_to_get_a_device_connected")
+            content_connectiqTVTextBoxInfo.setTextColor(Color.GRAY)
+            textBoxInfoTouched = true
         }
-
 
         spannedDeviceDisplay.onDeviceEvent(device, status, getViewModel())
         if (DEBUG_MODE) Log.i(tag, "onDeviceEvent display after call ${device.friendlyName} $status")

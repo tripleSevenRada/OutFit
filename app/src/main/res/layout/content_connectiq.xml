@@ -10,46 +10,51 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:id="@+id/content_connectiqLLLogoCheckboxHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+        <HorizontalScrollView
+            android:id="@+id/content_connectiqLogoCheckboxSV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
 
-            <ImageView
-                android:id="@+id/content_connectiqIV"
-                android:layout_width="188dp"
-                android:layout_height="50dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"
-                android:contentDescription="@string/imgview_connectiq_desc"
-                android:scaleType="centerInside"
-                android:src="@drawable/connect_iq_logo_black" />
-
-            <CheckBox
-                android:id="@+id/content_connectiqCHCKBOX"
+            <LinearLayout
+                android:id="@+id/content_connectiqLLLogoCheckboxHorizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="16dp"
-                android:onClick="onCheckBoxCCIQClicked" />
+                android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/content_connectiqBTIcon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="16dp"
-                android:contentDescription="@string/bluetooth_status_icon" />
+                <ImageView
+                    android:id="@+id/content_connectiqIV"
+                    android:layout_width="188dp"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:contentDescription="@string/imgview_connectiq_desc"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/connect_iq_logo_black" />
 
-        </LinearLayout>
+                <CheckBox
+                    android:id="@+id/content_connectiqCHCKBOX"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="16dp"
+                    android:onClick="onCheckBoxCCIQClicked" />
+
+                <ImageView
+                    android:id="@+id/content_connectiqBTIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="16dp"
+                    android:contentDescription="@string/bluetooth_status_icon" />
+
+            </LinearLayout>
+        </HorizontalScrollView>
 
         <LinearLayout
             android:id="@+id/content_connectiqLLIndicatorHorizontal"
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:layout_marginStart="@dimen/custom_side_margins"
-            android:layout_marginTop="2dp"
             android:layout_marginEnd="@dimen/custom_side_margins"
             android:orientation="horizontal">
 

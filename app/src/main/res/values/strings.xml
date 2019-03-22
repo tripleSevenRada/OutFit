@@ -44,9 +44,9 @@
     <string name="kmh" translatable="false">km/h</string>
     <string name="mph" translatable="false">mph</string>
     <string name="frag_label_time_to_complete_course">It\'s going to take:</string>
-    <string name="hours">hr.</string>
-    <string name="minutes">min.</string>
-
+    <string name="hours">hrs</string>
+    <string name="minutes">min</string>
+    <string name="speed">speed</string>
 
     <string name="seconds">sec.</string>
 
@@ -82,7 +82,7 @@
     <string name="est_download_time">Estimated ConnectIQ download time:</string>
 
     <!-- ViewResultsActivity-->
-    <string name="how_to_use_infit">Please keep OUT FIT in foreground for and use IN FIT on</string>
+    <string name="how_to_use_infit">Please keep OUT FIT in foreground and use IN FIT on</string>
     <string name="try_to_get_a_device_connected">Try to get a CIQ device connected.</string>
     <string name="ciq_service_off">CIQ service is off.</string>
 

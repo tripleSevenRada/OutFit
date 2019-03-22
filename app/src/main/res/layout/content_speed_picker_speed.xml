@@ -33,65 +33,78 @@
 
     </LinearLayout>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/content_speed_picker_speedLLHorizontalWrapper"
+    <LinearLayout
+        android:id="@+id/content_speed_picker_speedLLVerticalWrapper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <NumberPicker
-            android:id="@+id/content_speed_picker_speedNPSpeed"
+        <TextView
+            android:id="@+id/content_speed_picker_speedTVSpeed_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/speed_picker_margin"
             android:layout_marginTop="@dimen/speed_picker_margin"
-            android:layout_marginBottom="@dimen/speed_picker_margin"
-            android:descendantFocusability="blocksDescendants" />
+            android:maxLines="1"
+            android:text="@string/speed" />
 
-        <ScrollView
-            android:id="@+id/content_speed_picker_speedSV"
+        <LinearLayout
+            android:id="@+id/content_speed_picker_speedLLVerticalNPWrapper"
             android:layout_width="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/speed_picker_margin"
+            android:layout_marginBottom="@dimen/speed_picker_margin"
+            android:orientation="horizontal">
 
-            <LinearLayout
-                android:id="@+id/content_speed_picker_speedLLRadioGroupButton"
+            <NumberPicker
+                android:id="@+id/content_speed_picker_speedNPSpeed"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/speed_picker_margin_left_of_radio_buttons"
-                android:orientation="vertical">
+                android:descendantFocusability="blocksDescendants" />
 
-                <RadioGroup
-                    android:id="@+id/content_speed_picker_speedRGSpeedSelection"
+            <ScrollView
+                android:id="@+id/content_speed_picker_speedSV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical">
+
+                <LinearLayout
+                    android:id="@+id/content_speed_picker_speedLLRadioGroupButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/speed_picker_margin_left_of_radio_buttons"
                     android:orientation="vertical">
 
-                    <RadioButton
-                        android:id="@+id/content_speed_picker_speedBTNKmh"
+                    <Button
+                        android:id="@+id/content_speed_picker_speedBTNOk"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/kmh" />
+                        android:layout_marginEnd="@dimen/speed_picker_margin"
+                        android:text="@string/ok" />
 
-                    <RadioButton
-                        android:id="@+id/content_speed_picker_speedBTNMph"
+                    <RadioGroup
+                        android:id="@+id/content_speed_picker_speedRGSpeedSelection"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="28dp"
-                        android:text="@string/mph" />
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginTop="@dimen/speed_picker_margin_left_of_radio_buttons"
+                        android:orientation="vertical">
 
-                </RadioGroup>
+                        <RadioButton
+                            android:id="@+id/content_speed_picker_speedBTNKmh"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/kmh" />
 
-                <Button
-                    android:id="@+id/content_speed_picker_speedBTNOk"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="28dp"
-                    android:layout_marginEnd="@dimen/speed_picker_margin"
-                    android:text="@string/ok" />
-
-            </LinearLayout>
-        </ScrollView>
+                        <RadioButton
+                            android:id="@+id/content_speed_picker_speedBTNMph"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/speed_picker_margin_left_of_radio_buttons"
+                            android:text="@string/mph" />
+                    </RadioGroup>
+                </LinearLayout>
+            </ScrollView>
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

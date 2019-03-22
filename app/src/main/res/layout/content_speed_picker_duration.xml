@@ -17,7 +17,7 @@
 
     <LinearLayout
         android:id="@+id/content_speed_picker_durationLLSpacer"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="8dp"
         android:orientation="vertical" />
 
@@ -27,42 +27,54 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <NumberPicker
-            android:id="@+id/content_speed_picker_durationNPHours"
+        <LinearLayout
+            android:id="@+id/content_speed_picker_durationLLWrapperVertical_Hours"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/speed_picker_margin"
             android:layout_marginTop="@dimen/speed_picker_margin"
             android:layout_marginBottom="@dimen/speed_picker_margin"
-            android:descendantFocusability="blocksDescendants" />
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/content_speed_picker_durationTVHours"
+            <TextView
+                android:id="@+id/content_speed_picker_durationTVHours_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="@string/hours" />
+
+            <NumberPicker
+                android:id="@+id/content_speed_picker_durationNPHours"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:descendantFocusability="blocksDescendants" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/content_speed_picker_durationLLWrapperVertical_Minutes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="@dimen/speed_picker_margin"
-            android:maxLines="1"
-            android:text="@string/hours" />
-
-        <NumberPicker
-            android:id="@+id/content_speed_picker_durationNPMinutes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/speed_picker_margin"
+            android:layout_marginStart="@dimen/speed_picker_margin_left_of_radio_buttons"
             android:layout_marginTop="@dimen/speed_picker_margin"
-            android:layout_marginBottom="@dimen/speed_picker_margin"
-            android:descendantFocusability="blocksDescendants" />
-
-        <TextView
-            android:id="@+id/content_speed_picker_durationTVMinutes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="@dimen/speed_picker_margin"
             android:layout_marginEnd="@dimen/speed_picker_margin"
-            android:maxLines="1"
-            android:text="@string/minutes" />
+            android:layout_marginBottom="@dimen/speed_picker_margin"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/content_speed_picker_durationTVMinutes_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="@string/minutes" />
+
+            <NumberPicker
+                android:id="@+id/content_speed_picker_durationNPMinutes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:descendantFocusability="blocksDescendants" />
+
+        </LinearLayout>
 
     </LinearLayout>
 </LinearLayout>
