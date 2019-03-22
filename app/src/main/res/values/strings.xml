@@ -83,7 +83,7 @@
 
     <!-- ViewResultsActivity-->
     <string name="how_to_use_infit">Please keep OUT FIT in foreground and use IN FIT on</string>
-    <string name="try_to_get_a_device_connected">Try to get a CIQ device connected.</string>
+    <string name="waiting_for_a_device_connected">Waiting for a CIQ device connected.</string>
     <string name="ciq_service_off">CIQ service is off.</string>
 
     <!-- Locus dir pick-->

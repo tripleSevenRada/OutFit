@@ -121,7 +121,7 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
     <string name="later">Později</string>
 
     <string name="how_to_use_infit">"Prosím podrž OUT FIT na popředí a spusť IN FIT na"</string>
-    <string name="try_to_get_a_device_connected">Zkus připojit nějaké CIQ zařízení.</string>
+    <string name="waiting_for_a_device_connected">Čeká se na nějaké CIQ zařízení.</string>
     <string name="ciq_service_off">CIQ servis je vypnutý.</string>
 
     <string name="bt_may_be_needed">Bluetooth je vypnuté.</string>

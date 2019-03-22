@@ -11,7 +11,6 @@ import android.graphics.Color
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.DialogFragment
 import android.support.v4.content.FileProvider
 import android.text.SpannableStringBuilder
@@ -190,8 +189,6 @@ class ViewResultsActivity : AppCompatActivity(),
                 } else if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR) == BluetoothAdapter.STATE_ON) {
                     Log.w("BTBroadcastReceiver", "BT STATE ON")
                     content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_black_24dp)
-                    Handler().postDelayed({ stopConnectIQServices() }, 1000)
-                    Handler().postDelayed({ startConnectIQServices() }, 4000)
                 }
             }
         }
@@ -344,7 +341,7 @@ class ViewResultsActivity : AppCompatActivity(),
         indicatorIQTimer = SimpleTimer(220, indicatorIQTimerCallback)
         indicatorIQTimer.start()
         if (!textBoxInfoTouched) {
-            content_connectiqTVTextBoxInfo.text = getString("try_to_get_a_device_connected")
+            content_connectiqTVTextBoxInfo.text = getString("waiting_for_a_device_connected")
             content_connectiqTVTextBoxInfo.setTextColor(Color.GRAY)
         }
     }
@@ -404,6 +401,7 @@ class ViewResultsActivity : AppCompatActivity(),
     private val spannedDeviceDisplay = SpannedDeviceDisplay()
 
     private fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus) {
+        // any event
 
         // IQDevice.IQDeviceStatus.NOT_CONNECTED
         // IQDevice.IQDeviceStatus.CONNECTED
@@ -434,7 +432,7 @@ class ViewResultsActivity : AppCompatActivity(),
             content_connectiqTVTextBoxInfo.setTextColor(Color.GREEN)
             textBoxInfoTouched = true
         } else {
-            content_connectiqTVTextBoxInfo.text = getString("try_to_get_a_device_connected")
+            content_connectiqTVTextBoxInfo.text = getString("waiting_for_a_device_connected")
             content_connectiqTVTextBoxInfo.setTextColor(Color.GRAY)
             textBoxInfoTouched = true
         }
