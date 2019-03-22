@@ -243,16 +243,15 @@ class SpeedPickerFragment : DialogFragment() {
     override fun onStart() {
         super.onStart()
         val currentOrientation = resources.configuration.orientation
-        val actualHeightPx = content_speed_picker_speedTVActivityTypeHeightWrapper.height
         val params = content_speed_picker_durationLLSpacer?.layoutParams
         if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
             // Landscape
             val dip = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    actualHeightPx.toFloat(), resources.displayMetrics).toInt()
+                    34.toFloat(), resources.displayMetrics).toInt()
             params?.height = dip
         } else {
             // Portrait
-            params?.height = R.dimen.speed_picker_margin
+            params?.height = 0
         }
     }
 
