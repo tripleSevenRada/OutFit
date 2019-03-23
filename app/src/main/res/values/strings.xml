@@ -85,6 +85,9 @@
     <string name="how_to_use_infit">Please keep OUT FIT in foreground and use IN FIT on</string>
     <string name="waiting_for_a_device_connected">Waiting for a CIQ device connected.</string>
     <string name="ciq_service_off">CIQ service is off.</string>
+    <string name="device">device</string>
+    <string name="zero_length_buffer">No exported files found. No CIQ service.</string>
+    <string name="ciqservice_generic_error">CIQ service error.</string>
 
     <!-- Locus dir pick-->
     <string name="pick_dir_message">Select export folder</string>

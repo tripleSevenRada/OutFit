@@ -25,7 +25,6 @@ class SpannedDeviceDisplay {
     private val devicesIdsToSpannable = mutableMapOf<Long, SpannableString>()
     private val tag = "spannDisplay"
 
-
     private val appStatusToColor: Map<IQApp.IQAppStatus, Int> = mapOf(
             IQApp.IQAppStatus.INSTALLED to Color.GREEN,
             IQApp.IQAppStatus.NOT_INSTALLED to Color.RED,
@@ -33,14 +32,16 @@ class SpannedDeviceDisplay {
             IQApp.IQAppStatus.UNKNOWN to Color.BLACK
     )
 
-    fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus, viewModel: ViewResultsActivityViewModel) {
-        val friendlyName: String = if(device.friendlyName.isNotEmpty()) {
+    fun onDeviceEvent(device: IQDevice, status: IQDevice.IQDeviceStatus,
+                      viewModel: ViewResultsActivityViewModel, fallback: String) {
+        val friendlyName: String = if(device.friendlyName.isNotEmpty() && device.friendlyName.isNotBlank()) {
+            // memoize
             viewModel.idToFriendlyName[device.deviceIdentifier] = device.friendlyName
             device.friendlyName
         } else {
             // device.friendlyName is empty
             val memoizedFriendlyName = viewModel.idToFriendlyName[device.deviceIdentifier]
-            memoizedFriendlyName ?: "Device"
+            memoizedFriendlyName ?: fallback
         }
         devicesIdsToSpannable[device.deviceIdentifier] = getSpannableString(friendlyName, status)
         devicesIdsOrder.remove(device.deviceIdentifier)

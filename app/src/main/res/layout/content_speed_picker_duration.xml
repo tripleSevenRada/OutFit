@@ -47,6 +47,7 @@
                 android:id="@+id/content_speed_picker_durationNPHours"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@color/grayBackground"
                 android:descendantFocusability="blocksDescendants" />
 
         </LinearLayout>
@@ -72,6 +73,7 @@
                 android:id="@+id/content_speed_picker_durationNPMinutes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@color/grayBackground"
                 android:descendantFocusability="blocksDescendants" />
 
         </LinearLayout>

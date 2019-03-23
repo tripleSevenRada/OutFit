@@ -21,6 +21,7 @@
     <color name="blue">#0000FF</color>
 
     <color name="blueBackground">#E8F2FC</color>
+    <color name="grayBackground">#f2f2f2</color>
 
     <color name="garminBlue">#007CC3</color>
     <color name="connectIQBlue">#109AD7</color>
