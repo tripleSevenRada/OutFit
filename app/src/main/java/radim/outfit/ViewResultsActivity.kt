@@ -57,7 +57,6 @@ class ViewResultsActivity : AppCompatActivity(),
     private var shareFitReady = false
     private val btBroadcastReceiver = BTBroadcastReceiver()
 
-    private val idToFriendlyName: MutableMap<Long, String> = mutableMapOf()
     private val idToStatus: MutableMap<Long, IQDevice.IQDeviceStatus> = mutableMapOf()
 
     // Menu START
@@ -114,6 +113,7 @@ class ViewResultsActivity : AppCompatActivity(),
 
         if (intent.hasExtra(EXTRA_MESSAGE_VIEW_RESULTS))
             parcel = intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
+        // TODO ELSE
 
         connectIQManager = ConnectIQManager(
                 this,
@@ -197,22 +197,33 @@ class ViewResultsActivity : AppCompatActivity(),
     // NANO HTTPD START
     private lateinit var server: LocalHostServer
 
-    private fun bindNanoHTTPD() {
+    private fun bindNanoHTTPD(): BindNanoHTTPDResult {
+        val size: Int
         try {
             val filenamesOnly = mutableListOf<String>()
             parcel.buffer.forEach {
-                //TODO what if file does not exist anymore?
-                filenamesOnly.add(it.substring(it.lastIndexOf(File.separator) + 1))
+                //what if file does not exist anymore?
+                if (File(it).exists())
+                    filenamesOnly.add(it.substring(it.lastIndexOf(File.separator) + 1))
             }
+            if (filenamesOnly.size == 0) return BindNanoHTTPDResult.BindNanoFailure(getString("zero_length_buffer"))
             server = LocalHostServer(NANOHTTPD_PORT,
                     File("${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"),
                     filenamesOnly,
                     parcel.fileNameToCourseName)
             if (DEBUG_MODE) Log.i(tag, "JSONArray, coursenames: ${server.coursenamesAsJSON()}")
             server.start()
+            size = filenamesOnly.size
         } catch (e: Exception) {
             Log.e(tag, e.localizedMessage)
+            return BindNanoHTTPDResult.BindNanoFailure(getString("ciqservice_generic_error"))
         }
+        return BindNanoHTTPDResult.BindNanoSuccess(size)
+    }
+
+    sealed class BindNanoHTTPDResult {
+        data class BindNanoSuccess(val size: Int) : BindNanoHTTPDResult()
+        data class BindNanoFailure(val why: String) : BindNanoHTTPDResult()
     }
 
     private fun unbindNanoHTTPD() {
@@ -293,8 +304,18 @@ class ViewResultsActivity : AppCompatActivity(),
 
     private fun startConnectIQServices() {
         Log.w("IQ", "START SERVICES")
-        bindNanoHTTPD()
-        connectIQManager.startConnectIQ()
+        val bindResult = bindNanoHTTPD()
+        when (bindResult) {
+            is BindNanoHTTPDResult.BindNanoSuccess -> {
+                connectIQManager.startConnectIQ()
+                if(DEBUG_MODE) Log.i(tag, "Bind result: served files.size: ${bindResult.size}")
+            }
+            is BindNanoHTTPDResult.BindNanoFailure -> {
+                content_connectiqTVTextBoxInfo.text = bindResult.why
+                content_connectiqTVTextBoxInfo.setTextColor(Color.RED)
+                enableExecutive()
+            }
+        }
     }
 
     private fun stopConnectIQServices() {
@@ -310,7 +331,6 @@ class ViewResultsActivity : AppCompatActivity(),
         content_connectiqTVDevicesData.text = ""
         textBoxInfoTouched = false
         idToStatus.clear()
-        idToFriendlyName.clear()
     }
 
     // CALLBACKS START
@@ -408,11 +428,17 @@ class ViewResultsActivity : AppCompatActivity(),
         // IQDevice.IQDeviceStatus.NOT_PAIRED
         // IQDevice.IQDeviceStatus.UNKNOWN
 
-        // Log.i(tag,"onDeviceEvent -- ${device.hashCode()} " +
-        //     "-- ${device.deviceIdentifier} -- ${device.friendlyName} -- ${status}")
+        if (DEBUG_MODE) Log.i(tag, "onDeviceEvent -- ${device.hashCode()} " +
+                "-- ${device.deviceIdentifier} -- name >${device.friendlyName}< -- ${status}")
 
+        val memoizedFriendlyNameOrNull: String? = getViewModel().idToFriendlyName[device.deviceIdentifier]
+        // https://improve-future.com/en/kotlin-difference-between-blank-and-empty.html
+        val friendlyNameOrNull: String? =
+                if (with(device.friendlyName) { isBlank() || isEmpty() }) memoizedFriendlyNameOrNull
+                else device.friendlyName
         // update
-        idToFriendlyName[device.deviceIdentifier] = device.friendlyName
+        if (friendlyNameOrNull != null)
+            getViewModel().idToFriendlyName[device.deviceIdentifier] = friendlyNameOrNull
         idToStatus[device.deviceIdentifier] = status
 
         val connectedEntries = idToStatus.filter { it.value == IQDevice.IQDeviceStatus.CONNECTED }
@@ -423,7 +449,7 @@ class ViewResultsActivity : AppCompatActivity(),
             var count = 0
             val last = connectedEntries.size - 1
             connectedEntries.forEach {
-                val friendlyName = idToFriendlyName[it.key]
+                val friendlyName = getViewModel().idToFriendlyName[it.key] ?: getString("device")
                 builder.append(" $friendlyName")
                 if (count < last) builder.append(",")
                 count++
@@ -437,7 +463,7 @@ class ViewResultsActivity : AppCompatActivity(),
             textBoxInfoTouched = true
         }
 
-        spannedDeviceDisplay.onDeviceEvent(device, status, getViewModel())
+        spannedDeviceDisplay.onDeviceEvent(device, status, getViewModel(), getString("device"))
         if (DEBUG_MODE) Log.i(tag, "onDeviceEvent display after call ${device.friendlyName} $status")
         content_connectiqTVDevicesData.text = spannedDeviceDisplay.getDisplay()
     }
