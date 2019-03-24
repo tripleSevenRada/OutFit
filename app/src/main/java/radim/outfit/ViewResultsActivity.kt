@@ -240,8 +240,8 @@ class ViewResultsActivity : AppCompatActivity(),
 
         if (intent.hasExtra(EXTRA_MESSAGE_VIEW_RESULTS)) {
             parcel = intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
-            Log.e(tag, "intent.hasParcelableExtra")
         }
+
         if (DEBUG_MODE && ::parcel.isInitialized) {
             Log.i(tag, "Circular buffer of export PATHS:")
             parcel.buffer.forEach { Log.i(tag, it) }
@@ -253,17 +253,18 @@ class ViewResultsActivity : AppCompatActivity(),
         populateStats() // only if stats in viewModel are not null
         val dirToServeFromPath = "${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"
 
-        // very first entry
-        if (!viewModel.fileOpsDone) {
+        if (DEBUG_MODE) {
+            Log.e(tag, "viewModel.fileOpsDone ${viewModel.fileOpsDone}")
+            Log.e(tag, "::parcel.isInitialized ${::parcel.isInitialized}")
+            Log.e(tag, "viewModel.parcelPersistenceDone ${viewModel.parcelPersistenceDone}")
+        }
 
+        // very first entry or
+        if (!viewModel.fileOpsDone ||
+                !::parcel.isInitialized ||
+                !viewModel.parcelPersistenceDone) {
 
-
-
-
-
-            Log.e(tag, "viewModel.fileOpsDone NOT")
-
-            var dirToServeCreated = false
+            //var dirToServeCreated = false
             var dataToServeReady = true
 
             var usingDefaultParcel = false
@@ -271,61 +272,52 @@ class ViewResultsActivity : AppCompatActivity(),
             doAsync {
                 // parcel persistence operations
 
+                if (!viewModel.parcelPersistenceDone ||
+                        !::parcel.isInitialized) {
 
-                val db = Room.databaseBuilder(
-                        applicationContext,
-                        ParcelDatabase::class.java, "parcel-database"
-                ).build()
+                    val db = Room.databaseBuilder(
+                            applicationContext,
+                            ParcelDatabase::class.java, "parcel-database"
+                    ).build()
 
-
-
-                try {
-                    if (::parcel.isInitialized && parcel.type == ViewResultsParcel.Type.REGULAR) {// then persist it
-                        db.parcelDao().persist(parcel.getEntity())
-                        Log.e(tag, "persisting regular")
-                    } else {
-                        val parcelEntities: List<ViewResultsParcelEntity> = db.parcelDao().retrieve()
-                        parcel = if (parcelEntities.isNotEmpty())
-                            parcelEntities[0].getParcel()
-                        else {
-                            usingDefaultParcel = true
-                            getDefaultParcel(this@ViewResultsActivity)
+                    try {
+                        if (::parcel.isInitialized && parcel.type == ViewResultsParcel.Type.REGULAR) {// then persist it
+                            db.parcelDao().persist(parcel.getEntity())
+                            viewModel.parcelPersistenceDone = true
+                        } else {
+                            val parcelEntities: List<ViewResultsParcelEntity> = db.parcelDao().retrieve()
+                            parcel = if (parcelEntities.isNotEmpty())
+                                parcelEntities[0].getParcel()
+                            else {
+                                usingDefaultParcel = true
+                                getDefaultParcel(this@ViewResultsActivity)
+                            }
                         }
+                    } catch (e: java.lang.Exception) {
+                        usingDefaultParcel = true
+                        parcel = getErrorParcel(this@ViewResultsActivity)
                     }
-                } catch (e: java.lang.Exception) {
-                    usingDefaultParcel = true
-                    parcel = getErrorParcel(this@ViewResultsActivity)
+                    
+                    db.close()
                 }
-
-                db.close()
-
-
-
-                
 
                 // prepare dir for LocalHostServer to serve from
                 try {
-                    if (filesDir != null) {
-                        val dirToServeFromFile = File(dirToServeFromPath)
-                        dirToServeCreated = dirToServeFromFile.mkdir()
-                        if (!emptyTarget(dirToServeFromPath)) dataToServeReady = false
+                    if (filesDir != null && ::parcel.isInitialized) {
+                        if (!viewModel.fileOpsDone) {
 
-                        if (::parcel.isInitialized) {
+                            File(dirToServeFromPath).mkdir()
+                            if (!emptyTarget(dirToServeFromPath)) dataToServeReady = false
                             val existingFiles = getListOfExistingFiles(parcel.buffer)
                             if (existingFiles.isEmpty()) dataToServeReady = false
                             if (!copyFilesIntoTarget(dirToServeFromPath, existingFiles)) dataToServeReady = false
-                        } else dataToServeReady = false
-
+                        }
                     } else dataToServeReady = false
                 } catch (e: Exception) {
                     dataToServeReady = false
                 }
-                uiThread {
 
-                    if (DEBUG_MODE) {
-                        Log.i(tag, "dirToServeCreated: $dirToServeCreated")
-                        Log.i(tag, "dataToServeReady: $dataToServeReady")
-                    }
+                uiThread {
 
                     if (usingDefaultParcel) {
                         disableCheckBoxStatusPersistence = true
@@ -333,12 +325,8 @@ class ViewResultsActivity : AppCompatActivity(),
                         buildStats()
                         populateStats()
                         enableExecutive()
-
                     } else {
-
-                        content_connectiqCHCKBOX.isChecked = this@ViewResultsActivity.getSharedPreferences(
-                                getString(R.string.main_activity_preferences),
-                                Context.MODE_PRIVATE).getBoolean(getString("checkbox_cciq"), true)
+                        checkConnectiqCHCKBOX()
 
                         if (dataToServeReady) {
                             val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
@@ -349,7 +337,6 @@ class ViewResultsActivity : AppCompatActivity(),
                             viewModel.fileOpsDone = true
                             if (content_connectiqCHCKBOX.isChecked) startConnectIQServices() // includes disableExecutive() // START
                             else enableExecutive()
-
                         } else {
                             FailGracefullyLauncher().failGracefully(this@ViewResultsActivity, "file operations error")
                             finish()
@@ -359,9 +346,17 @@ class ViewResultsActivity : AppCompatActivity(),
             }
         } else {
             shareFitReady = true
-            if (content_connectiqCHCKBOX.isChecked) startConnectIQServices() // includes disableExecutive() // START
+            checkConnectiqCHCKBOX()
+            if (content_connectiqCHCKBOX.isChecked)
+                startConnectIQServices() // includes disableExecutive()
             else enableExecutive()
         }
+    }
+
+    fun checkConnectiqCHCKBOX(){
+        content_connectiqCHCKBOX.isChecked = this@ViewResultsActivity.getSharedPreferences(
+                getString(R.string.main_activity_preferences),
+                Context.MODE_PRIVATE).getBoolean(getString("checkbox_cciq"), true)
     }
     //override fun onResume() { super.onResume() }
     //override fun onPause() { super.onPause() }

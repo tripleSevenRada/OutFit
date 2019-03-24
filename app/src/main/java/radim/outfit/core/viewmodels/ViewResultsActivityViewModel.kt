@@ -9,6 +9,7 @@ import java.io.File
 
 class ViewResultsActivityViewModel: ViewModel(){
     var fileOpsDone = false
+    var parcelPersistenceDone = false
     var bufferHead: File? = null
 
     var idToFriendlyName = mutableMapOf<Long, String>()
