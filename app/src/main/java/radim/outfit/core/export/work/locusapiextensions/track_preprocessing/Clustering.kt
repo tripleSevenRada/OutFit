@@ -24,7 +24,7 @@ class Clustering(val debug: Boolean) {
             if (debug && clusters.size % 10 == 0) Log.i(tag, "ADDING $centroid")
         }
 
-        // assume null is not comming from Locus
+        // assume null is not coming from Locus
         var latestCentroid: Location = track.points[track.points.size / 2]
 
         addToClusters(latestCentroid)

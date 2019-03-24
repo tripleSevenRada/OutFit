@@ -1,6 +1,7 @@
 package radim.outfit
 
 import android.arch.lifecycle.ViewModelProviders
+import android.arch.persistence.room.Room
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
@@ -29,6 +30,7 @@ import kotlinx.android.synthetic.main.activity_view_results.*
 import kotlinx.android.synthetic.main.content_connectiq.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import radim.outfit.core.persistence.*
 import radim.outfit.core.share.logic.ConnectIQManager
 import radim.outfit.core.share.logic.getEstimatedDownloadTimeInSeconds
 import radim.outfit.core.share.logic.getSpannableDownloadInfo
@@ -52,12 +54,13 @@ class ViewResultsActivity : AppCompatActivity(),
     //https://drive.google.com/open?id=18Z1mDp_IcV8NQWlSipONdPs1XWaNjsOr
 
     private val tag = "VIEW_RESULTS"
-    private lateinit var parcel: ViewResultsParcel
     private lateinit var connectIQManager: ConnectIQManager
     private var shareFitReady = false
     private val btBroadcastReceiver = BTBroadcastReceiver()
 
     private val idToStatus: MutableMap<Long, IQDevice.IQDeviceStatus> = mutableMapOf()
+
+    private lateinit var parcel: ViewResultsParcel
 
     // Menu START
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -90,7 +93,9 @@ class ViewResultsActivity : AppCompatActivity(),
         }
     }
 
+    private var disableCheckBoxStatusPersistence = false
     private fun setCheckBoxStatus(status: Boolean) {
+        if (disableCheckBoxStatusPersistence) return
         this.getSharedPreferences(
                 getString(R.string.main_activity_preferences),
                 Context.MODE_PRIVATE).edit().putBoolean(getString("checkbox_cciq"), status).apply()
@@ -105,31 +110,7 @@ class ViewResultsActivity : AppCompatActivity(),
         content_connectiqTVTextBoxInfo.text = this.getString("ciq_service_off")
         content_connectiqTVTextBoxInfo.setTextColor(Color.GRAY)
 
-        content_connectiqCHCKBOX.isChecked = this.getSharedPreferences(
-                getString(R.string.main_activity_preferences),
-                Context.MODE_PRIVATE).getBoolean(getString("checkbox_cciq"), true)
-
         disableExecutive()
-
-        if (intent.hasExtra(EXTRA_MESSAGE_VIEW_RESULTS))
-            parcel = intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
-        // TODO ELSE
-
-        connectIQManager = ConnectIQManager(
-                this,
-                ::onStartCIQInit,
-                ::onFinnishCIQInit,
-                ::onDeviceEvent,
-                ::onAppEvent,
-                ::onFirstINFITDetected
-        )
-
-        if (DEBUG_MODE && ::parcel.isInitialized) {
-            Log.i(tag, "Circular buffer of export PATHS:")
-            parcel.buffer.forEach { Log.i(tag, it) }
-            Log.i(tag, "Circular buffer of export MAPPING FROM FILENAMES TO COURSENAMES:")
-            Log.i(tag, parcel.fileNameToCourseName.toString())
-        }
 
         val intentFilter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         registerReceiver(btBroadcastReceiver, intentFilter)
@@ -147,9 +128,19 @@ class ViewResultsActivity : AppCompatActivity(),
                 content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_black_24dp)
             }
         }
+
+        connectIQManager = ConnectIQManager(
+                this,
+                ::onStartCIQInit,
+                ::onFinnishCIQInit,
+                ::onDeviceEvent,
+                ::onAppEvent,
+                ::onFirstINFITDetected
+        )
     }
 
     private fun buildStats() {
+
         if (::parcel.isInitialized) {
             val viewModel = getViewModel()
             if (viewModel.statsSpannableStringBuilder != null) return
@@ -198,6 +189,11 @@ class ViewResultsActivity : AppCompatActivity(),
     private lateinit var server: LocalHostServer
 
     private fun bindNanoHTTPD(): BindNanoHTTPDResult {
+
+        unbindNanoHTTPD()
+
+        if (!::parcel.isInitialized) return BindNanoHTTPDResult.BindNanoFailure(getString("ciqservice_generic_error"))
+
         val size: Int
         try {
             val filenamesOnly = mutableListOf<String>()
@@ -239,45 +235,125 @@ class ViewResultsActivity : AppCompatActivity(),
 
     override fun onStart() {
         super.onStart()
+
+        Log.e(tag, "onStart")
+
+        if (intent.hasExtra(EXTRA_MESSAGE_VIEW_RESULTS)) {
+            parcel = intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
+            Log.e(tag, "intent.hasParcelableExtra")
+        }
+        if (DEBUG_MODE && ::parcel.isInitialized) {
+            Log.i(tag, "Circular buffer of export PATHS:")
+            parcel.buffer.forEach { Log.i(tag, it) }
+            Log.i(tag, "Circular buffer of export MAPPING FROM FILENAMES TO COURSENAMES:")
+            Log.i(tag, parcel.fileNameToCourseName.toString())
+        }
+
         val viewModel = getViewModel()
         populateStats() // only if stats in viewModel are not null
         val dirToServeFromPath = "${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"
 
-        if (!viewModel.fileOperationsDone) {
+        // very first entry
+        if (!viewModel.fileOpsDone) {
+
+
+
+
+
+
+            Log.e(tag, "viewModel.fileOpsDone NOT")
+
             var dirToServeCreated = false
             var dataToServeReady = true
+
+            var usingDefaultParcel = false
+
             doAsync {
+                // parcel persistence operations
+
+
+                val db = Room.databaseBuilder(
+                        applicationContext,
+                        ParcelDatabase::class.java, "parcel-database"
+                ).build()
+
+
+
+                try {
+                    if (::parcel.isInitialized && parcel.type == ViewResultsParcel.Type.REGULAR) {// then persist it
+                        db.parcelDao().persist(parcel.getEntity())
+                        Log.e(tag, "persisting regular")
+                    } else {
+                        val parcelEntities: List<ViewResultsParcelEntity> = db.parcelDao().retrieve()
+                        parcel = if (parcelEntities.isNotEmpty())
+                            parcelEntities[0].getParcel()
+                        else {
+                            usingDefaultParcel = true
+                            getDefaultParcel(this@ViewResultsActivity)
+                        }
+                    }
+                } catch (e: java.lang.Exception) {
+                    usingDefaultParcel = true
+                    parcel = getErrorParcel(this@ViewResultsActivity)
+                }
+
+                db.close()
+
+
+
+                
+
                 // prepare dir for LocalHostServer to serve from
                 try {
                     if (filesDir != null) {
                         val dirToServeFromFile = File(dirToServeFromPath)
                         dirToServeCreated = dirToServeFromFile.mkdir()
                         if (!emptyTarget(dirToServeFromPath)) dataToServeReady = false
-                        val existingFiles = getListOfExistingFiles(parcel.buffer)
-                        //TODO take care when buffer contains links to non-existing files
-                        if (existingFiles.isEmpty()) dataToServeReady = false
-                        if (!copyFilesIntoTarget(dirToServeFromPath, existingFiles)) dataToServeReady = false
+
+                        if (::parcel.isInitialized) {
+                            val existingFiles = getListOfExistingFiles(parcel.buffer)
+                            if (existingFiles.isEmpty()) dataToServeReady = false
+                            if (!copyFilesIntoTarget(dirToServeFromPath, existingFiles)) dataToServeReady = false
+                        } else dataToServeReady = false
+
                     } else dataToServeReady = false
                 } catch (e: Exception) {
                     dataToServeReady = false
                 }
                 uiThread {
+
                     if (DEBUG_MODE) {
                         Log.i(tag, "dirToServeCreated: $dirToServeCreated")
                         Log.i(tag, "dataToServeReady: $dataToServeReady")
                     }
-                    if (dataToServeReady) {
-                        val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
-                        viewModel.fileOperationsDone = true
-                        viewModel.bufferHead = if (afterFiles.isNotEmpty()) afterFiles[0] else null
-                        shareFitReady = true
+
+                    if (usingDefaultParcel) {
+                        disableCheckBoxStatusPersistence = true
+                        content_connectiqCHCKBOX.isChecked = false
                         buildStats()
                         populateStats()
-                        if (content_connectiqCHCKBOX.isChecked) startConnectIQServices() // includes disableExecutive() // START
-                        else enableExecutive()
+                        enableExecutive()
+
                     } else {
-                        FailGracefullyLauncher().failGracefully(this@ViewResultsActivity, "file operations")
-                        finish()
+
+                        content_connectiqCHCKBOX.isChecked = this@ViewResultsActivity.getSharedPreferences(
+                                getString(R.string.main_activity_preferences),
+                                Context.MODE_PRIVATE).getBoolean(getString("checkbox_cciq"), true)
+
+                        if (dataToServeReady) {
+                            val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
+                            viewModel.bufferHead = if (afterFiles.isNotEmpty()) afterFiles[0] else null
+                            shareFitReady = true
+                            buildStats()
+                            populateStats()
+                            viewModel.fileOpsDone = true
+                            if (content_connectiqCHCKBOX.isChecked) startConnectIQServices() // includes disableExecutive() // START
+                            else enableExecutive()
+
+                        } else {
+                            FailGracefullyLauncher().failGracefully(this@ViewResultsActivity, "file operations error")
+                            finish()
+                        }
                     }
                 }
             }
@@ -308,7 +384,7 @@ class ViewResultsActivity : AppCompatActivity(),
         when (bindResult) {
             is BindNanoHTTPDResult.BindNanoSuccess -> {
                 connectIQManager.startConnectIQ()
-                if(DEBUG_MODE) Log.i(tag, "Bind result: served files.size: ${bindResult.size}")
+                if (DEBUG_MODE) Log.i(tag, "Bind result: served files.size: ${bindResult.size}")
             }
             is BindNanoHTTPDResult.BindNanoFailure -> {
                 content_connectiqTVTextBoxInfo.text = bindResult.why

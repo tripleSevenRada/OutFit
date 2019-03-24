@@ -12,6 +12,7 @@ class ViewResultsParcel : Parcelable {
     var buffer: Array<String> // circular buffer of last buffer.size exports. May contain empty strings or
     // duplicates both in terms of filenames and complete paths
     var fileNameToCourseName: Map<String, String>
+    val type: ViewResultsParcel.Type
 
     private constructor(inParcel: Parcel) {
         this.title = inParcel.readString()?: ""
@@ -34,16 +35,19 @@ class ViewResultsParcel : Parcelable {
             fileToCourseName[inParcel.readString()?:""] = inParcel.readString()?:""
         }
         this.fileNameToCourseName = fileToCourseName
+        type = ViewResultsParcel.Type.REGULAR
     }
 
     constructor(title: String,
                 messages: List<SpannableString>,
                 buffer: Array<String>,
-                fileToCourseName: Map<String, String>) {
+                fileToCourseName: Map<String, String>,
+                type: ViewResultsParcel.Type = Type.REGULAR) {
         this.title = title
         this.messages = messages
         this.buffer = buffer
         this.fileNameToCourseName = fileToCourseName
+        this.type = type
     }
 
     override fun writeToParcel(p0: Parcel?, p1: Int) {
@@ -64,6 +68,10 @@ class ViewResultsParcel : Parcelable {
     }
 
     override fun describeContents(): Int = messages.size
+
+    public enum class Type {
+        REGULAR, DEFAULT
+    }
 
     companion object {
         @JvmField

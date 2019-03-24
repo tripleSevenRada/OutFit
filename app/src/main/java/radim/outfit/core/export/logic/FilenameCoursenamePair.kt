@@ -5,6 +5,7 @@ import android.util.Log
 const val KEY_VALUE_FILENAME_TO_COURSENAME_DIV = "<DIVIDER_BETWEEN_FILENAME_AND_COURSENAME>"
 
 class FilenameCoursenamePair{
+    // TODO Gson? Converters in DataTypeConverters.kt
     fun getEntry(keyValue: Pair<String, String>): String = "${keyValue.first}$KEY_VALUE_FILENAME_TO_COURSENAME_DIV${keyValue.second}"
     fun getPair(entry: String): Pair<String, String>{
         val list = entry.split(KEY_VALUE_FILENAME_TO_COURSENAME_DIV)
