@@ -53,13 +53,13 @@ class ExportListener(
     }
 
     override fun onClick(v: View?) {
-        if (!dataIsValid()) return
-        val trackContainer = exportPOJO.trackContainer
-        trackContainer ?: return
         if (!permInfoProvider.permWriteIsGranted()) {
             toaster.toast(ctx.getString("permission_needed"), Toast.LENGTH_LONG)
             return
         }
+        if (!dataIsValid()) return
+        val trackContainer = exportPOJO.trackContainer
+        trackContainer ?: return
 
         // https://medium.com/coding-blocks/making-asynctask-obsolete-with-kotlin-5fe1d944d69
         // https://antonioleiva.com/anko-background-kotlin-android/

@@ -30,6 +30,8 @@ import kotlinx.android.synthetic.main.activity_view_results.*
 import kotlinx.android.synthetic.main.content_connectiq.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import radim.outfit.core.async.ShallowParcel
+import radim.outfit.core.async.getShallow
 import radim.outfit.core.persistence.*
 import radim.outfit.core.share.logic.ConnectIQManager
 import radim.outfit.core.share.logic.getEstimatedDownloadTimeInSeconds
@@ -55,8 +57,9 @@ class ViewResultsActivity : AppCompatActivity(),
 
     private val tag = "VIEW_RESULTS"
     private lateinit var connectIQManager: ConnectIQManager
-    private var shareFitReady = false
     private val btBroadcastReceiver = BTBroadcastReceiver()
+
+    private var shareFitReady = false
 
     private val idToStatus: MutableMap<Long, IQDevice.IQDeviceStatus> = mutableMapOf()
 
@@ -77,7 +80,7 @@ class ViewResultsActivity : AppCompatActivity(),
                 true
             }
             R.id.share_standard -> {
-                shareCourse()
+                if (::parcel.isInitialized) shareCourse(parcel.getShallow())
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -88,7 +91,7 @@ class ViewResultsActivity : AppCompatActivity(),
     fun onCheckBoxCCIQClicked(checkboxCCIQ: View) {
         if (checkboxCCIQ is CheckBox) {
             setCheckBoxStatus(checkboxCCIQ.isChecked)
-            if (checkboxCCIQ.isChecked) startConnectIQServices()
+            if (checkboxCCIQ.isChecked && ::parcel.isInitialized) startConnectIQServices(parcel.getShallow())
             else stopConnectIQServices()
         }
     }
@@ -137,12 +140,16 @@ class ViewResultsActivity : AppCompatActivity(),
                 ::onAppEvent,
                 ::onFirstINFITDetected
         )
+
+        if (intent.hasExtra(EXTRA_MESSAGE_VIEW_RESULTS)) {
+            parcel = intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
+        }
     }
 
-    private fun buildStats(): SpannableStringBuilder {
+    private fun buildStats(shallowParcel: ShallowParcel): SpannableStringBuilder {
         val messagesAsSpannableStringBuilder = SpannableStringBuilder()
-        if (::parcel.isInitialized && parcel.type == ViewResultsParcel.Type.REGULAR) {
-            val bufferHead = File(parcel.buffer[0])
+        if (shallowParcel.type == ViewResultsParcel.Type.REGULAR) {
+            val bufferHead = File(shallowParcel.buffer[0])
 
             if (bufferHead.exists()) {
                 val secondsTotal = getEstimatedDownloadTimeInSeconds(bufferHead.length())
@@ -152,16 +159,19 @@ class ViewResultsActivity : AppCompatActivity(),
                         append("\n")
                     }
                 }
-                parcel.messages.forEach { with(messagesAsSpannableStringBuilder) { append(it); append("\n") } }
+                shallowParcel.messages.forEach { with(messagesAsSpannableStringBuilder) { append(it); append("\n") } }
             }
 
             messagesAsSpannableStringBuilder.append("\n${this.getString("courses")}\n")
-            val existingFiles = getListOfExistingFiles(parcel.buffer)
-            existingFiles.forEach { messagesAsSpannableStringBuilder.append(parcel.fileNameToCourseName[it.name]?:"?").append("\n") }
+            val existingFiles = getListOfExistingFiles(shallowParcel.buffer.toTypedArray())
+            existingFiles.forEach {
+                messagesAsSpannableStringBuilder.append(shallowParcel.fileNameToCoursename[it.name]
+                        ?: "?").append("\n")
+            }
             return messagesAsSpannableStringBuilder
         }
-        if (::parcel.isInitialized && parcel.type != ViewResultsParcel.Type.REGULAR) {
-            parcel.messages.forEach { with(messagesAsSpannableStringBuilder) { append(it); append("\n") } }
+        if (shallowParcel.type != ViewResultsParcel.Type.REGULAR) {
+            shallowParcel.messages.forEach { with(messagesAsSpannableStringBuilder) { append(it); append("\n") } }
             return messagesAsSpannableStringBuilder
         }
         messagesAsSpannableStringBuilder.append("?")
@@ -191,33 +201,25 @@ class ViewResultsActivity : AppCompatActivity(),
     // NANO HTTPD START
     private lateinit var server: LocalHostServer
 
-    private fun bindNanoHTTPD(): BindNanoHTTPDResult {
+    private fun bindNanoHTTPD(filenamesExisting: List<String>, shallowParcel: ShallowParcel): BindNanoHTTPDResult {
+
+        if (filenamesExisting.isEmpty()) return BindNanoHTTPDResult.BindNanoFailure(getString("zero_length_buffer"))
 
         unbindNanoHTTPD()
 
-        if (!::parcel.isInitialized) return BindNanoHTTPDResult.BindNanoFailure(getString("ciqservice_generic_error"))
-
-        val size: Int
         try {
-            val filenamesOnly = mutableListOf<String>()
-            parcel.buffer.forEach {
-                //what if file does not exist anymore?
-                if (File(it).exists())
-                    filenamesOnly.add(it.substring(it.lastIndexOf(File.separator) + 1))
-            }
-            if (filenamesOnly.size == 0) return BindNanoHTTPDResult.BindNanoFailure(getString("zero_length_buffer"))
             server = LocalHostServer(NANOHTTPD_PORT,
                     File("${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"),
-                    filenamesOnly,
-                    parcel.fileNameToCourseName)
+                    filenamesExisting,
+                    shallowParcel.fileNameToCoursename)
             if (DEBUG_MODE) Log.i(tag, "JSONArray, coursenames: ${server.coursenamesAsJSON()}")
             server.start()
-            size = filenamesOnly.size
+
         } catch (e: Exception) {
             Log.e(tag, e.localizedMessage)
             return BindNanoHTTPDResult.BindNanoFailure(getString("ciqservice_generic_error"))
         }
-        return BindNanoHTTPDResult.BindNanoSuccess(size)
+        return BindNanoHTTPDResult.BindNanoSuccess(filenamesExisting.size)
     }
 
     sealed class BindNanoHTTPDResult {
@@ -242,34 +244,30 @@ class ViewResultsActivity : AppCompatActivity(),
     //
     override fun onStart() {
         super.onStart()
-
         Log.e(tag, "onStart")
 
-        if (intent.hasExtra(EXTRA_MESSAGE_VIEW_RESULTS)) {
-            parcel = intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
-        }
-
-        if (DEBUG_MODE && ::parcel.isInitialized) {
-            Log.i(tag, "Circular buffer of export PATHS:")
-            parcel.buffer.forEach { Log.i(tag, it) }
-            Log.i(tag, "Circular buffer of export MAPPING FROM FILENAMES TO COURSENAMES:")
-            Log.i(tag, parcel.fileNameToCourseName.toString())
+        // fire and forget writing stats to ui
+        fun doStats(shallowParcel: ShallowParcel) {
+            doAsync {
+                val builder = buildStats(shallowParcel)
+                uiThread { populateStats(builder) }
+            }
         }
 
         val viewModel = getViewModel()
         val dirToServeFromPath = "${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"
 
         if (DEBUG_MODE) {
-            Log.e(tag, "viewModel.fileOpsDone ${viewModel.fileOpsDone}")
-            Log.e(tag, "::parcel.isInitialized ${::parcel.isInitialized}")
-            Log.e(tag, "viewModel.parcelPersistenceDone ${viewModel.parcelPersistenceDone}")
+            Log.w(tag, "viewModel.fileOpsDone ${viewModel.fileOpsDone}")
+            Log.w(tag, "::parcel.isInitialized ${::parcel.isInitialized}")
+            Log.w(tag, "viewModel.parcelPersistenceDone ${viewModel.parcelPersistenceDone}")
         }
 
         // only the very first entry of regular parcel (got from previous (main) activity)
         // OR
         // every entry if in standalone mode (no parcel in the intent)
         // TODO
-        // -- parcel is not a property of view model. No good.
+        // -- parcel is not a property of view model.
         if (!viewModel.fileOpsDone ||
                 !::parcel.isInitialized ||
                 !viewModel.parcelPersistenceDone) {
@@ -284,7 +282,6 @@ class ViewResultsActivity : AppCompatActivity(),
                         !::parcel.isInitialized) {
 
                     var db: ParcelDatabase? = null
-
                     try {
                         db = Room.databaseBuilder(
                                 applicationContext,
@@ -316,7 +313,6 @@ class ViewResultsActivity : AppCompatActivity(),
                             File(dirToServeFromPath).mkdir()
                             dataToServeReady = emptyTarget(dirToServeFromPath)
                             val existingFiles = getListOfExistingFiles(parcel.buffer)
-                            //if(dataToServeReady) dataToServeReady = existingFiles.isNotEmpty()
                             if (dataToServeReady) dataToServeReady = copyFilesIntoTarget(dirToServeFromPath, existingFiles)
                             Log.e(tag, "data to serve ready: $dataToServeReady")
                         }
@@ -336,24 +332,24 @@ class ViewResultsActivity : AppCompatActivity(),
                         lookUpConnectiqCHCKBOX()
 
                         if (dataToServeReady && parcel.type == ViewResultsParcel.Type.REGULAR) {
-                            shareFitReady = true
                             viewModel.fileOpsDone = true
-                            if (content_connectiqCHCKBOX.isChecked) startConnectIQServices() // includes disableExecutive() // START
+                            shareFitReady = true
+                            if (content_connectiqCHCKBOX.isChecked) startConnectIQServices(parcel.getShallow()) // includes disableExecutive() // START
                             else enableExecutive()
                         } else {
                             FailGracefullyLauncher().failGracefully(this@ViewResultsActivity, "file operations error")
                             finish()
                         }
                     }
-                    populateStats(buildStats())
+                    doStats(parcel.getShallow())
                 }
             }
         } else {
-            populateStats(buildStats())
-            shareFitReady = true
+            doStats(parcel.getShallow())
             lookUpConnectiqCHCKBOX()
+            shareFitReady = true
             if (content_connectiqCHCKBOX.isChecked)
-                startConnectIQServices() // includes disableExecutive()
+                startConnectIQServices(parcel.getShallow()) // includes disableExecutive()
             else enableExecutive()
         }
     }
@@ -362,7 +358,7 @@ class ViewResultsActivity : AppCompatActivity(),
     //
 
 
-    fun lookUpConnectiqCHCKBOX() {
+    private fun lookUpConnectiqCHCKBOX() {
         content_connectiqCHCKBOX.isChecked = this@ViewResultsActivity.getSharedPreferences(
                 getString(R.string.main_activity_preferences),
                 Context.MODE_PRIVATE).getBoolean(getString("checkbox_cciq"), true)
@@ -382,18 +378,30 @@ class ViewResultsActivity : AppCompatActivity(),
         unregisterReceiver(btBroadcastReceiver)
     }
 
-    private fun startConnectIQServices() {
+    private fun startConnectIQServices(shallowParcel: ShallowParcel) {
         Log.w("IQ", "START SERVICES")
-        val bindResult = bindNanoHTTPD()
-        when (bindResult) {
-            is BindNanoHTTPDResult.BindNanoSuccess -> {
-                connectIQManager.startConnectIQ()
-                if (DEBUG_MODE) Log.i(tag, "Bind result: served files.size: ${bindResult.size}")
+
+        val filenamesExisting = mutableListOf<String>()
+
+        doAsync {
+            shallowParcel.buffer.forEach {
+                if (File(it).exists())
+                    filenamesExisting.add(it.substring(it.lastIndexOf(File.separator) + 1))
             }
-            is BindNanoHTTPDResult.BindNanoFailure -> {
-                content_connectiqTVTextBoxInfo.text = bindResult.why
-                content_connectiqTVTextBoxInfo.setTextColor(Color.RED)
-                enableExecutive()
+
+            uiThread {
+                val bindResult = bindNanoHTTPD(filenamesExisting, shallowParcel)
+                when (bindResult) {
+                    is BindNanoHTTPDResult.BindNanoSuccess -> {
+                        connectIQManager.startConnectIQ()
+                        if (DEBUG_MODE) Log.i(tag, "Bind result: served files.size: ${bindResult.size}")
+                    }
+                    is BindNanoHTTPDResult.BindNanoFailure -> {
+                        content_connectiqTVTextBoxInfo.text = bindResult.why
+                        content_connectiqTVTextBoxInfo.setTextColor(Color.RED)
+                        enableExecutive()
+                    }
+                }
             }
         }
     }
@@ -602,33 +610,49 @@ class ViewResultsActivity : AppCompatActivity(),
     }
     // INDICATOR END
 
-    fun shareCourse() {
-        if (!shareFitReady) return
-        val afterFiles = getListOfFitFilesRecursively(
-                File("${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"))
-        val bufferHead = if (afterFiles.isNotEmpty()) afterFiles[0] else null
-        val uriToShare: Uri? = if (bufferHead != null) {
-            try {
-                FileProvider.getUriForFile(
-                        this@ViewResultsActivity,
-                        "radim.outfit.fileprovider",
-                        bufferHead)
-            } catch (e: IllegalArgumentException) {
-                Log.e(tag, "The selected file can't be shared. ${e.localizedMessage}")
-                null
+    private fun shareCourse(shallowParcel: ShallowParcel) {
+        if(!shareFitReady) return
+        doAsync {
+
+            val afterFiles: MutableList<File> = mutableListOf()
+            shallowParcel.buffer.forEach {
+                val file = File(it); if (file.exists()) afterFiles.add(file)
             }
-        } else null
-        if (uriToShare != null) {
-            val launchIntent = Intent(Intent.ACTION_SEND)
-            with(launchIntent) {
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                type = MIME_FIT
-                putExtra(Intent.EXTRA_STREAM, uriToShare)
+            val bufferHeadExternalStorage = if (afterFiles.isNotEmpty()) afterFiles[0] else null
+            var bufferHeadInternalStorage =
+                    if (bufferHeadExternalStorage != null)
+                        File("${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME" +
+                                "${File.separator}${bufferHeadExternalStorage.name}") else null
+            if (bufferHeadInternalStorage != null && !bufferHeadInternalStorage.exists())
+                bufferHeadInternalStorage = null
+
+            uiThread {
+
+                val uriToShare: Uri? =
+                        if (bufferHeadInternalStorage != null) {
+                            try {
+                                FileProvider.getUriForFile(
+                                        this@ViewResultsActivity,
+                                        "radim.outfit.fileprovider",
+                                        bufferHeadInternalStorage)
+                            } catch (e: IllegalArgumentException) {
+                                Log.e(tag, "The selected file can't be shared. ${e.localizedMessage}")
+                                null
+                            }
+                        } else null
+                if (uriToShare != null) {
+                    val launchIntent = Intent(Intent.ACTION_SEND)
+                    with(launchIntent) {
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        type = MIME_FIT
+                        putExtra(Intent.EXTRA_STREAM, uriToShare)
+                    }
+                    Toast.makeText(this@ViewResultsActivity,
+                            "${this@ViewResultsActivity.getString("sharing_buffer_head")} " +
+                                    "${bufferHeadInternalStorage?.name}", Toast.LENGTH_LONG).show()
+                    startActivity(Intent.createChooser(launchIntent, getString("share_single")))
+                }
             }
-            Toast.makeText(this, "${this.getString("sharing_buffer_head")} ${bufferHead?.name}", Toast.LENGTH_LONG).show()
-            startActivity(Intent.createChooser(launchIntent, getString("share_single")))
-        } else {
-            Toast.makeText(this, getString("share_error"), Toast.LENGTH_LONG).show()
         }
     }
 }

@@ -66,7 +66,7 @@
     <string name="zero_length_buffer">Žádné exportované soubory nenalezeny. Žádný CIQ servis.</string>
     <string name="ciqservice_generic_error">CIQ servis - chyba.</string>
     <string name="est_download_time">Čas stažení přes ConnectIQ (odhad):</string>
-    <string name="courses">Sdílené trasy:</string>
+    <string name="courses">Trasy:</string>
 
     <!-- ViewResultsActivity - default parcel -->
     <string name="default_parcel1">Vítejte!</string>
@@ -85,7 +85,6 @@
 
     <!-- FileProvider / ViewResultActivity-->
     <string name="share_single">Sdílet trasu</string>
-    <string name="share_error">Chyba při sdílení trasy</string>
 
     <!--
 install_needed_title — Dialog title for when Garmin Connect Mobile needs to be installed.

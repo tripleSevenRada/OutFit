@@ -87,7 +87,7 @@
     <string name="device">device</string>
     <string name="zero_length_buffer">No exported files found. No CIQ service.</string>
     <string name="ciqservice_generic_error">CIQ service error.</string>
-    <string name="courses">Shared courses:</string>
+    <string name="courses">Serving courses:</string>
 
 
     <!-- ViewResultsActivity - default parcel -->
@@ -107,7 +107,6 @@
 
     <!-- FileProvider / ViewResultActivity-->
     <string name="share_single">Share course</string>
-    <string name="share_error">Error sharing course</string>
 
     <!-- Dialogs to prompt user to install or update IN FIT / ViewResultsActivity -->
     <string name="infit_dialog_infit_not_installed_message">IN FIT, the ConnectIQ companion App is not installed on</string>
