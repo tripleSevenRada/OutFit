@@ -38,5 +38,17 @@ class Converters {
             return Gson().fromJson(value, listType)
         }
 
+        @TypeConverter
+        @JvmStatic
+        fun fromMapStringString(map: Map<String, String>): String {
+            return Gson().toJson(map)
+        }
+
+        @TypeConverter
+        @JvmStatic
+        fun toMapStringString(value: String): Map<String, String> {
+            val mapType = genericType<Map<String,String>>()
+            return Gson().fromJson(value, mapType)
+        }
     }
 }

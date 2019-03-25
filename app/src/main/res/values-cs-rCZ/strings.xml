@@ -59,7 +59,25 @@
     <string name="found_devices_label">Nalezená zařízení:</string>
     <string name="found_companion">. IN FIT, Connect IQ aplikace:</string>
 
+    <string name="how_to_use_infit">"Prosím podrž OUT FIT na popředí a spusť IN FIT na"</string>
+    <string name="waiting_for_a_device_connected">Čeká se na nějaké CIQ zařízení.</string>
+    <string name="ciq_service_off">CIQ servis je vypnutý.</string>
+    <string name="device">zařízení</string>
+    <string name="zero_length_buffer">Žádné exportované soubory nenalezeny. Žádný CIQ servis.</string>
+    <string name="ciqservice_generic_error">CIQ servis - chyba.</string>
     <string name="est_download_time">Čas stažení přes ConnectIQ (odhad):</string>
+
+    <!-- ViewResultsActivity - default parcel -->
+    <string name="default_parcel1">Vítejte!</string>
+    <string name="default_parcel2">Momentálně nemáme žádné trasy.</string>
+    <string name="default_parcel3.1">Locus -> Hlavní menu -> Trasy</string>
+    <string name="default_parcel3.2">Detail Trasy -> INFORMACE</string>
+    <string name="default_parcel3.3">Spodní sdílecí záložka -> Locus - OUT FIT</string>
+    <string name="default_parcel4">...to chce screenshot :-)</string>
+    
+    <!-- ViewResultsActivity - error parcel -->
+    <string name="error_parcel1">Chyba v databázi :-(</string>
+    <string name="error_parcel2">Vymazání dat aplikace (v nastavení telefonu) by to mělo vyřešit.</string>
 
     <!-- Locus dir pick-->
     <string name="pick_dir_message">Vyber adresář pro export</string>
@@ -119,13 +137,6 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
     <string name="infit_dialog_infit_not_installed_message">IN FIT, ConnectIQ aplikace není nainstalovaná na</string>
     <string name="bluetooth_status_icon">Bluetooth stav</string>
     <string name="later">Později</string>
-
-    <string name="how_to_use_infit">"Prosím podrž OUT FIT na popředí a spusť IN FIT na"</string>
-    <string name="waiting_for_a_device_connected">Čeká se na nějaké CIQ zařízení.</string>
-    <string name="ciq_service_off">CIQ servis je vypnutý.</string>
-    <string name="device">zařízení</string>
-    <string name="zero_length_buffer">Žádné exportované soubory nenalezeny. Žádný CIQ servis.</string>
-    <string name="ciqservice_generic_error">CIQ servis - chyba.</string>
 
     <string name="bt_may_be_needed">Bluetooth je vypnuté.</string>
 

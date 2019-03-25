@@ -11,6 +11,6 @@ data class ViewResultsParcelEntity(
         @PrimaryKey val pid: Int,
         @ColumnInfo(name = "title") val title: String,
         @ColumnInfo(name = "messages") val messages: List<SpannableString>,
-        @ColumnInfo(name = "buffer") val buffer: List<String>
-        //@ColumnInfo(name = "filename_to_coursename") val filenameToCoursename: Map<String, String>
+        @ColumnInfo(name = "buffer") val buffer: List<String>,
+        @ColumnInfo(name = "filename_to_coursename") val filenameToCoursename: Map<String, String>
 )

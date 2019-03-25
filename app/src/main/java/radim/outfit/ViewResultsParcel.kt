@@ -69,8 +69,8 @@ class ViewResultsParcel : Parcelable {
 
     override fun describeContents(): Int = messages.size
 
-    public enum class Type {
-        REGULAR, DEFAULT
+    enum class Type {
+        REGULAR, DEFAULT, ERROR
     }
 
     companion object {
