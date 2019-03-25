@@ -40,7 +40,7 @@ fun getSpannableDownloadInfo(secondsTot: Int, ctx: AppCompatActivity): Spannable
     val secs = secondsTot % 60
     val prefix = ctx.getString("est_download_time")
     val timeS = if (mins > 0) "$mins $minsS, $secs $secsS" else "$secs $secsS"
-    val publish = "$prefix\n\t\t\t$timeS"
+    val publish = "$prefix\n$timeS"
     val spannable = SpannableString(publish)
     spannable.setSpan(BackgroundColorSpan(color), (publish.length - timeS.length), publish.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
     return spannable

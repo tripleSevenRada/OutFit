@@ -139,34 +139,37 @@ class ViewResultsActivity : AppCompatActivity(),
         )
     }
 
-    private fun buildStats() {
+    private fun buildStats(): SpannableStringBuilder {
+        val messagesAsSpannableStringBuilder = SpannableStringBuilder()
+        if (::parcel.isInitialized && parcel.type == ViewResultsParcel.Type.REGULAR) {
+            val bufferHead = File(parcel.buffer[0])
 
-        if (::parcel.isInitialized) {
-            val viewModel = getViewModel()
-            if (viewModel.statsSpannableStringBuilder != null) return
-            val messagesAsSpannableStringBuilder = SpannableStringBuilder()
-            val fileToShare: File? = viewModel.bufferHead
-            if (fileToShare != null) {
-                val secondsTotal = getEstimatedDownloadTimeInSeconds(fileToShare.length())
+            if (bufferHead.exists()) {
+                val secondsTotal = getEstimatedDownloadTimeInSeconds(bufferHead.length())
                 if (secondsTotal > DOWNLOAD_TIME_EST_TO_REPORT) {
                     with(messagesAsSpannableStringBuilder) {
                         append(getSpannableDownloadInfo(secondsTotal, this@ViewResultsActivity))
                         append("\n")
                     }
                 }
-            } else {
-                Log.e(tag, "fileToShare = null")
+                parcel.messages.forEach { with(messagesAsSpannableStringBuilder) { append(it); append("\n") } }
             }
+
+            messagesAsSpannableStringBuilder.append("\n${this.getString("courses")}\n")
+            val existingFiles = getListOfExistingFiles(parcel.buffer)
+            existingFiles.forEach { messagesAsSpannableStringBuilder.append(parcel.fileNameToCourseName[it.name]?:"?").append("\n") }
+            return messagesAsSpannableStringBuilder
+        }
+        if (::parcel.isInitialized && parcel.type != ViewResultsParcel.Type.REGULAR) {
             parcel.messages.forEach { with(messagesAsSpannableStringBuilder) { append(it); append("\n") } }
-            viewModel.statsSpannableStringBuilder = messagesAsSpannableStringBuilder
-        } else Log.e(tag, "parcel.isInitialized NOT")
+            return messagesAsSpannableStringBuilder
+        }
+        messagesAsSpannableStringBuilder.append("?")
+        return messagesAsSpannableStringBuilder
     }
 
-    private fun populateStats() {
-        val viewModel = getViewModel()
-        if (viewModel.statsSpannableStringBuilder != null) {
-            content_statsTVData.text = viewModel.statsSpannableStringBuilder
-        }
+    private fun populateStats(builder: SpannableStringBuilder) {
+        content_statsTVData.text = builder
     }
 
     //BT
@@ -234,7 +237,6 @@ class ViewResultsActivity : AppCompatActivity(),
     // NANO HTTPD END
 
 
-
     //
     //
     //
@@ -255,7 +257,6 @@ class ViewResultsActivity : AppCompatActivity(),
         }
 
         val viewModel = getViewModel()
-        populateStats() // only if stats in viewModel are not null
         val dirToServeFromPath = "${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"
 
         if (DEBUG_MODE) {
@@ -315,8 +316,8 @@ class ViewResultsActivity : AppCompatActivity(),
                             File(dirToServeFromPath).mkdir()
                             dataToServeReady = emptyTarget(dirToServeFromPath)
                             val existingFiles = getListOfExistingFiles(parcel.buffer)
-                            if(dataToServeReady) dataToServeReady = existingFiles.isNotEmpty()
-                            if(dataToServeReady) dataToServeReady = copyFilesIntoTarget(dirToServeFromPath, existingFiles)
+                            //if(dataToServeReady) dataToServeReady = existingFiles.isNotEmpty()
+                            if (dataToServeReady) dataToServeReady = copyFilesIntoTarget(dirToServeFromPath, existingFiles)
                             Log.e(tag, "data to serve ready: $dataToServeReady")
                         }
                     } else dataToServeReady = false
@@ -329,19 +330,13 @@ class ViewResultsActivity : AppCompatActivity(),
                     if (parcel.type != ViewResultsParcel.Type.REGULAR) {
                         disableCheckBoxStatusPersistence = true
                         content_connectiqCHCKBOX.isChecked = false
-                        buildStats()
-                        populateStats()
                         enableExecutive()
                         //returns
                     } else {
                         lookUpConnectiqCHCKBOX()
 
                         if (dataToServeReady && parcel.type == ViewResultsParcel.Type.REGULAR) {
-                            val afterFiles = getListOfFitFilesRecursively(File(dirToServeFromPath))
-                            viewModel.bufferHead = if (afterFiles.isNotEmpty()) afterFiles[0] else null
                             shareFitReady = true
-                            buildStats()
-                            populateStats()
                             viewModel.fileOpsDone = true
                             if (content_connectiqCHCKBOX.isChecked) startConnectIQServices() // includes disableExecutive() // START
                             else enableExecutive()
@@ -350,9 +345,11 @@ class ViewResultsActivity : AppCompatActivity(),
                             finish()
                         }
                     }
+                    populateStats(buildStats())
                 }
             }
         } else {
+            populateStats(buildStats())
             shareFitReady = true
             lookUpConnectiqCHCKBOX()
             if (content_connectiqCHCKBOX.isChecked)
@@ -365,8 +362,7 @@ class ViewResultsActivity : AppCompatActivity(),
     //
 
 
-
-    fun lookUpConnectiqCHCKBOX(){
+    fun lookUpConnectiqCHCKBOX() {
         content_connectiqCHCKBOX.isChecked = this@ViewResultsActivity.getSharedPreferences(
                 getString(R.string.main_activity_preferences),
                 Context.MODE_PRIVATE).getBoolean(getString("checkbox_cciq"), true)
@@ -608,14 +604,15 @@ class ViewResultsActivity : AppCompatActivity(),
 
     fun shareCourse() {
         if (!shareFitReady) return
-        val viewModel = getViewModel()
-        val fileToShare: File? = viewModel.bufferHead
-        val uriToShare: Uri? = if (fileToShare != null) {
+        val afterFiles = getListOfFitFilesRecursively(
+                File("${filesDir.absolutePath}${File.separator}$NANOHTTPD_SERVE_FROM_DIR_NAME"))
+        val bufferHead = if (afterFiles.isNotEmpty()) afterFiles[0] else null
+        val uriToShare: Uri? = if (bufferHead != null) {
             try {
                 FileProvider.getUriForFile(
                         this@ViewResultsActivity,
                         "radim.outfit.fileprovider",
-                        fileToShare)
+                        bufferHead)
             } catch (e: IllegalArgumentException) {
                 Log.e(tag, "The selected file can't be shared. ${e.localizedMessage}")
                 null
@@ -628,6 +625,7 @@ class ViewResultsActivity : AppCompatActivity(),
                 type = MIME_FIT
                 putExtra(Intent.EXTRA_STREAM, uriToShare)
             }
+            Toast.makeText(this, "${this.getString("sharing_buffer_head")} ${bufferHead?.name}", Toast.LENGTH_LONG).show()
             startActivity(Intent.createChooser(launchIntent, getString("share_single")))
         } else {
             Toast.makeText(this, getString("share_error"), Toast.LENGTH_LONG).show()

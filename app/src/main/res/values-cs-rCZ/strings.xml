@@ -66,6 +66,7 @@
     <string name="zero_length_buffer">Žádné exportované soubory nenalezeny. Žádný CIQ servis.</string>
     <string name="ciqservice_generic_error">CIQ servis - chyba.</string>
     <string name="est_download_time">Čas stažení přes ConnectIQ (odhad):</string>
+    <string name="courses">Sdílené trasy:</string>
 
     <!-- ViewResultsActivity - default parcel -->
     <string name="default_parcel1">Vítejte!</string>
@@ -145,6 +146,7 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
 
     <!-- menu view_results-->
     <string name="menu_share_standard">Sdílet mimo CIQ</string>
+    <string name="sharing_buffer_head">Sdílím:</string>
 
     <!-- ExplainWaypointsActivity -->
     <string name="activity_explain_waypoints_label">OUT FIT - coursepointy</string>

@@ -87,6 +87,8 @@
     <string name="device">device</string>
     <string name="zero_length_buffer">No exported files found. No CIQ service.</string>
     <string name="ciqservice_generic_error">CIQ service error.</string>
+    <string name="courses">Shared courses:</string>
+
 
     <!-- ViewResultsActivity - default parcel -->
     <string name="default_parcel1">Welcome!</string>
@@ -170,6 +172,7 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
 
     <!-- menu view_results-->
     <string name="menu_share_standard">Share non CIQ</string>
+    <string name="sharing_buffer_head">Sharing:</string>
 
     <!-- ExplainWaypointsActivity -->
     <string name="activity_explain_waypoints_label">OUT FIT - coursepoints</string>
