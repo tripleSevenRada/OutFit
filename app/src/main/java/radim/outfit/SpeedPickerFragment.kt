@@ -16,15 +16,9 @@ import android.widget.RadioButton
 import android.widget.TextView
 import radim.outfit.core.export.work.*
 import java.lang.Exception
-import android.content.Context.WINDOW_SERVICE
 import android.content.res.Configuration
-import android.support.v4.content.ContextCompat.getSystemService
-import android.view.WindowManager
-import android.view.Display
 import kotlinx.android.synthetic.main.content_speed_picker_duration.*
 import android.util.TypedValue
-import kotlinx.android.synthetic.main.content_speed_picker_speed.*
-
 
 const val DEFAULT_UNITS_RADIO_BUTTON_ID = R.id.content_speed_picker_speedBTNKmh
 

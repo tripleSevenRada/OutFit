@@ -14,7 +14,6 @@ import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
-import android.support.v4.app.Fragment
 import android.support.v4.content.FileProvider
 import android.text.SpannableStringBuilder
 import android.util.Log
@@ -53,8 +52,7 @@ const val BT_ICON_ALPHA = 100
 const val DOWNLOAD_TIME_EST_TO_REPORT = 10
 
 class ViewResultsActivity : AppCompatActivity(),
-        IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener,
-        ExplainTrackTools.OnFragmentInteractionListener {
+        IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener{
 
     //https://drive.google.com/open?id=18Z1mDp_IcV8NQWlSipONdPs1XWaNjsOr
 
@@ -67,9 +65,6 @@ class ViewResultsActivity : AppCompatActivity(),
     private val idToStatus: MutableMap<Long, IQDevice.IQDeviceStatus> = mutableMapOf()
 
     private lateinit var parcel: ViewResultsParcel
-
-    // Fragment interaction
-    override fun onFragmentInteraction(interaction: Int) {}
 
     // Menu START
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -356,7 +351,9 @@ class ViewResultsActivity : AppCompatActivity(),
                         content_connectiqCHCKBOX.isChecked = false
                         enableExecutive()
                         if (parcel.type == ViewResultsParcel.Type.DEFAULT) {
-                            //TODO
+                            val fm = supportFragmentManager
+                            val etf = ExplainTrackToolsFragment()
+                            etf.show(fm, "explain_track_tools_fragment")
                         }
                         //returns
                     } else {

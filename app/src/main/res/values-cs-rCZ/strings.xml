@@ -71,6 +71,8 @@
     <!-- ViewResultsActivity - default parcel -->
     <string name="default_parcel1">Vítejte!</string>
     <string name="default_parcel2">Momentálně nemáme žádné trasy.</string>
+
+    <string name="explain_track_tools_menu">Kde najít OUT FIT v Locusu</string>
     
     <!-- ViewResultsActivity - error parcel -->
     <string name="error_parcel1">Chyba v databázi :-(</string>

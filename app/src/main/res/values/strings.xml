@@ -94,6 +94,9 @@
     <string name="default_parcel1">Welcome!</string>
     <string name="default_parcel2">Currently, there are no exported courses.</string>
 
+    <string name="explain_track_tools_menu">Where to find OUT FIT in Locus</string>
+
+
     <!-- ViewResultsActivity - error parcel -->
     <string name="error_parcel1">Database error :-(</string>
     <string name="error_parcel2">Deleting app data in settings should solve this.</string>
