@@ -71,10 +71,6 @@
     <!-- ViewResultsActivity - default parcel -->
     <string name="default_parcel1">Vítejte!</string>
     <string name="default_parcel2">Momentálně nemáme žádné trasy.</string>
-    <string name="default_parcel3.1">Locus -> Hlavní menu -> Trasy</string>
-    <string name="default_parcel3.2">Detail Trasy -> INFORMACE</string>
-    <string name="default_parcel3.3">Spodní sdílecí záložka -> Locus - OUT FIT</string>
-    <string name="default_parcel4">...to chce screenshot :-)</string>
     
     <!-- ViewResultsActivity - error parcel -->
     <string name="error_parcel1">Chyba v databázi :-(</string>

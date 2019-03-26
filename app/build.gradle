@@ -19,7 +19,6 @@ android {
                 arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
             }
         }
-
     }
     buildTypes {
         release {
@@ -87,3 +86,10 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.2'
 }
 
+dependencies {
+    implementation 'com.android.support.constraint:constraint-layout:+'
+}
+
+dependencies {
+    implementation 'com.android.support:support-v4:28.+'
+}

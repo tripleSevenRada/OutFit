@@ -9,11 +9,7 @@ fun getDefaultParcel(ctx: AppCompatActivity): ViewResultsParcel{
     val title = "default title"
     val messages = listOf<SpannableString>(
             SpannableString(ctx.getString("default_parcel1")),
-            SpannableString(ctx.getString("default_parcel2")),
-            SpannableString(ctx.getString("default_parcel3.1")),
-            SpannableString(ctx.getString("default_parcel3.2")),
-            SpannableString(ctx.getString("default_parcel3.3")),
-            SpannableString(ctx.getString("default_parcel4"))
+            SpannableString(ctx.getString("default_parcel2"))
     )
     val buffer = arrayOf("")
     val filenameToCoursename = mapOf<String, String>(Pair("",""))

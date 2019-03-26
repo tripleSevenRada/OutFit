@@ -8,11 +8,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
+import android.support.v4.app.Fragment
 import android.support.v4.content.FileProvider
 import android.text.SpannableStringBuilder
 import android.util.Log
@@ -51,7 +53,8 @@ const val BT_ICON_ALPHA = 100
 const val DOWNLOAD_TIME_EST_TO_REPORT = 10
 
 class ViewResultsActivity : AppCompatActivity(),
-        IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener {
+        IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener,
+        ExplainTrackTools.OnFragmentInteractionListener {
 
     //https://drive.google.com/open?id=18Z1mDp_IcV8NQWlSipONdPs1XWaNjsOr
 
@@ -64,6 +67,9 @@ class ViewResultsActivity : AppCompatActivity(),
     private val idToStatus: MutableMap<Long, IQDevice.IQDeviceStatus> = mutableMapOf()
 
     private lateinit var parcel: ViewResultsParcel
+
+    // Fragment interaction
+    override fun onFragmentInteraction(interaction: Int) {}
 
     // Menu START
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -115,6 +121,10 @@ class ViewResultsActivity : AppCompatActivity(),
 
         disableExecutive()
 
+        initSharedPrefs(this)
+
+        if (!permWriteIsGranted(this)) requestPermWrite(this)
+
         val intentFilter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         registerReceiver(btBroadcastReceiver, intentFilter)
 
@@ -143,6 +153,24 @@ class ViewResultsActivity : AppCompatActivity(),
 
         if (intent.hasExtra(EXTRA_MESSAGE_VIEW_RESULTS)) {
             parcel = intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<String>, grantResults: IntArray) {
+        when (requestCode) {
+            REQUEST_CODE_PERM_WRITE_EXTERNAL -> {
+                // If request is cancelled, the result arrays are empty.
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    // permission was granted, yay!
+                } else {
+                    // permission denied, boo!
+                }
+                return
+            }
+            else -> {
+                // Ignore all other requests.
+            }
         }
     }
 
@@ -327,6 +355,9 @@ class ViewResultsActivity : AppCompatActivity(),
                         disableCheckBoxStatusPersistence = true
                         content_connectiqCHCKBOX.isChecked = false
                         enableExecutive()
+                        if (parcel.type == ViewResultsParcel.Type.DEFAULT) {
+                            //TODO
+                        }
                         //returns
                     } else {
                         lookUpConnectiqCHCKBOX()
@@ -611,7 +642,7 @@ class ViewResultsActivity : AppCompatActivity(),
     // INDICATOR END
 
     private fun shareCourse(shallowParcel: ShallowParcel) {
-        if(!shareFitReady) return
+        if (!shareFitReady) return
         doAsync {
 
             val afterFiles: MutableList<File> = mutableListOf()
