@@ -218,25 +218,12 @@ class MainActivity : AppCompatActivity(),
 
         sharedPreferences = this.getSharedPreferences(
                 getString(R.string.main_activity_preferences), Context.MODE_PRIVATE)
-
+        initSharedPrefs(this)
         with(sharedPreferences.edit()) {
-            if (!sharedPreferences.contains(getString("last_seen_speed_value_m_s")))
-                putFloat(getString("last_seen_speed_value_m_s"), SPEED_DEFAULT_M_S)
-            if (!sharedPreferences.contains(getString("last_seen_speed_units"))) {
-                putInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
-            }
             if (!sharedPreferences.contains("${CIRC_BUFF_POINTER_KEY_PREFIX}1"))
                 circularBufferPaths.initCircularBuffer(this)
             if (!sharedPreferences.contains("${CIRC_BUFF_POINTER_KEY_PREFIX}2"))
                 circularBufferCourseNames.initCircularBuffer(this)
-            if (!sharedPreferences.contains(getString("checkbox_cciq")))
-                putBoolean(getString("checkbox_cciq"), true)
-            if (!sharedPreferences.contains("dialog_app_not_installed_disabled"))
-                putBoolean("dialog_app_not_installed_disabled", false)
-            if (!sharedPreferences.contains("dialog_app_old_version_disabled"))
-                putBoolean("dialog_app_old_version_disabled", false)
-            if (!sharedPreferences.contains("dialog_use_infit_like_this_disabled"))
-                putBoolean("dialog_use_infit_like_this_disabled", false)
             apply()
         }
 
@@ -272,7 +259,7 @@ class MainActivity : AppCompatActivity(),
             setAppStorageRoot()
             setTvRootDir()
         } else {
-            requestPermWrite()
+            requestPermWrite(this)
         }
 
         Log.i(LOG_TAG_MAIN, "activeLocus.versionName: ${activeLocus.versionName}")
@@ -530,14 +517,15 @@ class MainActivity : AppCompatActivity(),
     // PERMISSION UTILS
 
     override fun permWriteIsGranted(): Boolean {
-        return ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+        return permWriteIsGranted(this)
+        //return ContextCompat.checkSelfPermission(this,
+          //      Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun requestPermWrite() {
+   /* private fun requestPermWrite() {
         ActivityCompat.requestPermissions(this,
                 arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), REQUEST_CODE_PERM_WRITE_EXTERNAL)
-    }
+    }*/
 
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
