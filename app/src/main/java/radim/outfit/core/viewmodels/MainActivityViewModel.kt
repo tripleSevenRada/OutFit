@@ -14,6 +14,7 @@ import radim.outfit.DEBUG_MODE
 import radim.outfit.LOG_TAG_MAIN
 import radim.outfit.R
 import radim.outfit.core.export.work.locusapiextensions.hasUndefinedWaypoints
+import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.Kruskal
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.WaypointsRelatedTrackPreprocessing
 
@@ -44,6 +45,11 @@ class MainActivityViewModel (application: Application): AndroidViewModel (applic
             var trackContainerBuilt: TrackContainer? = null
             try {
                 val track = LocusUtils.handleIntentTrackTools(app, intent)
+
+
+                Kruskal().clusterize(200.0, track)
+
+
                 trackContainerBuilt = if (track.hasUndefinedWaypoints()) {
                     if (DEBUG_MODE) {
                         val message = "Track has undefined waypoints"
