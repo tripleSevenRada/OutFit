@@ -14,9 +14,8 @@
         android:resizeableActivity="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".ExplainTrackToolsActivity"></activity>
+        android:theme="@style/AppTheme">
+
         <activity android:name=".ExplainWaypointsActivity" />
         <activity
             android:name=".MainActivity"

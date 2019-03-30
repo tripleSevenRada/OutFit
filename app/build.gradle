@@ -4,13 +4,21 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
+    signingConfigs {
+        play_upload {
+            keyAlias 'theOnly'
+            keyPassword 'pamatuji2311'
+            storeFile file('/home/radim/Dropbox/outFit/keys/dev_key_play.jks')
+            storePassword 'pamatuji2311'
+        }
+    }
     compileSdkVersion 28
     defaultConfig {
         applicationId "radim.outfit"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 3
+        versionName "1.0.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         // https://stackoverflow.com/questions/44322178/room-schema-export-directory-is-not-provided-to-the-annotation-processor-so-we/44424908#44424908
@@ -41,17 +49,15 @@ android {
 }
 
 dependencies {
-
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support:recyclerview-v7:28.0.0'
     testImplementation 'junit:junit:4.12'
     implementation 'org.slf4j:slf4j-api:1.7.25'
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    implementation 'ch.qos.logback:logback-classic:1.2.3'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-
     implementation files('libs/fit.jar')
     implementation files('libs/connectiq.jar')
 }

@@ -1,7 +1,6 @@
 package radim.outfit.core.share.logic
 
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v7.app.AppCompatActivity
@@ -17,10 +16,14 @@ class ConnectIQManager(
         private val ctx: AppCompatActivity,
         private val onStartInit: () -> Unit,
         private val onFinishInit: () -> Unit,
+        private val onInitError: (ConnectIQ.IQSdkErrorStatus?) -> Unit,
         private val onDeviceEvent: (IQDevice, IQDevice.IQDeviceStatus) -> Unit,
         private val onAppEvent: (IQDevice, IQApp.IQAppStatus) -> Unit,
         private val onFirstINFITDetected: (String) -> Unit
 ) {
+
+    enum class CIQInitResult{ SUCCESS, FAILURE, UNKNOWN }
+    enum class CIQInitStatus{ IN_PROGRESS, DONE }
 
     private var firstINFITReported = false
     private val tag = "ConnIQList"
@@ -30,15 +33,14 @@ class ConnectIQManager(
     private val companionAppId = "8c055fc4-ec4b-455b-a106-822f8bb340de"
     private val companionAppRequiredVersion = 1
 
-    private var connectIQIsInitialized = false
-    private var connectIQIsBeingInitialized = false
+    private var connectIQInitResult = CIQInitResult.UNKNOWN
+    private var connectIQSetup = CIQInitStatus.DONE
 
     fun startConnectIQ() {
-        if (!connectIQIsInitialized &&
-                !connectIQIsBeingInitialized) {
-            connectIQIsBeingInitialized = true
+        if (connectIQInitResult != CIQInitResult.SUCCESS && connectIQSetup == CIQInitStatus.DONE) {
+            connectIQSetup = CIQInitStatus.IN_PROGRESS
             onStartInit()
-            Log.i(tag, "init")
+            Log.w(tag, "init CONNECT IQ MAN")
             connectIQ.initialize(ctx, true, connectIQListener)
         }
     }
@@ -46,11 +48,15 @@ class ConnectIQManager(
     fun shutDownConnectIQ() {
         decoratedDevices.clear()
         unregisterForDeviceEvents()
-        shutdown()
+        if (listOf(CIQInitResult.SUCCESS, CIQInitResult.FAILURE).any{ it == connectIQInitResult}) {
+            Log.w(tag, "shutDownConnectIQ CONNECT IQ MAN")
+            connectIQ.shutdown(ctx)
+            connectIQInitResult == CIQInitResult.UNKNOWN
+        }
     }
 
     private fun unregisterForDeviceEvents() {
-        if (connectIQIsInitialized) {
+        if (listOf(CIQInitResult.SUCCESS).any{ it == connectIQInitResult}) {
             connectIQ.connectedDevices?.forEach {
                 if (it != null) connectIQ.unregisterForDeviceEvents(it)
             }
@@ -81,29 +87,29 @@ class ConnectIQManager(
         showDialog(dialog)
     }
 
-    private fun shutdown() {
-        if (connectIQIsInitialized) connectIQ.shutdown(ctx)
-        connectIQIsInitialized = false
-    }
-
     private val decoratedDevices = mutableSetOf<Long>()
 
     // connectIQListener
     inner class ConnectIQLifecycleListener : ConnectIQ.ConnectIQListener {
         // Called when initialization fails.
-        override fun onInitializeError(p0: ConnectIQ.IQSdkErrorStatus?) {
+        override fun onInitializeError(status: ConnectIQ.IQSdkErrorStatus?) {
             // A failure has occurred during initialization. Inspect
             // the IQSdkErrorStatus value for more information regarding the failure.
-            val errorMessage = p0?.toString() ?: "ConnectIQ platform init error"
+            val errorMessage = status?.toString() ?: "ConnectIQ platform init error"
             Log.e(tag, "onInitializeError: $errorMessage")
-            FailGracefullyLauncher().failGracefully(ctx, errorMessage)
-            ctx.finish()
+            connectIQSetup = CIQInitStatus.DONE
+            connectIQInitResult = CIQInitResult.FAILURE
+            shutDownConnectIQ()
+            // val status1 = ConnectIQ.IQSdkErrorStatus.GCM_NOT_INSTALLED
+            // val status2 = ConnectIQ.IQSdkErrorStatus.GCM_UPGRADE_NEEDED
+            // val status3 = ConnectIQ.IQSdkErrorStatus.SERVICE_ERROR
+            onInitError(status)
         }
 
         // Called when the SDK has been successfully initialized
         override fun onSdkReady() {
-            connectIQIsInitialized = true
-            connectIQIsBeingInitialized = false
+            connectIQSetup == CIQInitStatus.DONE
+            connectIQInitResult ==CIQInitResult.SUCCESS
             // Do any post initialization setup.
             Log.i(tag, "onSdkReady")
             // list connected and known devices

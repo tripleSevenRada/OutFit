@@ -22,6 +22,7 @@ class IQAppIsInvalidDialogFragment : DialogFragment() {
         fun onDialogPositiveClick(dialog: DialogFragment)
         fun onDialogNegativeClick(dialog: DialogFragment)
         fun onDialogNeutralClick(dialog: DialogFragment)
+        fun onDialogCancel(dialog: DialogFragment)
         fun setDialogVisible(visible: Boolean)
         fun getDialogVisible(): Boolean
         fun setDialogType(type: DialogType)
@@ -76,6 +77,7 @@ class IQAppIsInvalidDialogFragment : DialogFragment() {
 
     override fun onCancel(dialog: DialogInterface?) {
         super.onCancel(dialog)
+        mListener.onDialogCancel(this)
         mListener.setDialogVisible(false)
     }
 }

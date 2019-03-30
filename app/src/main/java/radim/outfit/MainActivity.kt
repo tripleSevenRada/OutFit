@@ -1,6 +1,5 @@
 package radim.outfit
 
-import android.Manifest
 import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
@@ -15,8 +14,6 @@ import locus.api.android.utils.LocusUtils
 import locus.api.android.utils.exceptions.RequiredVersionMissingException
 import java.io.File
 import android.content.pm.PackageManager
-import android.support.v4.content.ContextCompat
-import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuInflater
@@ -278,7 +275,7 @@ class MainActivity : AppCompatActivity(),
         val btManager = getSystemService(Context.BLUETOOTH_SERVICE)
         if (btManager is BluetoothManager) {
             val btAdapter = btManager.adapter
-            val state = btAdapter.state
+            val state = btAdapter?.state
             if (state == BluetoothAdapter.STATE_OFF) {
                 Log.w("onCreateMain", "onCreate BT STATE OFF")
                 val checkboxInShare = sharedPreferences.getBoolean((getString("checkbox_cciq")), true)

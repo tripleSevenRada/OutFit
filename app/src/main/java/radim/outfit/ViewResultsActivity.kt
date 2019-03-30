@@ -25,6 +25,7 @@ import kotlinx.android.synthetic.main.content_stats.*
 import android.view.View
 import android.widget.CheckBox
 import android.widget.Toast
+import com.garmin.android.connectiq.ConnectIQ
 import com.garmin.android.connectiq.IQApp
 import com.garmin.android.connectiq.IQDevice
 import kotlinx.android.synthetic.main.activity_view_results.*
@@ -127,7 +128,7 @@ class ViewResultsActivity : AppCompatActivity(),
         content_connectiqBTIcon.imageAlpha = BT_ICON_ALPHA
         if (btManager is BluetoothManager) {
             val btAdapter = btManager.adapter
-            val state = btAdapter.state
+            val state = btAdapter?.state
             if (state == BluetoothAdapter.STATE_OFF) {
                 Log.w("BTBroadcastReceiver", "onCreate BT STATE OFF")
                 content_connectiqBTIcon.setImageResource(R.mipmap.ic_bluetooth_disabled_black_24dp)
@@ -141,6 +142,7 @@ class ViewResultsActivity : AppCompatActivity(),
                 this,
                 ::onStartCIQInit,
                 ::onFinnishCIQInit,
+                ::onInitError,
                 ::onDeviceEvent,
                 ::onAppEvent,
                 ::onFirstINFITDetected
@@ -350,10 +352,12 @@ class ViewResultsActivity : AppCompatActivity(),
                         disableCheckBoxStatusPersistence = true
                         content_connectiqCHCKBOX.isChecked = false
                         enableExecutive()
-                        if (parcel.type == ViewResultsParcel.Type.DEFAULT) {
+                        if (parcel.type == ViewResultsParcel.Type.DEFAULT
+                                && ! getViewModel().explainTrackToolsFragmentShown) {
                             val fm = supportFragmentManager
                             val etf = ExplainTrackToolsFragment()
                             etf.show(fm, "explain_track_tools_fragment")
+                            getViewModel().explainTrackToolsFragmentShown = true
                         }
                         //returns
                     } else {
@@ -481,6 +485,13 @@ class ViewResultsActivity : AppCompatActivity(),
             content_connectiqTVTextBoxInfo.setTextColor(Color.GRAY)
         }
     }
+
+    private fun onInitError(why: ConnectIQ.IQSdkErrorStatus?){
+        Log.e(tag, "onInitError STATUS: $why")
+        content_connectiqCHCKBOX?.isChecked = false
+        enableExecutive()
+    }
+
     // ConnectIQ init loop END
 
     // IQAppIsInvalidDialogFragment.IQAppIsInvalidDialogListener IMPL BEGIN
@@ -519,6 +530,10 @@ class ViewResultsActivity : AppCompatActivity(),
     override fun onDialogNeutralClick(dialog: DialogFragment) {
         Log.i(tag, "onDialogNeutralClick")
         //TODO?
+    }
+
+    override fun onDialogCancel(dialog: DialogFragment) {
+        Log.i(tag, "onDialogCancel")
     }
 
     override fun setDialogVisible(visible: Boolean) = let { getViewModel().dialogShown = visible }
