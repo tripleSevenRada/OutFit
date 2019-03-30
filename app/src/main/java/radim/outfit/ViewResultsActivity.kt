@@ -441,7 +441,7 @@ class ViewResultsActivity : AppCompatActivity(),
     private fun stopConnectIQServices() {
         Log.w("IQ", "STOP SERVICES")
         unbindNanoHTTPD()
-        connectIQManager.shutDownConnectIQ()
+        connectIQManager.shutDownConnectIQ(ConnectIQManager.ShutDownReason.STANDARD)
         if (::indicatorIQTimer.isInitialized) {
             indicatorIQTimer.stop()
             if (::indicatorIQTimerCallback.isInitialized) indicatorIQTimerCallback.restart(View.VISIBLE)
@@ -488,6 +488,7 @@ class ViewResultsActivity : AppCompatActivity(),
 
     private fun onInitError(why: ConnectIQ.IQSdkErrorStatus?){
         Log.e(tag, "onInitError STATUS: $why")
+        connectIQManager.shutDownConnectIQ(ConnectIQManager.ShutDownReason.ERROR)
         content_connectiqCHCKBOX?.isChecked = false
         enableExecutive()
     }

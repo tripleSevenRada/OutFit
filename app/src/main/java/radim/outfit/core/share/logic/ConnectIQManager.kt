@@ -22,9 +22,6 @@ class ConnectIQManager(
         private val onFirstINFITDetected: (String) -> Unit
 ) {
 
-    enum class CIQInitResult{ SUCCESS, FAILURE, UNKNOWN }
-    enum class CIQInitStatus{ IN_PROGRESS, DONE }
-
     private var firstINFITReported = false
     private val tag = "ConnIQList"
     private val connectionType = ConnectIQ.IQConnectType.WIRELESS
@@ -33,30 +30,31 @@ class ConnectIQManager(
     private val companionAppId = "8c055fc4-ec4b-455b-a106-822f8bb340de"
     private val companionAppRequiredVersion = 1
 
-    private var connectIQInitResult = CIQInitResult.UNKNOWN
-    private var connectIQSetup = CIQInitStatus.DONE
+    private var connectIQIsInitialized = false
+    private var connectIQIsBeingInitialized = false
 
     fun startConnectIQ() {
-        if (connectIQInitResult != CIQInitResult.SUCCESS && connectIQSetup == CIQInitStatus.DONE) {
-            connectIQSetup = CIQInitStatus.IN_PROGRESS
+        if (!connectIQIsInitialized &&
+                !connectIQIsBeingInitialized) {
+            connectIQIsBeingInitialized = true
             onStartInit()
-            Log.w(tag, "init CONNECT IQ MAN")
+            Log.i(tag, "init")
             connectIQ.initialize(ctx, true, connectIQListener)
         }
     }
 
-    fun shutDownConnectIQ() {
+    fun shutDownConnectIQ(why: ShutDownReason) {
         decoratedDevices.clear()
         unregisterForDeviceEvents()
-        if (listOf(CIQInitResult.SUCCESS, CIQInitResult.FAILURE).any{ it == connectIQInitResult}) {
-            Log.w(tag, "shutDownConnectIQ CONNECT IQ MAN")
+        if (connectIQIsInitialized ||
+                why == ConnectIQManager.ShutDownReason.ERROR) {
             connectIQ.shutdown(ctx)
-            connectIQInitResult == CIQInitResult.UNKNOWN
         }
+        connectIQIsInitialized = false
     }
 
     private fun unregisterForDeviceEvents() {
-        if (listOf(CIQInitResult.SUCCESS).any{ it == connectIQInitResult}) {
+        if (connectIQIsInitialized) {
             connectIQ.connectedDevices?.forEach {
                 if (it != null) connectIQ.unregisterForDeviceEvents(it)
             }
@@ -88,6 +86,7 @@ class ConnectIQManager(
     }
 
     private val decoratedDevices = mutableSetOf<Long>()
+    enum class ShutDownReason{STANDARD, ERROR}
 
     // connectIQListener
     inner class ConnectIQLifecycleListener : ConnectIQ.ConnectIQListener {
@@ -96,10 +95,7 @@ class ConnectIQManager(
             // A failure has occurred during initialization. Inspect
             // the IQSdkErrorStatus value for more information regarding the failure.
             val errorMessage = status?.toString() ?: "ConnectIQ platform init error"
-            Log.e(tag, "onInitializeError: $errorMessage")
-            connectIQSetup = CIQInitStatus.DONE
-            connectIQInitResult = CIQInitResult.FAILURE
-            shutDownConnectIQ()
+            Log.e(tag, errorMessage)
             // val status1 = ConnectIQ.IQSdkErrorStatus.GCM_NOT_INSTALLED
             // val status2 = ConnectIQ.IQSdkErrorStatus.GCM_UPGRADE_NEEDED
             // val status3 = ConnectIQ.IQSdkErrorStatus.SERVICE_ERROR
@@ -108,8 +104,8 @@ class ConnectIQManager(
 
         // Called when the SDK has been successfully initialized
         override fun onSdkReady() {
-            connectIQSetup == CIQInitStatus.DONE
-            connectIQInitResult ==CIQInitResult.SUCCESS
+            connectIQIsInitialized = true
+            connectIQIsBeingInitialized = false
             // Do any post initialization setup.
             Log.i(tag, "onSdkReady")
             // list connected and known devices
