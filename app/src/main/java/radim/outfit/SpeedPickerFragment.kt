@@ -20,7 +20,7 @@ import android.content.res.Configuration
 import kotlinx.android.synthetic.main.content_speed_picker_duration.*
 import android.util.TypedValue
 
-const val DEFAULT_UNITS_RADIO_BUTTON_ID = R.id.content_speed_picker_speedBTNKmh
+const val DEFAULT_UNITS_RADIO_BUTTON = "kmh"//"mph"
 
 // https://drive.google.com/file/d/1wwYzoPQts1HreDpS614oMAVyafU07ZYF/view?usp=sharing
 
@@ -32,8 +32,8 @@ interface TriggerActionProvider {
 interface LastSelectedValuesProvider {
     fun getSpeedMperS(): Float
     fun setSpeedMperS(value: Float)
-    fun getUnitsButtonId(): Int
-    fun setUnitsButtonId(id: Int)
+    fun getUnitsButtonS(): String
+    fun setUnitsButtonS(idS: String)
 }
 
 interface TrackDetailsProvider {
@@ -181,15 +181,14 @@ class SpeedPickerFragment : DialogFragment() {
             npMinutes?.minValue = 0
             npMinutes?.maxValue = 59
 
-            val unitButtons = listOf<Button?>(buttKmh, buttMph)
-            val buttonIds = listOf<Int>(R.id.content_speed_picker_speedBTNKmh,
-                    R.id.content_speed_picker_speedBTNMph)
+            val unitButtons = listOf<RadioButton?>(buttKmh, buttMph)
+            val buttonIdSList = listOf<String>("kmh","mph")
             val speedInUnitToMperS = listOf<Int.() -> Float>(speedIsInKmhToMperS, speedIsInMphToMperS)
             val speedInMperSToUnit = listOf<Float.() -> Int>(speedInMperStoKmh, speedInMperStoMph)
 
             for (i in unitButtons.indices) {
                 unitButtons[i]?.setOnClickListener {
-                    providerOfLastSelectedValues.setUnitsButtonId(buttonIds[i])
+                    providerOfLastSelectedValues.setUnitsButtonS(buttonIdSList[i])
                     speedInCheckedUnitToMperS = speedInUnitToMperS[i]
                     speedInMperSToCheckedUnit = speedInMperSToUnit[i]
                     disconnectTimeOnChangeListeners()
@@ -200,15 +199,21 @@ class SpeedPickerFragment : DialogFragment() {
                 }
             }
 
-            val buttonId = providerOfLastSelectedValues.getUnitsButtonId()
-            val lastSelectedButton: RadioButton? = mView?.findViewById(buttonId)
-            lastSelectedButton?.isChecked = true
-            for (i in buttonIds.indices) {
-                if (buttonId == buttonIds[i]) {
-                    speedInCheckedUnitToMperS = speedInUnitToMperS[i]
-                    speedInMperSToCheckedUnit = speedInMperSToUnit[i]
+            val buttonIdS = providerOfLastSelectedValues.getUnitsButtonS()
+
+            fun getRadioButtonSpeedUnits(idS: String): RadioButton? {
+                for (i in unitButtons.indices){
+                    if(buttonIdSList[i] == idS) {
+                        speedInCheckedUnitToMperS = speedInUnitToMperS[i]
+                        speedInMperSToCheckedUnit = speedInMperSToUnit[i]
+                        return unitButtons[i]
+                    }
                 }
+                throw RuntimeException("SpeedPickerFragment getButton")
             }
+
+            val lastSelectedButton: RadioButton? = getRadioButtonSpeedUnits(buttonIdS)
+            lastSelectedButton?.isChecked = true
 
             npSpeed?.value = readStoredSpeed()
             setBackgroundColor(npSpeed, speedInCheckedUnitToMperS, span, colorCrossFader, colorFrom, colorTo)

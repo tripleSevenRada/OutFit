@@ -48,7 +48,7 @@ fun AppCompatActivity.getString(name: String): String {
     }
 }
 
-const val DEBUG_MODE = false
+const val DEBUG_MODE = true
 
 class MainActivity : AppCompatActivity(),
         TriggerActionProvider,
@@ -110,8 +110,8 @@ class MainActivity : AppCompatActivity(),
         viewModel.speedPickerFragmentShown = false
     }
 
-    override fun getUnitsButtonId() = sharedPreferences.getInt(getString("last_seen_speed_units"), DEFAULT_UNITS_RADIO_BUTTON_ID)
-    override fun setUnitsButtonId(id: Int) = persistInSharedPreferences(getString("last_seen_speed_units"), id)
+    override fun getUnitsButtonS():String = sharedPreferences.getString(getString("last_seen_speed_units_string"), DEFAULT_UNITS_RADIO_BUTTON)?: "error"
+    override fun setUnitsButtonS(idS: String) = persistInSharedPreferences(getString("last_seen_speed_units_string"), idS)
 
     private fun <T> persistInSharedPreferences(key: String, value: T) {
         with(sharedPreferences.edit()) {
@@ -124,6 +124,9 @@ class MainActivity : AppCompatActivity(),
                 }
                 is Boolean -> {
                     putBoolean(key, value)
+                }
+                is String -> {
+                    putString(key, value)
                 }
                 else -> {
                     throw RuntimeException("unimplemented")

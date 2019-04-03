@@ -54,10 +54,14 @@ class ConnectIQManager(
     }
 
     private fun unregisterForDeviceEvents() {
-        if (connectIQIsInitialized) {
-            connectIQ.connectedDevices?.forEach {
-                if (it != null) connectIQ.unregisterForDeviceEvents(it)
+        try {
+            if (connectIQIsInitialized) {
+                connectIQ.connectedDevices?.forEach {
+                    if (it != null) connectIQ.unregisterForDeviceEvents(it)
+                }
             }
+        } catch (e: Exception){
+            Log.e(tag,e.message)
         }
     }
 

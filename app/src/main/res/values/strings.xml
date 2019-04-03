@@ -39,7 +39,7 @@
     <string name="nmb_waypoints_stats">Number of waypoints:</string>
 
     <!-- speed_fragment.xml-->
-    <string name="frag_label_speed">How fast?</string>
+    <string name="frag_label_speed">Virtual partner\'s speed?</string>
     <string name="frag_label_activity_type">ActivityType: </string>
     <string name="kmh" translatable="false">km/h</string>
     <string name="mph" translatable="false">mph</string>
@@ -58,7 +58,7 @@
     <!-- shared preferences -->
     <string name="main_activity_preferences" translatable="false">radim.outfit.MainActivity</string>
     <string name="last_seen_speed_value_m_s" translatable="false">value_for_duration_picker</string>
-    <string name="last_seen_speed_units" translatable="false">units_in_speed_picker-id_of_the_widget</string>
+    <string name="last_seen_speed_units_string" translatable="false">units_in_speed_picker-string_reference</string>
     <string name="last_seen_root" translatable="false">last_seen_root_directory</string>
     <string name="checkbox_cciq" translatable="false">checkbox_enabling_cc_iq</string>
 
@@ -175,8 +175,7 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
     <!-- ExplainWaypointsActivity -->
     <string name="activity_explain_waypoints_label">OUT FIT - coursepoints</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="moreActions">more actions</string>
 
 
 </resources>

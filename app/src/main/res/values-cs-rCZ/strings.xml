@@ -29,7 +29,6 @@
     <string name="nmb_waypoints_stats">Počet značek (Waypointy):</string>
 
     <!-- speed_fragment.xml-->
-    <string name="frag_label_speed">Jak rychle?</string>
     <string name="frag_label_activity_type">"Typ aktivity: "</string>
     <string name="frag_label_time_to_complete_course">Bude to trvat:</string>
     <string name="hours">hod.</string>
@@ -147,5 +146,7 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
 
     <!-- ExplainWaypointsActivity -->
     <string name="activity_explain_waypoints_label">OUT FIT - coursepointy</string>
+    <string name="frag_label_speed">Rychlost virtuálního partnera?</string>
+    <string name="moreActions">vice akci</string>
 
 </resources>

@@ -10,8 +10,8 @@ fun initSharedPrefs(ctx: AppCompatActivity){
     with(sharedPreferences.edit()) {
         if (!sharedPreferences.contains(ctx.getString("last_seen_speed_value_m_s")))
             putFloat(ctx.getString("last_seen_speed_value_m_s"), radim.outfit.core.export.work.SPEED_DEFAULT_M_S)
-        if (!sharedPreferences.contains(ctx.getString("last_seen_speed_units"))) {
-            putInt(ctx.getString("last_seen_speed_units"), radim.outfit.DEFAULT_UNITS_RADIO_BUTTON_ID)
+        if (!sharedPreferences.contains(ctx.getString("last_seen_speed_units_string"))) {
+            putString(ctx.getString("last_seen_speed_units_string"), radim.outfit.DEFAULT_UNITS_RADIO_BUTTON)
         }
         if (!sharedPreferences.contains(ctx.getString("checkbox_cciq")))
             putBoolean(ctx.getString("checkbox_cciq"), true)

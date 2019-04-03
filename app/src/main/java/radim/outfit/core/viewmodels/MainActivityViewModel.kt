@@ -4,6 +4,7 @@ import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
 import android.content.Intent
+import android.support.v4.content.res.TypedArrayUtils.getString
 import android.util.Log
 import locus.api.android.utils.LocusUtils
 import locus.api.android.utils.exceptions.RequiredVersionMissingException
@@ -45,10 +46,6 @@ class MainActivityViewModel (application: Application): AndroidViewModel (applic
             var trackContainerBuilt: TrackContainer? = null
             try {
                 val track = LocusUtils.handleIntentTrackTools(app, intent)
-
-
-                Kruskal().clusterize(200.0, track)
-
 
                 trackContainerBuilt = if (track.hasUndefinedWaypoints()) {
                     if (DEBUG_MODE) {
