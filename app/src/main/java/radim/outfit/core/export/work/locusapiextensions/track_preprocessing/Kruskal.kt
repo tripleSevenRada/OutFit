@@ -6,6 +6,8 @@ import locus.api.objects.extra.Point
 import locus.api.objects.extra.Track
 import locus.api.objects.utils.LocationCompute.computeDistanceFast
 import radim.outfit.DEBUG_MODE
+import radim.outfit.core.export.work.locusapiextensions.allLeft
+import radim.outfit.core.export.work.locusapiextensions.allRight
 import java.lang.RuntimeException
 
 class Kruskal(val debugMessages: MutableList<String>) {
@@ -20,13 +22,14 @@ class Kruskal(val debugMessages: MutableList<String>) {
         Log.e(tag, "KRUSKAL CLUSTERIZE")
 
         val track = trackContainer.track
+        val actionsToIndices: Map<Point, Int> = trackContainer.definedRteActionsToShiftedIndices
 
         if (DEBUG_MODE) {
             debugMessages.add("KRUSKAL CLUSTERIZE waypoints before preprocess")
             track.waypoints.forEach { debugMessages.add(it.parameterRteAction.toString()) }
         }
 
-        preprocess(track)
+        preprocess(track, actionsToIndices)
 
         for (i in edges.indices) {
             if (edges[i].dist > minDistWP) break
@@ -37,7 +40,7 @@ class Kruskal(val debugMessages: MutableList<String>) {
             forest[edges[i].rightInd].clear()
         }
 
-        if(DEBUG_MODE){
+        if (DEBUG_MODE) {
             debugMessages.add("KRUSKAL CLUSTERIZE after clustering lists")
             forest.forEach {
                 debugMessages.add(it.size.toString())
@@ -45,18 +48,29 @@ class Kruskal(val debugMessages: MutableList<String>) {
             }
         }
 
-        val survivors = mutableListOf<Point>()
-        forest.forEach{ cluster ->
-            if(cluster.size > 0) survivors.add(rteActionsOnlyWP[cluster[0]])
-            if(cluster.size > 1) {
-                with(rteActionsOnlyWP[cluster[0]]){
-                    parameterRteAction = PointRteAction.PASS_PLACE
+        val survivorsRteActions = mutableSetOf<Point>()
+        forest.forEach { cluster ->
+            if (cluster.size > 0) survivorsRteActions.add(rteActionsOnlyWP[cluster[0]])
+            if (cluster.size > 1) {
+                with(rteActionsOnlyWP[cluster[0]]) {
+                    parameterRteAction =
+                            if (cluster.all {
+                                        allLeft.contains(rteActionsOnlyWP[it].parameterRteAction)
+                                    }) PointRteAction.LEFT
+                            else if (cluster.all {
+                                        allRight.contains(rteActionsOnlyWP[it].parameterRteAction)
+                                    }) PointRteAction.RIGHT
+                            else PointRteAction.PASS_PLACE
                     name = nameReplacement
                 }
             }
         }
+        val finalWPTList = track.waypoints.filter {
+            survivorsRteActions.contains(it) ||
+                    it.parameterRteAction == PointRteAction.UNDEFINED
+        }
         track.waypoints.clear()
-        track.waypoints.addAll(survivors)
+        track.waypoints.addAll(finalWPTList)
         return trackContainer
     }
 
@@ -70,7 +84,7 @@ class Kruskal(val debugMessages: MutableList<String>) {
         return if (DEBUG_MODE) -1 else index
     }
 
-    private fun preprocess(track: Track) {
+    private fun preprocess(track: Track, actionsToRteIndices: Map<Point, Int>) {
 
         fun getDistBtwWpts(rteIndLeft: Int, rteIndRight: Int): Double {
             var accumulator = 0.0
@@ -83,7 +97,6 @@ class Kruskal(val debugMessages: MutableList<String>) {
 
         rteActionsOnlyWP = track.waypoints.filter {
             it != null &&
-                    it.paramRteIndex != -1 &&
                     it.parameterRteAction != PointRteAction.UNDEFINED &&
                     it.parameterRteAction != PointRteAction.PASS_PLACE
         }
@@ -95,11 +108,19 @@ class Kruskal(val debugMessages: MutableList<String>) {
 
         // EDGES
         for (index in 0 until rteActionsOnlyWP.lastIndex) {
+            if (DEBUG_MODE && (actionsToRteIndices[rteActionsOnlyWP[index]] == null ||
+                            actionsToRteIndices[rteActionsOnlyWP[index + 1]] == null))
+                throw RuntimeException("unexpected null")
             edges.add(Edge(index, index + 1,
-                    getDistBtwWpts(rteActionsOnlyWP[index].paramRteIndex,
-                            rteActionsOnlyWP[index + 1].paramRteIndex)))
+                    getDistBtwWpts(actionsToRteIndices[rteActionsOnlyWP[index]] ?: 0,
+                            actionsToRteIndices[rteActionsOnlyWP[index + 1]] ?: 0)))
         }
         edges.sort()
+
+        if (DEBUG_MODE) {
+            debugMessages.add("KRUSKAL CLUSTERIZE edges sorted")
+            edges.forEach { debugMessages.add(it.toString()) }
+        }
 
         // FOREST
         for (index in rteActionsOnlyWP.indices) {

@@ -58,3 +58,32 @@ data class WaypointSimplified(val rteIndex: Int,
 
     override fun compareTo(other: WaypointSimplified): Int = this.rteIndex.compareTo(other.rteIndex)
 }
+
+val allLeft: Set<PointRteAction> = setOf(
+        PointRteAction.EXIT_LEFT,
+        PointRteAction.LEFT,
+        PointRteAction.LEFT_SHARP,
+        PointRteAction.LEFT_SLIGHT,
+        PointRteAction.MERGE_LEFT,
+        PointRteAction.STAY_LEFT,
+        PointRteAction.RAMP_ON_LEFT,
+        PointRteAction.U_TURN_LEFT
+)
+val allRight: Set<PointRteAction> = setOf(
+        PointRteAction.EXIT_RIGHT,
+        PointRteAction.RIGHT,
+        PointRteAction.RIGHT_SHARP,
+        PointRteAction.RIGHT_SLIGHT,
+        PointRteAction.MERGE_RIGHT,
+        PointRteAction.STAY_RIGHT,
+        PointRteAction.RAMP_ON_RIGHT,
+        PointRteAction.U_TURN_RIGHT
+)
+val dismissibleRteActions: Set<PointRteAction> = setOf(
+        PointRteAction.MERGE,
+        PointRteAction.CONTINUE_STRAIGHT,
+        PointRteAction.ENTER_STATE,
+        PointRteAction.NO_MANEUVER,
+        PointRteAction.NO_MANEUVER_NAME_CHANGE,
+        PointRteAction.STAY_STRAIGHT
+)
