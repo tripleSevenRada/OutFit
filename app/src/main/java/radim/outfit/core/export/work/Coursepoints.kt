@@ -318,7 +318,7 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
         if (debug) debugMessages.add("Size of all waypoints received in rebuild() ${waypoints.size}")
 
         // move all PointRteAction.UNDEFINED waypoints to waypointsUndefined
-        waypointsUndefined.addAll(waypoints.filter { it.parameterRteAction == PointRteAction.UNDEFINED })
+        waypointsUndefined.addAll(waypoints.filter { it != null && it.parameterRteAction == PointRteAction.UNDEFINED })
         waypoints.removeAll(waypointsUndefined)
 
         if (debug) {

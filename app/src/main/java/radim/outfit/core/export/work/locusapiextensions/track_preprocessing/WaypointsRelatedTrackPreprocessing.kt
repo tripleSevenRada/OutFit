@@ -44,6 +44,10 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                 PointStringDump.stringDescription(it)
                         .joinToString("\n")
             })
+            needToConstructNewLocation.forEach {
+                if (it.paramRteIndex != -1)
+                    throw RuntimeException("$tag: it.paramRteIndex != -1")
+            }
         }
 
         //memoization
@@ -54,13 +58,20 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         //
         //
         // we need to be able to provide indices of shifted trackpoints where
-        // defined RteActions are now, after new trackpoints were inserted
+        // defined RteActions are now, after new trackpoints have been inserted
         val definedRteActionsToLocationsInTrack = mutableMapOf<Point, Location>()
         // rte actions waypoints have valid paramRteIndex (!= -1)
         val definedRteActions = track.waypoints.filter {
-            it != null && it.paramRteIndex != -1 &&
-                    it.parameterRteAction != PointRteAction.UNDEFINED
+            it != null && it.parameterRteAction != PointRteAction.UNDEFINED // also PASS_PLACE
         }
+        if (debugInPreprocess) {
+            definedRteActions.forEach {
+                if (it.paramRteIndex == -1) {
+                    throw RuntimeException("it.paramRteIndex == -1 WHEN it.parameterRteAction != UNDEFINED")
+                }
+            }
+        }
+
         definedRteActions.forEach {
             if (it.paramRteIndex in track.points.indices) {
                 definedRteActionsToLocationsInTrack[it] = track.points[it.paramRteIndex]
@@ -329,16 +340,6 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         val lat = A.latitude + (t * (B.latitude - A.latitude))
         val lon = A.longitude + (t * (B.longitude - A.longitude))
         return Location(lat, lon)
-    }
-
-    // https://discuss.kotlinlang.org/t/how-to-write-generic-functions-for-all-numeric-types/7367
-    // There’s no completely satisfactory way to write generic functions for all numeric types.
-    // val double = linearInterpolatorGeneric(1.0, 2.0, 0.5) // returns 1.5
-    @Suppress("Unchecked_cast")
-    private fun <T> linearInterpolatorGeneric(A: T, B: T, coef: Double): T where T : Number {
-        return if (A is Double && B is Double) (A + ((B - A) * coef)) as T
-        else if (A is Long && B is Long) (A + ((B - A) * coef).roundToLong()) as T
-        else throw UnsupportedOperationException("linearInterpolatorGeneric")
     }
 
     fun interpolationCoef(A: Location, B: Location, C: Location): Double {
