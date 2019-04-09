@@ -263,7 +263,6 @@ class ViewResultsActivity : AppCompatActivity(),
     }
     // NANO HTTPD END
 
-
     //
     //
     //
@@ -353,11 +352,16 @@ class ViewResultsActivity : AppCompatActivity(),
                         content_connectiqCHCKBOX.isChecked = false
                         enableExecutive()
                         if (parcel.type == ViewResultsParcel.Type.DEFAULT
-                                && ! getViewModel().explainTrackToolsFragmentShown) {
-                            val fm = supportFragmentManager
-                            val etf = ExplainTrackToolsFragment()
-                            etf.show(fm, "explain_track_tools_fragment")
-                            getViewModel().explainTrackToolsFragmentShown = true
+                                && ! getViewModel().explainTrackToolsFragmentShown &&
+                                !onSaveCalled) {
+                            try {
+                                val fm = supportFragmentManager
+                                val etf = ExplainTrackToolsFragment()
+                                etf.show(fm, "explain_track_tools_fragment")
+                                getViewModel().explainTrackToolsFragmentShown = true
+                            } catch (e: Exception){
+                                Log.e(tag, e.localizedMessage)
+                            }
                         }
                         //returns
                     } else {
@@ -397,6 +401,12 @@ class ViewResultsActivity : AppCompatActivity(),
     }
     //override fun onResume() { super.onResume() }
     //override fun onPause() { super.onPause() }
+
+    private var onSaveCalled = false
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        onSaveCalled = true
+    }
 
     override fun onStop() {
         super.onStop()
