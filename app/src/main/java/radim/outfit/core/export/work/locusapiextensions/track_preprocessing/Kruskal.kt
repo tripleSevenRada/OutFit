@@ -67,7 +67,8 @@ class Kruskal(val debugMessages: MutableList<String>) {
         }
         val finalWPTList = track.waypoints.filter {
             survivorsRteActions.contains(it) ||
-                    it.parameterRteAction == PointRteAction.UNDEFINED
+                    it.parameterRteAction == PointRteAction.UNDEFINED ||
+                    it.parameterRteAction == PointRteAction.PASS_PLACE
         }
         track.waypoints.clear()
         track.waypoints.addAll(finalWPTList)
@@ -95,11 +96,8 @@ class Kruskal(val debugMessages: MutableList<String>) {
             return accumulator
         }
 
-        rteActionsOnlyWP = track.waypoints.filter {
-            it != null &&
-                    it.parameterRteAction != PointRteAction.UNDEFINED &&
-                    it.parameterRteAction != PointRteAction.PASS_PLACE
-        }
+        // NOT PointRteAction.UNDEFINED; NOT PointRteAction.PASS_PLACE
+        rteActionsOnlyWP = RteActionsOnlyWP(track).getRteActionsOnlyWP()
 
         if (DEBUG_MODE) {
             debugMessages.add("KRUSKAL CLUSTERIZE waypoints rteActionsOnlyWP")
