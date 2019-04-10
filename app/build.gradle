@@ -6,16 +6,16 @@ apply plugin: 'kotlin-kapt'
 android {
     signingConfigs {
         play_upload {
-            keyAlias 'theOnly'
-            keyPassword 'pamatuji2311'
-            storeFile file('/home/radim/Dropbox/outFit/keys/dev_key_play.jks')
-            storePassword 'pamatuji2311'
+            keyAlias ''
+            keyPassword ''
+            storeFile file('/')
+            storePassword ''
         }
     }
     compileSdkVersion 28
     defaultConfig {
         applicationId "radim.outfit"
-        minSdkVersion 23
+        minSdkVersion 22
         targetSdkVersion 28
         versionCode 4
         versionName "1.0.3"
