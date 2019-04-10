@@ -6,6 +6,7 @@ class Move(val debugMessages: MutableList<String>){
         // NOT PointRteAction.UNDEFINED; NOT PointRteAction.PASS_PLACE
         val rteActionsOnlyWP = RteActionsOnlyWP(trackContainer.track).getRteActionsOnlyWP()
 
+        // trackContainer.map mapuje vsechno krome UNDEFINED
 
 
 

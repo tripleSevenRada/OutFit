@@ -23,7 +23,7 @@ import kotlin.math.roundToLong
 
 class WaypointsRelatedTrackPreprocessing(private val track: Track, private val debugMessages: MutableList<String>) {
 
-    private val minDistConsider = 2.0
+    private val minDistConsider = 4.0
     private val debugInPreprocess = false
     private val tag = "WPTS preprocessing"
     private val howManyClustersExamine = 3
@@ -185,6 +185,15 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
         val insertCandidates = mutableListOf<InsertCandidate>()
 
+        // a function that tests if there are too close locations in insertCandidates already
+        fun tooCloseToACandidateAlreadyIn(candidate: InsertCandidate): Boolean{
+            val minDistCandidate = insertCandidates.minBy {
+                computeDistanceFast(it.location, candidate.location)
+            }
+            minDistCandidate?: return false
+            return computeDistanceFast(minDistCandidate.location, candidate.location) < (minDistConsider / 2)
+        }
+
         closestLocations.forEach {
             val root = getCurrentIndexOf(it.location, locationToLastKnownIndex)
             if (root != -1) {
@@ -219,7 +228,9 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                     val C = location
                     val candidate = getInsertCandidate(A, B, C,
                             "LEFT branch of the closest tree", A)
-                    if (candidate != null) insertCandidates.add(candidate)
+                    // if there is not a too close location already
+                    if (candidate != null &&
+                            !tooCloseToACandidateAlreadyIn(candidate)) insertCandidates.add(candidate)
                 }
                 if (
                         tree.rightLoc != null &&
@@ -230,7 +241,9 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                     val C = location
                     val candidate = getInsertCandidate(A, B, C,
                             "RIGHT branch of the closest tree", B)
-                    if (candidate != null) insertCandidates.add(candidate)
+                    // if there is not a too close location already
+                    if (candidate != null &&
+                            !tooCloseToACandidateAlreadyIn(candidate)) insertCandidates.add(candidate)
                 }
             }
         } // closestLocations.forEach
@@ -240,7 +253,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             debugMessages.add(insertCandidates.joinToString("\n"))
         }
 
-        // we accept all candidates, no filter
+        // we accept all candidates here, no filter except tooCloseToACandidateAlreadyIn
         insertCandidates.forEach {
             val currentIndex = getCurrentIndexOf(it.locationToReplace, locationToLastKnownIndex)
             track.points.add(currentIndex, it.location)
