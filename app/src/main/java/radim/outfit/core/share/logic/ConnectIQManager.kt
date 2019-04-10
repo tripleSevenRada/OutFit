@@ -292,7 +292,11 @@ class ConnectIQManager(
     private fun showDialog(dialog: IQAppIsInvalidDialogFragment) {
         val manager = ctx.supportFragmentManager
         if (manager != null) {
-            dialog.show(manager, "showDialog")
+            try {
+                dialog.show(manager, "showDialog")
+            } catch (e: Exception){
+                Log.e(tag, e.localizedMessage)
+            }
         } else {
             Log.e(tag, "manager == null")
         }

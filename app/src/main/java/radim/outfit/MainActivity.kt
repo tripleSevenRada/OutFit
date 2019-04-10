@@ -67,10 +67,14 @@ class MainActivity : AppCompatActivity(),
         val viewModel =
                 ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
         if (viewModel.speedPickerFragmentShown) return
-        viewModel.speedPickerFragmentShown = true
-        val fm = supportFragmentManager
-        val spf = SpeedPickerFragment()
-        spf.show(fm, "speed_picker_fragment")
+        try {
+            val fm = supportFragmentManager
+            val spf = SpeedPickerFragment()
+            spf.show(fm, "speed_picker_fragment")
+            viewModel.speedPickerFragmentShown = true
+        }catch (e: Exception){
+            Log.e(LOG_TAG_MAIN, e.localizedMessage)
+        }
     }
 
     // Menu START

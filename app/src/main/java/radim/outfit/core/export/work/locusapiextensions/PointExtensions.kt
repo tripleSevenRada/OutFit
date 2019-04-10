@@ -85,5 +85,10 @@ val dismissibleRteActions: Set<PointRteAction> = setOf(
         PointRteAction.ENTER_STATE,
         PointRteAction.NO_MANEUVER,
         PointRteAction.NO_MANEUVER_NAME_CHANGE,
-        PointRteAction.STAY_STRAIGHT
+        PointRteAction.STAY_STRAIGHT,
+        PointRteAction.RAMP_STRAIGHT,
+        PointRteAction.STAY_RIGHT,
+        PointRteAction.RAMP_ON_RIGHT,
+        PointRteAction.STAY_LEFT,
+        PointRteAction.RAMP_ON_LEFT
 )
