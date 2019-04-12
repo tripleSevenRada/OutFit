@@ -10,21 +10,35 @@ import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.locusapiextensions.StarIterator
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.LocationStringDump.locationStringDescriptionSimple
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.PointStringDump
-import java.lang.RuntimeException
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
-import kotlin.math.roundToLong
+import kotlin.system.exitProcess
 
 //https://drive.google.com/file/d/1CpRSCrSO8ARn8MOYh3YFkfZKGAPuex72/view?usp=sharing
 //https://drive.google.com/file/d/1iZcHLD_r3CrN8K4fHi4bb9OzZlRUW2-t/view?usp=sharing
 //https://drive.google.com/file/d/1KL5_sh6uKFXdsYyDFoQ9FoGFqixr5esT/view?usp=sharing
 //https://drive.google.com/file/d/1zA38mtGoBME6RmqETP5W4RaMrq03wLy-/view?usp=sharing
 
+fun getCurrentIndexOf(track: Track,
+                      location: Location,
+                      LocationToLastKnownIndex: MutableMap<Location, Int>): Int {
+    val start = LocationToLastKnownIndex[location] ?: return -1
+    if (track.points[start] === location) return start
+    var count = 1
+    while (true) {
+        val rightInd = if (start + count <= track.points.lastIndex) start + count else return -1
+        if (track.points[rightInd] === location) {
+            LocationToLastKnownIndex[location] = rightInd; return rightInd
+        }
+        count++
+    }
+}
+
 class WaypointsRelatedTrackPreprocessing(private val track: Track, private val debugMessages: MutableList<String>) {
 
-    private val minDistConsider = 4.0
-    private val debugInPreprocess = false
+    private val minDistConsider = 2.0
+    private val debugInPreprocess = true
     private val tag = "WPTS preprocessing"
     private val howManyClustersExamine = 3
 
@@ -45,8 +59,10 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
                         .joinToString("\n")
             })
             needToConstructNewLocation.forEach {
-                if (it.paramRteIndex != -1)
-                    throw RuntimeException("$tag: it.paramRteIndex != -1")
+                if (it.paramRteIndex != -1) {
+                    Log.e(tag, "it.paramRteIndex != -1")
+                    exitProcess(-1)
+                }
             }
         }
 
@@ -67,7 +83,8 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         if (debugInPreprocess) {
             definedRteActions.forEach {
                 if (it.paramRteIndex == -1) {
-                    throw RuntimeException("it.paramRteIndex == -1 WHEN it.parameterRteAction != UNDEFINED")
+                    Log.e(tag, "it.paramRteIndex == -1 WHEN it.parameterRteAction != UNDEFINED")
+                    exitProcess(-1)
                 }
             }
         }
@@ -82,7 +99,8 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             }
         }
         if (DEBUG_MODE && definedRteActions.size != definedRteActionsToLocationsInTrack.size) {
-            throw RuntimeException("definedRteActions.size != definedRteActionsToLocationsInTrack.size")
+            Log.e(tag, "definedRteActions.size != definedRteActionsToLocationsInTrack.size")
+            exitProcess(-1)
         }
         //
         //
@@ -112,7 +130,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
         // apply HEURISTICS on remaining WPTS in bagOfWpts
 
-        if(bagOfWpts.size > 0) {
+        if (bagOfWpts.size > 0) {
             val starIt = StarIterator(bagOfWpts.first().location)
             val bagOfWptsCopy = mutableSetOf<Point>()
             bagOfWptsCopy.addAll(bagOfWpts)
@@ -147,7 +165,12 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             // although they have the same lat & lon
             val locSearched = definedRteActionsToLocationsInTrack[it]
             if (locSearched != null) {
-                definedRteActionsToShiftedIndices[it] = getCurrentIndexOf(locSearched, lastKnownLocationToIndex)
+                val currentIndex = getCurrentIndexOf(track, locSearched, lastKnownLocationToIndex)
+                if (DEBUG_MODE && currentIndex == -1) {
+                    Log.e(tag, "unexpected -1")
+                    exitProcess(-1)
+                }
+                if(currentIndex != -1) definedRteActionsToShiftedIndices[it] = currentIndex
             } else {
                 val debugMessage = "INCONSISTENCY IN :definedRteActionsToLocationsInTrack"
                 Log.e(tag, debugMessage)
@@ -156,8 +179,10 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         }
 
         if (DEBUG_MODE) {
-            if (definedRteActions.size != definedRteActionsToShiftedIndices.size)
-                throw RuntimeException("definedRteActions.size != definedRteActionsToShiftedIndices.size")
+            if (definedRteActions.size != definedRteActionsToShiftedIndices.size) {
+                Log.e(tag, "definedRteActions.size != definedRteActionsToShiftedIndices.size")
+                exitProcess(-1)
+            }
             debugMessages.add("definedRteActionsToLocationsInTrack before processing +++++++++++++++++++")
             definedRteActionsToLocationsInTrack.forEach {
                 debugMessages.add(" location -- ${locationStringDescriptionSimple(it.value)}")
@@ -186,16 +211,16 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
         val insertCandidates = mutableListOf<InsertCandidate>()
 
         // a function that tests if there are too close locations in insertCandidates already
-        fun tooCloseToACandidateAlreadyIn(candidate: InsertCandidate): Boolean{
+        fun tooCloseToACandidateAlreadyIn(candidate: InsertCandidate): Boolean {
             val minDistCandidate = insertCandidates.minBy {
                 computeDistanceFast(it.location, candidate.location)
             }
-            minDistCandidate?: return false
+            minDistCandidate ?: return false
             return computeDistanceFast(minDistCandidate.location, candidate.location) < (minDistConsider / 2)
         }
 
         closestLocations.forEach {
-            val root = getCurrentIndexOf(it.location, locationToLastKnownIndex)
+            val root = getCurrentIndexOf(track, it.location, locationToLastKnownIndex)
             if (root != -1) {
                 if (debugInPreprocess) {
                     debugMessages.add("\n\n\n\n\nPOINT--------------------------------------------------")
@@ -255,18 +280,23 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
         // we accept all candidates here, no filter except tooCloseToACandidateAlreadyIn
         insertCandidates.forEach {
-            val currentIndex = getCurrentIndexOf(it.locationToReplace, locationToLastKnownIndex)
-            track.points.add(currentIndex, it.location)
-            locationToLastKnownIndex[it.location] = currentIndex
-            val closestCluster = getClosestCluster(it.location, clusters)
-            closestCluster?.members?.add(it.location)
-            if (debugInPreprocess) Log.i(tag, "Inserted Candidate $it")
-            inserted = true
+            val currentIndex = getCurrentIndexOf(track, it.locationToReplace, locationToLastKnownIndex)
+            if(currentIndex != -1) {
+                track.points.add(currentIndex, it.location)
+                locationToLastKnownIndex[it.location] = currentIndex
+                val closestCluster = getClosestCluster(it.location, clusters)
+                closestCluster?.members?.add(it.location)
+                if (debugInPreprocess) Log.i(tag, "Inserted Candidate $it")
+                inserted = true
+            } else if (DEBUG_MODE) {
+                Log.e(tag,"currentIndex == -1")
+                exitProcess(-1)
+            }
         }
         return inserted
     }
 
-    private object DistanceProviderComparator: Comparator<DistanceProvider> {
+    private object DistanceProviderComparator : Comparator<DistanceProvider> {
         override fun compare(dp0: DistanceProvider, dp1: DistanceProvider): Int =
                 dp0.getDistance().compareTo(dp1.getDistance())
     }
@@ -331,20 +361,6 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
             computeDistanceFast(this, A) > minDistConsider / 2 &&
                     computeDistanceFast(this, B) > minDistConsider / 2
 
-    private fun getCurrentIndexOf(location: Location,
-                                  LocationToLastKnownIndex: MutableMap<Location, Int>): Int {
-        val start = LocationToLastKnownIndex[location] ?: return -1
-        if (track.points[start] === location) return start
-        var count = 1
-        while (true) {
-            val rightInd = if (start + count <= track.points.lastIndex) start + count else return -1
-            if (track.points[rightInd] === location) {
-                LocationToLastKnownIndex[location] = rightInd; return rightInd
-            }
-            count++
-        }
-    }
-
     fun pointOnALineSegmentClosestToPoint(A: Location, B: Location, C: Location): Location {
         val t: Double =
                 (((C.latitude - A.latitude) * (B.latitude - A.latitude)) + ((C.longitude - A.longitude) * (B.longitude - A.longitude))) /
@@ -408,19 +424,19 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
 }
 
-interface DistanceProvider{
+interface DistanceProvider {
     fun getDistance(): Double
 }
 
 // we want to call computeDistanceFast(from: Location, to: Location) only n times
 // not n*log(n) times during sorting
 data class LocationDistance(val location: Location,
-                            val distanceToPoint: Double): DistanceProvider{
-    override fun getDistance(): Double  = distanceToPoint
+                            val distanceToPoint: Double) : DistanceProvider {
+    override fun getDistance(): Double = distanceToPoint
 }
 
 data class ClusterDistance(val cluster: Cluster,
-                           val distanceToPoint: Double): DistanceProvider{
+                           val distanceToPoint: Double) : DistanceProvider {
     override fun getDistance(): Double = distanceToPoint
 }
 

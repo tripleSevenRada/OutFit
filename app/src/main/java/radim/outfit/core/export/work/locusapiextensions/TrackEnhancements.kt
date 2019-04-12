@@ -1,9 +1,12 @@
 package radim.outfit.core.export.work.locusapiextensions
 
+import android.util.Log
 import locus.api.objects.extra.Track
 import locus.api.objects.utils.LocationCompute
+import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.routePointActionsPrioritized
 import radim.outfit.core.export.work.routePointActionsToCoursePoints
+import kotlin.system.exitProcess
 
 // track does not contain null elements and is fully timestamped
 fun extractPointTimestampsFromPoints(track: Track): List<Long> {
@@ -76,8 +79,10 @@ fun assignSpeedsToNonNullPoints(track: Track, timeBundle: TrackTimestampsBundle,
         lastDist = dist[index]
         index++
     }
-    if (timeBundle.pointStamps.size != dist.size || dist.size != speeds.size)
-        throw RuntimeException("Data sizes - TrackEnhancements")
+    if (DEBUG_MODE && (timeBundle.pointStamps.size != dist.size || dist.size != speeds.size)) {
+        Log.e("TRACK_ENHANCEMENTS", "Data sizes - TrackEnhancements")
+        exitProcess(-1)
+    }
     return speeds
 }
 

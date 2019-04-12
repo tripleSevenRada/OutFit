@@ -9,6 +9,7 @@ import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.locusapiextensions.allLeft
 import radim.outfit.core.export.work.locusapiextensions.allRight
 import java.lang.RuntimeException
+import kotlin.system.exitProcess
 
 class Kruskal(val debugMessages: MutableList<String>) {
 
@@ -34,8 +35,14 @@ class Kruskal(val debugMessages: MutableList<String>) {
         for (i in edges.indices) {
             if (edges[i].dist > minDistWP) break
             val left = getFirstLeftNonEmptyListOrThis(edges[i].leftInd)
-            if (DEBUG_MODE && left == -1) throw RuntimeException("left == -1")
-            if (DEBUG_MODE && forest[edges[i].rightInd].isEmpty()) throw RuntimeException("right is empty")
+            if (DEBUG_MODE && left == -1) {
+                Log.e(tag,"left == -1")
+                exitProcess(-1)
+            }
+            if (DEBUG_MODE && forest[edges[i].rightInd].isEmpty()) {
+                Log.e(tag, "right is empty")
+                exitProcess(-1)
+            }
             forest[left].addAll(forest[edges[i].rightInd])
             forest[edges[i].rightInd].clear()
         }
@@ -107,8 +114,11 @@ class Kruskal(val debugMessages: MutableList<String>) {
         // EDGES
         for (index in 0 until rteActionsOnlyWP.lastIndex) {
             if (DEBUG_MODE && (actionsToRteIndices[rteActionsOnlyWP[index]] == null ||
-                            actionsToRteIndices[rteActionsOnlyWP[index + 1]] == null))
-                throw RuntimeException("unexpected null")
+                            actionsToRteIndices[rteActionsOnlyWP[index + 1]] == null)){
+                Log.e(tag, "unexpected null")
+                exitProcess(-1)
+            }
+
             edges.add(Edge(index, index + 1,
                     getDistBtwWpts(actionsToRteIndices[rteActionsOnlyWP[index]] ?: 0,
                             actionsToRteIndices[rteActionsOnlyWP[index + 1]] ?: 0)))
@@ -129,7 +139,10 @@ class Kruskal(val debugMessages: MutableList<String>) {
         if (DEBUG_MODE) {
             val sizes = rteActionsOnlyWP.size == forest.size &&
                     if (rteActionsOnlyWP.isNotEmpty()) edges.size == rteActionsOnlyWP.size - 1 else true
-            if (!sizes) throw RuntimeException("sizes")
+            if (!sizes) {
+                Log.e(tag,"sizes")
+                exitProcess(-1)
+            }
         }
     }
 

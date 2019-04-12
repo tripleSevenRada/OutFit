@@ -20,7 +20,7 @@ class ExportFunction : (File?, String?, TrackContainer?, Float, AppCompatActivit
             Kruskal(debugMessages).clusterize(70.0, trackContainer, ctx.getString(R.string.moreActions))
             // filter dismissible
             Simplify(debugMessages).simplify(trackContainer)
-            // move towards start howMuch metres
+            // move towards start howMany metres
             Move(debugMessages).move(60.0,trackContainer)
 
             Encoder(debugMessages).encode(trackContainer, dir, filename, speedIfNotInTrack, ctx)

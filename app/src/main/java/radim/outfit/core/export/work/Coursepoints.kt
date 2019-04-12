@@ -11,6 +11,7 @@ import radim.outfit.core.export.work.locusapiextensions.getCoursepointEnumForced
 import radim.outfit.core.export.work.locusapiextensions.getWaypointName
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.LocationStringDump
 import java.lang.RuntimeException
+import kotlin.system.exitProcess
 
 const val COURSEPOINTS_LIMIT = 100
 const val COURSEPOINTS_NAME_MAX_LENGTH = 20
@@ -346,7 +347,7 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
                 val message = "shiftedRteIndex = null!"
                 debugMessages.add(message)
                 Log.e(tag, message)
-                throw RuntimeException(message)
+                exitProcess(-1)
             }
         }
 

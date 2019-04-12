@@ -64,7 +64,7 @@
     <string name="device">zařízení</string>
     <string name="zero_length_buffer">Žádné exportované soubory nenalezeny. Žádný CIQ servis.</string>
     <string name="ciqservice_generic_error">CIQ servis - chyba.</string>
-    <string name="est_download_time">Čas stažení přes ConnectIQ (odhad):</string>
+    <string name="est_download_time">Čas stažení přes CIQ (odhad pro BLE):</string>
     <string name="courses">Trasy:</string>
 
     <!-- ViewResultsActivity - default parcel -->
@@ -146,7 +146,7 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
 
     <!-- ExplainWaypointsActivity -->
     <string name="activity_explain_waypoints_label">OUT FIT - coursepointy</string>
-    <string name="frag_label_speed">Rychlost virtuálního partnera?</string>
+    <string name="frag_label_speed">Rychlost virt. partnera?</string>
     <string name="moreActions">vice akci</string>
 
 </resources>
