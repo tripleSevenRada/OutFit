@@ -21,7 +21,7 @@ class ExportFunction : (File?, String?, TrackContainer?, Float, AppCompatActivit
             // filter dismissible
             Simplify(debugMessages).simplify(trackContainer)
             // move towards start howMany metres
-            Move(debugMessages).move(60.0,trackContainer)
+            Move(debugMessages).move(40.0,trackContainer)
 
             Encoder(debugMessages).encode(trackContainer, dir, filename, speedIfNotInTrack, ctx)
         } else {
