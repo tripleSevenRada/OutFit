@@ -161,7 +161,7 @@ class WaypointsRelatedTrackPreprocessing(private val track: Track, private val d
 
         val definedRteActionsToShiftedIndices = mutableMapOf<Point, Int>()
         definedRteActions.forEach {
-            // point.location and location in trackContainer are not the same object,
+            // point.location and location in track (trackpoint) are not the same object,
             // although they have the same lat & lon
             val locSearched = definedRteActionsToLocationsInTrack[it]
             if (locSearched != null) {
