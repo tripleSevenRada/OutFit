@@ -7,17 +7,21 @@
       <w>coef</w>
       <w>coursename</w>
       <w>coursenames</w>
+      <w>coursepoint</w>
       <w>fader</w>
       <w>garmin</w>
       <w>infit</w>
+      <w>kruskal</w>
       <w>memoized</w>
       <w>mper</w>
       <w>pojo</w>
       <w>preprocess</w>
       <w>preprocessing</w>
       <w>trackpoint</w>
+      <w>trackpoints</w>
       <w>waypoint</w>
       <w>waypoints</w>
+      <w>wpoints</w>
       <w>wpts</w>
     </words>
   </dictionary>

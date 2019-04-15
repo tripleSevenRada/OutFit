@@ -10,7 +10,6 @@ import radim.outfit.core.export.work.locusapiextensions.WaypointSimplified
 import radim.outfit.core.export.work.locusapiextensions.getCoursepointEnumForced
 import radim.outfit.core.export.work.locusapiextensions.getWaypointName
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.LocationStringDump
-import java.lang.RuntimeException
 import kotlin.system.exitProcess
 
 const val COURSEPOINTS_LIMIT = 100
@@ -192,6 +191,7 @@ val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
         PointRteAction.ROUNDABOUT_EXIT_6 to CoursePoint.GENERIC,
         PointRteAction.ROUNDABOUT_EXIT_7 to CoursePoint.GENERIC,
         PointRteAction.ROUNDABOUT_EXIT_8 to CoursePoint.GENERIC,
+        PointRteAction.NO_MANEUVER to CoursePoint.GENERIC,
         PointRteAction.U_TURN to CoursePoint.U_TURN,
         PointRteAction.CONTINUE_STRAIGHT to CoursePoint.STRAIGHT,
         PointRteAction.STAY_STRAIGHT to CoursePoint.STRAIGHT,
@@ -294,7 +294,8 @@ val routePointActionsPrioritized: Map<Int, List<PointRteAction>> = mapOf(
         10 to listOf(PointRteAction.EXIT_LEFT, PointRteAction.EXIT_RIGHT),
         11 to listOf(PointRteAction.U_TURN_LEFT, PointRteAction.U_TURN_RIGHT),
         12 to listOf(PointRteAction.U_TURN),
-        13 to listOf(PointRteAction.RIGHT_SHARP, PointRteAction.LEFT_SHARP),
+        13 to listOf(PointRteAction.RIGHT_SHARP, PointRteAction.LEFT_SHARP,
+                PointRteAction.NO_MANEUVER),
         14 to listOf(PointRteAction.RIGHT, PointRteAction.LEFT),
         15 to listOf(PointRteAction.PASS_PLACE, PointRteAction.UNDEFINED)
 )

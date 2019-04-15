@@ -8,7 +8,7 @@ import locus.api.objects.utils.LocationCompute.computeDistanceFast
 import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.locusapiextensions.allLeft
 import radim.outfit.core.export.work.locusapiextensions.allRight
-import java.lang.RuntimeException
+import radim.outfit.core.export.work.locusapiextensions.allStraight
 import kotlin.system.exitProcess
 
 class Kruskal(val debugMessages: MutableList<String>) {
@@ -67,7 +67,10 @@ class Kruskal(val debugMessages: MutableList<String>) {
                             else if (cluster.all {
                                         allRight.contains(rteActionsOnlyWP[it].parameterRteAction)
                                     }) PointRteAction.RIGHT
-                            else PointRteAction.PASS_PLACE
+                            else if (cluster.all {
+                                        allStraight.contains(rteActionsOnlyWP[it].parameterRteAction)
+                                    }) PointRteAction.CONTINUE_STRAIGHT
+                            else PointRteAction.NO_MANEUVER
                     name = nameReplacement
                 }
             }

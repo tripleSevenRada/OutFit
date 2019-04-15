@@ -38,13 +38,14 @@ if (pt.styleNormal != null && pt.styleNormal.getIconStyleIconUrl() != null) {
 return "";
 */
 
-fun Point.getCoursepointEnumForced(): CoursePoint?{
-    val styleName:String = parameterStyleName ?: if (styleNormal != null && styleNormal.iconStyleIconUrl != null)
-        styleNormal.iconStyleIconUrl else ""
+fun Point.getCoursepointEnumForced(): CoursePoint? {
+    val styleName: String = parameterStyleName
+            ?: if (styleNormal != null && styleNormal.iconStyleIconUrl != null)
+                styleNormal.iconStyleIconUrl else ""
     var enumForced = styleNameORIconStyleIconUrlToCoursePoints[styleName]
     if (enumForced == null &&
             (parameterRteAction == PointRteAction.PASS_PLACE ||
-            parameterRteAction == PointRteAction.UNDEFINED))
+                    parameterRteAction == PointRteAction.UNDEFINED))
         enumForced = CoursePoint.GENERIC
     return enumForced
 }
@@ -79,16 +80,29 @@ val allRight: Set<PointRteAction> = setOf(
         PointRteAction.RAMP_ON_RIGHT,
         PointRteAction.U_TURN_RIGHT
 )
+val allStraight: Set<PointRteAction> = setOf(
+        PointRteAction.RAMP_STRAIGHT,
+        PointRteAction.CONTINUE_STRAIGHT,
+        PointRteAction.STAY_STRAIGHT,
+        PointRteAction.MERGE
+)
+// NO_MANEUVER and CONTINUE_STRAIGHT are not dismissible, used
+// for clustered rte actions,
+// NO_MANEUVER later mapped to Coursepoint.GENERIC
+// CONTINUE_STRAIGHT to Coursepoint.STRAIGHT
 val dismissibleRteActions: Set<PointRteAction> = setOf(
         PointRteAction.MERGE,
-        PointRteAction.CONTINUE_STRAIGHT,
         PointRteAction.ENTER_STATE,
-        PointRteAction.NO_MANEUVER,
-        PointRteAction.NO_MANEUVER_NAME_CHANGE,
         PointRteAction.STAY_STRAIGHT,
         PointRteAction.RAMP_STRAIGHT,
         PointRteAction.STAY_RIGHT,
         PointRteAction.RAMP_ON_RIGHT,
         PointRteAction.STAY_LEFT,
         PointRteAction.RAMP_ON_LEFT
+)
+// always filter out these at the very beginning, before Kruskal possibly adds
+// NO_MANEUVER used as a placeholder fallback in clustering
+val alwaysDismissibleRteActions: Set<PointRteAction> = setOf(
+        PointRteAction.NO_MANEUVER,
+        PointRteAction.NO_MANEUVER_NAME_CHANGE
 )

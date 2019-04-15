@@ -23,6 +23,8 @@ class Move(val debugMessages: MutableList<String>) {
         // memoization START
         val wpToOriginalIndex = mutableMapOf<Point, Int>()
         val wpToOriginalLoc = mutableMapOf<Point, Location>()
+        val passPlaceStash = mutableListOf<Point>()
+        val undefinedStash = mutableListOf<Point>()
 
         trackContainer.track.waypoints.forEach {
             if (it.parameterRteAction != PointRteAction.UNDEFINED) {
@@ -33,7 +35,8 @@ class Move(val debugMessages: MutableList<String>) {
                 wpToOriginalLoc[it] = trackContainer.track.points[trackContainer.definedRteActionsToShiftedIndices[it]
                         ?: 0]
                 wpToOriginalIndex[it] = trackContainer.definedRteActionsToShiftedIndices[it] ?: 0
-            }
+                if(it.parameterRteAction == PointRteAction.PASS_PLACE) passPlaceStash.add(it)
+            } else undefinedStash.add(it)
         }
 
         val trackLocToOrigIndex = mutableMapOf<Location, Int>()
@@ -102,7 +105,7 @@ class Move(val debugMessages: MutableList<String>) {
                     }
                     if (DEBUG_MODE) movedLocWPTdebug.add(locToInsert.toWptRecord())
                     // actually insert
-                    trackContainer.track.points[prePostCoefTriple.second] = locToInsert
+                    trackContainer.track.points.add(prePostCoefTriple.second, locToInsert)
                     // keep track
                     wpToMovedLoc[wptToBeShifted] = locToInsert
                 } else {
@@ -119,10 +122,87 @@ class Move(val debugMessages: MutableList<String>) {
             debugMessages.add("MOVE: MOVED"); debugMessages.addAll(movedLocWPTdebug)
         }
 
-        // tidy
+        // search in track for loc, start @index
+        // if loc not found return -1
+        fun locSearch(loc: Location, start: Int): Int{
+            val trackpoints = trackContainer.track.points
+            if (start !in trackpoints.indices) return -1
+            if(trackpoints[start] === loc) return start
+            var locSearchCount = 1
+            while (true){
+                val left = start - locSearchCount
+                val right = start + locSearchCount
+                if(left in trackpoints.indices && trackpoints[left] === loc) return left
+                if(right in trackpoints.indices && trackpoints[right] === loc) return right
+                if(left !in trackpoints.indices && right !in trackpoints.indices) return -1
+                locSearchCount ++
+            }
+        }
 
+        // TIDY UP
 
-        return trackContainer
+        // I need to rebuild trackContainer.definedRteActionsToShiftedIndices
+        // and possibly the order of waypoints.(Swaps are possible).
+        // I already have:
+        //
+        //     wpToOriginalIndex = mutableMapOf<Point, Int>()
+        //     wpToOriginalLoc = mutableMapOf<Point, Location>()
+        //     for everything but UNDEFINED
+        //
+        //
+        //     wpToMovedLoc
+        //     for rteActionsOnlyWP
+        //
+        //     passPlaceStash = mutableListOf<Point>()
+        //     undefinedStash = mutableListOf<Point>()
+
+        val rebuiltWpoints: MutableList<WPIndex> = mutableListOf()
+        fun addToRebuiltWpoints(point: Point, loc: Location?, indexStart: Int?){
+            if(DEBUG_MODE && (indexStart == null || loc == null)) exitProcess(-5)
+            // search in both directions until you find index of moved location OR -1
+            val indexMoved = if (loc != null && indexStart != null) locSearch(loc, indexStart)
+            else -1
+            // -1 means ERROR
+            if(DEBUG_MODE && indexMoved == -1) exitProcess(-6)
+            // put waypoint and moved index into WPIndex
+            rebuiltWpoints.add(WPIndex(point, indexMoved))
+        }
+
+        // iterate rteActionsOnlyWP
+        rteActionsOnlyWP.forEach {
+            // get original index, get moved location
+            val indexStart = wpToOriginalIndex[it]
+            val loc = wpToMovedLoc[it]
+            addToRebuiltWpoints(it, loc, indexStart)
+        }
+        // iterate stashed PASS_PLACE
+        passPlaceStash.forEach {
+            val indexStart = wpToOriginalIndex[it]
+            val loc = wpToOriginalLoc[it]
+            addToRebuiltWpoints(it, loc, indexStart)
+        }
+        // sort list of <WPIndex> by indices
+        rebuiltWpoints.sort()
+
+        // clear & copy into trackContainer.track.waypoints
+        // put into newDefinedRteActionsToShiftedIndices
+        trackContainer.track.waypoints.clear()
+        val newDefinedRteActionsToShiftedIndices = mutableMapOf<Point, Int>()
+
+        rebuiltWpoints.forEach {
+            trackContainer.track.waypoints.add(it.wp)
+            newDefinedRteActionsToShiftedIndices[it.wp] = it.index
+        }
+        undefinedStash.forEach { trackContainer.track.waypoints.add(it) }
+
+        return TrackContainer(trackContainer.track, newDefinedRteActionsToShiftedIndices, "")
+    }
+
+    private data class WPIndex(val wp: Point, val index: Int): Comparable<WPIndex>{
+        override fun compareTo(other: WPIndex): Int {
+            return this.index.compareTo(other.index)
+        }
+
     }
 
     // returns -1 -1 if no pair found
