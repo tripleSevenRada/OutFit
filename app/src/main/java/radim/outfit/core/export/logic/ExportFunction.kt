@@ -25,10 +25,10 @@ class ExportFunction : (File?, String?, TrackContainer?, Float, AppCompatActivit
 
             // clusterize
             // OPTIONAL
-            Kruskal(debugMessages).clusterize(60.0, container, ctx.getString(R.string.moreActions))
+            // Kruskal(debugMessages).clusterize(60.0, container, ctx.getString(R.string.moreActions))
             // filter dismissible
             // OPTIONAL
-            Simplify(container).simplify()
+            // Simplify(container).simplify()
             // move towards start moveDist metres
             // OPTIONAL
             container = Move(debugMessages).move(40.0, container) // returns new container
