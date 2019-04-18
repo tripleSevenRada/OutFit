@@ -94,11 +94,7 @@ val dismissibleRteActions: Set<PointRteAction> = setOf(
         PointRteAction.MERGE,
         PointRteAction.ENTER_STATE,
         PointRteAction.STAY_STRAIGHT,
-        PointRteAction.RAMP_STRAIGHT,
-        PointRteAction.STAY_RIGHT,
-        PointRteAction.RAMP_ON_RIGHT,
-        PointRteAction.STAY_LEFT,
-        PointRteAction.RAMP_ON_LEFT
+        PointRteAction.RAMP_STRAIGHT
 )
 // always filter out these at the very beginning, before Kruskal possibly adds
 // NO_MANEUVER used as a placeholder fallback in clustering
