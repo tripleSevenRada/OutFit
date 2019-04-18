@@ -21,6 +21,14 @@ fun initSharedPrefs(ctx: AppCompatActivity){
             putBoolean("dialog_app_old_version_disabled", false)
         if (!sharedPreferences.contains("dialog_use_infit_like_this_disabled"))
             putBoolean("dialog_use_infit_like_this_disabled", false)
+
+        if (!sharedPreferences.contains("bundle_nav_hints"))
+            putBoolean("bundle_nav_hints", true)
+        if (!sharedPreferences.contains("move_nav_hints"))
+            putBoolean("move_nav_hints", false)
+        if (!sharedPreferences.contains("move_nav_hints_dist"))
+            putString("move_nav_hints_dist", "10")
+
         apply()
     }
 }

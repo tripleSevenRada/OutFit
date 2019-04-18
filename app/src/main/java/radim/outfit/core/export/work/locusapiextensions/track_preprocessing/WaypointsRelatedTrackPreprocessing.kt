@@ -442,7 +442,10 @@ data class ClusterDistance(val cluster: Cluster,
 
 data class TrackContainer(val track: Track,
                           val definedRteActionsToShiftedIndices: Map<Point, Int>,
-                          var failedMessage: String = "")
+                          var failedMessage: String = "",
+                          var clusterize: Boolean = false,
+                          var move: Boolean = false,
+                          var moveDist: Double = 40.0)
 
 // mocked stress test
 class InjectTestWaypoints(val track: Track) {

@@ -80,7 +80,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="@dimen/speed_picker_margin"
-                        android:text="@string/ok" />
+                        android:text="@string/btn_export" />
 
                     <RadioGroup
                         android:id="@+id/content_speed_picker_speedRGSpeedSelection"

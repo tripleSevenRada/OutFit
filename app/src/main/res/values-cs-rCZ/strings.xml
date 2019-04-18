@@ -8,6 +8,11 @@
     <string name="filename_label">Jméno souboru:</string>
     <string name="filename_hint">jméno souboru</string>
     <string name="btn_export">Export</string>
+    <string name="btn_extra">Možnosti exportu</string>
+
+    <string name="bundle_label">Shlukovat navigační pokyny?</string>
+    <string name="move_label">Posunout navigační pokyny?</string>
+
 
     <!-- activity_finish_gracefully.xml -->
     <string name="what_happened">Co se stalo:</string>

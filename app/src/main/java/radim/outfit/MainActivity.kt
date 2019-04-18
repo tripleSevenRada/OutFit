@@ -1,5 +1,6 @@
 package radim.outfit
 
+import android.annotation.TargetApi
 import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
@@ -55,6 +56,7 @@ class MainActivity : AppCompatActivity(),
         LastSelectedValuesProvider,
         PermInfoProvider,
         TrackDetailsProvider,
+        ExportOptionsDataProvider,
         Toaster {
 
     private val tvStatsFiller = " \n \n \n "
@@ -100,8 +102,7 @@ class MainActivity : AppCompatActivity(),
     override fun getTriggerAction(): (Float) -> Unit = exportListener.getOkAction()
 
     override fun getSpeedMperS(): Float {
-        val speed = sharedPreferences.getFloat(getString("last_seen_speed_value_m_s"), SPEED_DEFAULT_M_S)
-        return speed
+       return sharedPreferences.getFloat(getString("last_seen_speed_value_m_s"), SPEED_DEFAULT_M_S)
     }
 
     override fun setSpeedMperS(value: Float) {
@@ -158,6 +159,15 @@ class MainActivity : AppCompatActivity(),
         return viewModel.activityType ?: 100
     }
     // SpeedPickerFragment interfaces impl END
+
+    // ExportOptionsDataProvider impl START
+    override fun getBundle(): Boolean = sharedPreferences.getBoolean("bundle_nav_hints", false)
+    override fun setBundle(value: Boolean) = sharedPreferences.edit().putBoolean("bundle_nav_hints", value).apply()
+    override fun getMove(): Boolean = sharedPreferences.getBoolean("move_nav_hints", false)
+    override fun setMove(value: Boolean) = sharedPreferences.edit().putBoolean("move_nav_hints", value).apply()
+    override fun getMoveDist(): String = sharedPreferences.getString("move_nav_hints_dist", "10")?:"10"
+    override fun setMoveDist(value: String) = sharedPreferences.edit().putString("move_nav_hints_dist", value).apply()
+    // ExportOptionsDataProvider impl END
 
     inner class TimerCallback(private val viewModel: MainActivityViewModel) : Timer.TimerCallback {
         override fun tick(): Boolean {
@@ -387,6 +397,7 @@ class MainActivity : AppCompatActivity(),
         if (DEBUG_MODE) Log.i(LOG_TAG_MAIN, "DISABLE_Executive; Activity: $this")
         // disable executive UI
         content_exportBTNExport?.isEnabled = false
+        content_pathBTNExportOptions?.isEnabled = false
         activity_mainPB?.visibility = ProgressBar.VISIBLE
     }
 
@@ -395,6 +406,7 @@ class MainActivity : AppCompatActivity(),
         // enable executive UI if export is not running and preprocess is not running
         if (!viewModel.exportInProgress && !viewModel.preprocessInProgress) {
             content_exportBTNExport?.isEnabled = true
+            content_pathBTNExportOptions?.isEnabled = true
             activity_mainPB?.visibility = ProgressBar.INVISIBLE
         }
     }
@@ -413,6 +425,16 @@ class MainActivity : AppCompatActivity(),
             e.printStackTrace()
             fail.failGracefully(this, e.localizedMessage)
             finish()
+        }
+    }
+
+    fun exportOptions(@Suppress("UNUSED_PARAMETER") v: View) {
+        try {
+            val fm = supportFragmentManager
+            val eof = ExportOptionsFragment()
+            eof.show(fm, "export_options_fragment")
+        }catch (e: Exception) {
+            Log.e(LOG_TAG_MAIN, e.localizedMessage)
         }
     }
 
@@ -451,13 +473,15 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    @TargetApi(23)
     private fun setTvRootDir() {
         val text: String? = getRoot(exportListener)?.path
+        val apiLevel = android.os.Build.VERSION.SDK_INT
         if (text != null) {
-            content_pathTVRootDirPath?.setTextColor(this.getColor(R.color.imitateButtons))
+            if (apiLevel >= 23) content_pathTVRootDirPath?.setTextColor(this.getColor(R.color.imitateButtons))
             content_pathTVRootDirPath?.text = text
         } else {
-            content_pathTVRootDirPath?.setTextColor(this.getColor(R.color.colorAccent))
+            if (apiLevel >= 23) content_pathTVRootDirPath?.setTextColor(this.getColor(R.color.colorAccent))
             content_pathTVRootDirPath?.text = this.getString("not_set")
         }
     }

@@ -195,7 +195,16 @@ class Move(val debugMessages: MutableList<String>) {
         }
         undefinedStash.forEach { trackContainer.track.waypoints.add(it) }
 
-        return TrackContainer(trackContainer.track, newDefinedRteActionsToShiftedIndices, "")
+        val clusterOldContainer = trackContainer.clusterize
+        val moveOldContainer = trackContainer.move
+        val moveDistOldContainer = trackContainer.moveDist
+
+        return TrackContainer(trackContainer.track,
+                newDefinedRteActionsToShiftedIndices,
+                "",
+                clusterOldContainer,
+                moveOldContainer,
+                moveDistOldContainer)
     }
 
     private data class WPIndex(val wp: Point, val index: Int): Comparable<WPIndex>{

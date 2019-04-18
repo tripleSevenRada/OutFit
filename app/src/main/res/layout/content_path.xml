@@ -59,6 +59,13 @@
                 android:importantForAutofill="no"
                 android:inputType="text" />
 
+            <Button
+                android:id="@+id/content_pathBTNExportOptions"
+                style="@style/customButton"
+                android:layout_marginTop="16dp"
+                android:onClick="exportOptions"
+                android:text="@string/btn_extra" />
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
