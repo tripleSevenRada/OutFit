@@ -4,21 +4,14 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
-    signingConfigs {
-        play_upload {
-            keyAlias ''
-            keyPassword ''
-            storeFile file('/')
-            storePassword ''
-        }
-    }
+
     compileSdkVersion 28
     defaultConfig {
         applicationId "radim.outfit"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 4
-        versionName "1.0.3"
+        versionCode 5
+        versionName "1.0.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         // https://stackoverflow.com/questions/44322178/room-schema-export-directory-is-not-provided-to-the-annotation-processor-so-we/44424908#44424908
