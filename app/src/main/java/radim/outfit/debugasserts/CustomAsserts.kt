@@ -25,7 +25,7 @@ fun assertTimestampsIncreasingOrEqualFullyTimestampedTrack(track: Track): Boolea
 
         if (track.points[i].time < last) return false
         if (track.points[i].time == last)
-            Log.w(LOG_TAG_C_ASSERTS, "equal timestamps! - FullyTimestampedTrack")
+            Log.w(LOG_TAG_C_ASSERTS, "$i  -- equal timestamps! - FullyTimestampedTrack")
         last = track.points[i].time
     }
     return true
