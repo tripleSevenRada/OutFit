@@ -36,7 +36,7 @@
             <Button
                 android:id="@+id/content_pathBTNDirPick"
                 style="@style/customButton"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:onClick="directoryPick"
                 android:text="@string/btn_directory_picker" />
 
@@ -62,7 +62,7 @@
             <Button
                 android:id="@+id/content_pathBTNExportOptions"
                 style="@style/customButton"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:onClick="exportOptions"
                 android:text="@string/btn_extra" />
 

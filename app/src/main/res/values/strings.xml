@@ -17,6 +17,7 @@
 
     <string name="bundle_label">Bundle navigation hints?</string>
     <string name="move_label">Move navigation hints?</string>
+    <string name="in_meters">[metres]</string>
 
 
     <!-- activity_finish_gracefully.xml -->
@@ -181,9 +182,5 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
     <string name="activity_explain_waypoints_label">OUT FIT - coursepoints</string>
 
     <string name="moreActions">more actions</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
 
 </resources>

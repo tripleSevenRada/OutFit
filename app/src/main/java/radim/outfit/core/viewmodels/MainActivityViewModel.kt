@@ -30,6 +30,8 @@ class MainActivityViewModel (application: Application): AndroidViewModel (applic
     var preprocessInProgress = false
     var speedPickerFragmentShown = false
 
+    var exportOptionsDisplayed = false
+
     var btWarningShownCounter = 0
 
     var trackContainer = MutableLiveData<TrackContainer>()

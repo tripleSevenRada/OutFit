@@ -429,6 +429,10 @@ class MainActivity : AppCompatActivity(),
     }
 
     fun exportOptions(@Suppress("UNUSED_PARAMETER") v: View) {
+        val viewModel =
+                ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
+        if(viewModel.exportOptionsDisplayed) return
+        viewModel.exportOptionsDisplayed = true
         try {
             val fm = supportFragmentManager
             val eof = ExportOptionsFragment()
@@ -436,6 +440,12 @@ class MainActivity : AppCompatActivity(),
         }catch (e: Exception) {
             Log.e(LOG_TAG_MAIN, e.localizedMessage)
         }
+    }
+
+    override fun onExportOptionsDismiss() {
+        val viewModel =
+                ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
+        viewModel.exportOptionsDisplayed = false
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

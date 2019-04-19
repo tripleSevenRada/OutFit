@@ -2,6 +2,7 @@ package radim.outfit
 
 import android.app.Activity
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.util.Log
@@ -18,6 +19,7 @@ interface ExportOptionsDataProvider{
     fun setMove(value: Boolean)
     fun getMoveDist(): String
     fun setMoveDist(value: String)
+    fun onExportOptionsDismiss()
 }
 
 class ExportOptionsFragment: DialogFragment(){
@@ -75,5 +77,10 @@ class ExportOptionsFragment: DialogFragment(){
         bundleCheckBox?.isChecked = exportOptionsDataProvider.getBundle()
 
         return mView
+    }
+
+    override fun onDismiss(dialog: DialogInterface?) {
+        super.onDismiss(dialog)
+        exportOptionsDataProvider.onExportOptionsDismiss()
     }
 }
