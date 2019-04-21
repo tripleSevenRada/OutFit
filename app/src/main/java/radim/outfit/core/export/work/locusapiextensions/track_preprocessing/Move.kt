@@ -168,19 +168,13 @@ class Move(val debugMessages: MutableList<String>) {
             rebuiltWpoints.add(WPIndex(point, indexMoved))
         }
 
+        fun addToRebuild(point: Point){
+            addToRebuiltWpoints(point, wpToMovedLoc[point], wpToOriginalIndex[point])
+        }
         // iterate rteActionsOnlyWP
-        rteActionsOnlyWP.forEach {
-            // get original index, get moved location
-            val indexStart = wpToOriginalIndex[it]
-            val loc = wpToMovedLoc[it]
-            addToRebuiltWpoints(it, loc, indexStart)
-        }
+        rteActionsOnlyWP.forEach { addToRebuild(it) }
         // iterate stashed PASS_PLACE
-        passPlaceStash.forEach {
-            val indexStart = wpToOriginalIndex[it]
-            val loc = wpToOriginalLoc[it]
-            addToRebuiltWpoints(it, loc, indexStart)
-        }
+        passPlaceStash.forEach { addToRebuild(it) }
         // sort list of <WPIndex> by indices
         rebuiltWpoints.sort()
 

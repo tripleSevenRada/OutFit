@@ -41,11 +41,8 @@ class Clustering(val debug: Boolean) {
         }
 
         //now attach all trackpoints to their closest clusters
-        track.points.forEach { currentTrackpoint ->
-            if(currentTrackpoint != null) {
-                val closestCluster = getClosestCluster(currentTrackpoint, clusters)
-                closestCluster?.members?.add(currentTrackpoint)
-            }
+        track.points.forEach {
+            it?.let{ getClosestCluster(it, clusters)?.members?.add(it) }
         }
 
         if (debug) {
