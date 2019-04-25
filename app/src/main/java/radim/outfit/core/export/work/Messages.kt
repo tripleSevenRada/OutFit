@@ -116,7 +116,9 @@ message_index (254-1-UINT16): selected=0,reserved=0,mask=0 (0)
         lapMesg.maxAltitude = track.stats.altitudeMax
     }
 
-    val totalElapsed = trackTimestampsBundle.totalTime / 1000L
+    val totalElapsed = trackTimestampsBundle.pointStamps.run {
+        (this[this.lastIndex] / 1000L) - (this[0] / 1000L)
+    }
 
     lapMesg.totalElapsedTime = totalElapsed.toFloat()
     lapMesg.totalTimerTime = totalElapsed.toFloat()
@@ -129,7 +131,6 @@ message_index (254-1-UINT16): selected=0,reserved=0,mask=0 (0)
         Log.i("LAP_MSG_TIMES", "minus ${
         trackTimestampsBundle.pointStamps[trackTimestampsBundle.pointStamps.lastIndex] -
                 trackTimestampsBundle.pointStamps[0]}")
-        Log.i("LAP_MSG_TIMES", "total ${trackTimestampsBundle.totalTime}")
         Log.i("LAP_MSG_TIMES", "total elapsed ${totalElapsed.toFloat()}")
     }
 

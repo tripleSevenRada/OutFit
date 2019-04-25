@@ -162,15 +162,12 @@ state "isFullyTimestamped" as stamped {
                 //trackContainer has NO null elements
                 TrackTimestampsBundle(
                         trackContainer.track.stats.startTime,
-                        trackContainer.track.stats.totalTime,
                         extractPointTimestampsFromPoints(trackContainer.track)
                 )
             } else {
                 //trackContainer may contain null elements and is considered not timestamped
                 TrackTimestampsBundle(
                         System.currentTimeMillis(),
-                        timestampsNonNullPoints[timestampsNonNullPoints.lastIndex] -
-                                timestampsNonNullPoints[0], // here not empty
                         timestampsNonNullPoints // here not empty
                 )
             }
