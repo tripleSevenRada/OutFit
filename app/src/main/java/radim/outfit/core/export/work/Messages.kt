@@ -5,6 +5,7 @@ import com.garmin.fit.*
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Location
 import locus.api.objects.extra.Track
+import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.locusapiextensions.*
 import java.util.*
 
@@ -53,7 +54,7 @@ internal fun getCourseMesg(track: Track, filename: String): CourseMesg {
     }
     val sport: Sport? = activityTypesToGarminSport[track.activityType]
     courseMesg.sport = sport ?: Sport.GENERIC
-    courseMesg.capabilities = CourseCapabilities.NAVIGATION // Not required
+    courseMesg.capabilities = 799 // CourseCapabilities.NAVIGATION
     return courseMesg
 }
 
@@ -88,9 +89,14 @@ message_index (254-1-UINT16): selected=0,reserved=0,mask=0 (0)
 
     if (firstPoint == null || lastPoint == null) throw RuntimeException("Track has null elements only.")
 
+    lapMesg.event = Event.LAP
+    lapMesg.eventType = EventType.STOP
+    lapMesg.eventGroup = 255
+
     lapMesg.startTime = DateTime((trackTimestampsBundle.startTime -
             MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
-    lapMesg.timestamp = DateTime((trackTimestampsBundle.startTime -
+    val lastIndex = trackTimestampsBundle.pointStamps.lastIndex
+    lapMesg.timestamp = DateTime((trackTimestampsBundle.pointStamps[lastIndex] -
             MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
 
     lapMesg.startPositionLat = firstPoint.getLatitude().toSemiCircles()
@@ -105,13 +111,26 @@ message_index (254-1-UINT16): selected=0,reserved=0,mask=0 (0)
         else -(track.stats.eleNegativeHeight.toInt())
     }
 
-    lapMesg.totalTimerTime = trackTimestampsBundle.totalTime / 1000F
-    lapMesg.totalElapsedTime = trackTimestampsBundle.totalTime / 1000F
-    lapMesg.totalDistance = dst[dst.lastIndex]
-
     if (track.hasAltitudeBounds()) {
         lapMesg.minAltitude = track.stats.altitudeMin
         lapMesg.maxAltitude = track.stats.altitudeMax
+    }
+
+    val totalElapsed = trackTimestampsBundle.totalTime / 1000L
+
+    lapMesg.totalElapsedTime = totalElapsed.toFloat()
+    lapMesg.totalTimerTime = totalElapsed.toFloat()
+    lapMesg.totalDistance = dst[dst.lastIndex]
+    lapMesg.intensity = Intensity.ACTIVE
+
+    lapMesg.messageIndex = 0
+
+    if(DEBUG_MODE){
+        Log.i("LAP_MSG_TIMES", "minus ${
+        trackTimestampsBundle.pointStamps[trackTimestampsBundle.pointStamps.lastIndex] -
+                trackTimestampsBundle.pointStamps[0]}")
+        Log.i("LAP_MSG_TIMES", "total ${trackTimestampsBundle.totalTime}")
+        Log.i("LAP_MSG_TIMES", "total elapsed ${totalElapsed.toFloat()}")
     }
 
     return lapMesg
@@ -142,10 +161,10 @@ altitude (2-1-UINT16): 399.0 m (4495)
         DateTime((point.time - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
     } else {
         // time (List) is non empty
-        record.distance = dst[index]
         DateTime((time[index] - MILIS_FROM_START_UNIX_ERA_TO_UTC_00_00_Dec_31_1989) / 1000L)
     }
     record.speed = speed[index]
+    record.distance = dst[index]
     if (hasAltitude) record.altitude = point.altitude.toFloat()
     return record
 }
@@ -163,7 +182,8 @@ name (6-14-STRING): "Generic Point"
 internal fun getCoursepointMesg(wp: WaypointSimplified,
                                 mapNonNullIndicesToTmstmp: Map<Int, Long>,
                                 mapNonNullIndicesToDist: Map<Int, Float>,
-                                track: Track): CoursePointMesg? {
+                                track: Track,
+                                index: Int): CoursePointMesg? {
     val tag = "getCPMesg"
     val typeInLocus: PointRteAction? = wp.rteAction
     typeInLocus ?: return null
@@ -190,6 +210,7 @@ internal fun getCoursepointMesg(wp: WaypointSimplified,
     else wp.coursepointEnumForced
     val lengthAsserted = assertStringLength(wp.name, COURSEPOINTS_NAME_MAX_LENGTH)
     cp.name = replaceNonAllowedChars(lengthAsserted, NAMES_REPLACEMENT_CHAR)
+    cp.messageIndex = index
     return cp
 }
 

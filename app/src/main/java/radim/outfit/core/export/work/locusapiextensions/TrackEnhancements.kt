@@ -139,6 +139,6 @@ fun reduceWayPointsSizeTo(points: List<WaypointSimplified>, limit: Int): List<Wa
     }
 }
 
-data class TrackTimestampsBundle(val startTime: Long, val totalTime: Float, val pointStamps: List<Long>)
+data class TrackTimestampsBundle(val startTime: Long, val totalTime: Long, val pointStamps: List<Long>)
 
 

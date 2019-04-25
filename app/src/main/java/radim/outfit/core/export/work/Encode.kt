@@ -162,15 +162,15 @@ state "isFullyTimestamped" as stamped {
                 //trackContainer has NO null elements
                 TrackTimestampsBundle(
                         trackContainer.track.stats.startTime,
-                        trackContainer.track.stats.totalTime.toFloat(),
+                        trackContainer.track.stats.totalTime,
                         extractPointTimestampsFromPoints(trackContainer.track)
                 )
             } else {
                 //trackContainer may contain null elements and is considered not timestamped
                 TrackTimestampsBundle(
                         System.currentTimeMillis(),
-                        timestampsNonNullPoints[timestampsNonNullPoints.lastIndex].toFloat() -
-                                timestampsNonNullPoints[0].toFloat(), // here not empty
+                        timestampsNonNullPoints[timestampsNonNullPoints.lastIndex] -
+                                timestampsNonNullPoints[0], // here not empty
                         timestampsNonNullPoints // here not empty
                 )
             }
@@ -213,6 +213,7 @@ event_type (1-1-ENUM): start (0)
             eventMesgStart.event = Event.TIMER
             eventMesgStart.eventGroup = 0.toShort()
             eventMesgStart.eventType = EventType.START
+            eventMesgStart.timerTrigger = TimerTrigger.AUTO
             encoder.write(eventMesgStart)
 
             if (DEBUG_MODE) {
@@ -256,18 +257,21 @@ event_type (1-1-ENUM): start (0)
                     throw RuntimeException("assertWaypointsAreLinkedToTrackpointsOneToOneIncreasing")
             }
 
+            var indexCP = 0
             reducedToLimit.forEach {
                 val coursePointMesg = getCoursepointMesg(
                         it,
                         mapNonNullIndicesToTmstmp,
                         mapNonNullIndicesToDist,
-                        trackContainer.track)
+                        trackContainer.track,
+                        indexCP)
                 if (coursePointMesg != null) {
                     encoder.write(coursePointMesg)
                     countCP++
                     countFrequencies(coursePointMesg.type, mapCoursePointsTypesToFrequencies)
                     if (DEBUG_MODE) debugMessages.addAll(Dumps.coursePointMessageDumpLine(coursePointMesg))
                 }
+                indexCP ++
             }
 
             val indexToInsertTrackpointsInfo = publicMessages.size
@@ -314,8 +318,8 @@ event_type (1-1-ENUM): start (0)
             // RECORDS END
 
             // sanity check
-            if (index != distancesNonNullPoints.size ||
-                    (!trackIsFullyTimestamped && index != timestampsNonNullPoints.size)) {
+            if (DEBUG_MODE && (index != distancesNonNullPoints.size ||
+                    (!trackIsFullyTimestamped && index != timestampsNonNullPoints.size))) {
                 errorMessages.add("Sizes mismatch: Encode")
                 return Result.Fail(debugMessages, errorMessages, dir, filename)
             }
@@ -333,6 +337,7 @@ event_type (1-1-ENUM): stop_disable_all (9)
             eventMesgStop.event = Event.TIMER
             eventMesgStop.eventGroup = 0.toShort()
             eventMesgStop.eventType = EventType.STOP_DISABLE_ALL
+            eventMesgStop.timerTrigger = TimerTrigger.AUTO
 
             encoder.write(eventMesgStop)
 
