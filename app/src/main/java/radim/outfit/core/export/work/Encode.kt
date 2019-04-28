@@ -371,10 +371,7 @@ event_type (1-1-ENUM): stop_disable_all (9)
             map[word] = 1
         else {
             var count = map[word]
-            if (count != null) {
-                count++
-                map[word] = count
-            }
+            count?.let{ count++; map[word] = count }
         }
     }
 }
