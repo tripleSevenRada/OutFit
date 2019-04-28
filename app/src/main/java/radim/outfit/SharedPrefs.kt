@@ -28,6 +28,8 @@ fun initSharedPrefs(ctx: AppCompatActivity){
             putBoolean("move_nav_hints", false)
         if (!sharedPreferences.contains("move_nav_hints_dist"))
             putString("move_nav_hints_dist", "10")
+        if (!sharedPreferences.contains("bundle_nav_hints_dist"))
+            putString("bundle_nav_hints_dist", "80")
 
         apply()
     }

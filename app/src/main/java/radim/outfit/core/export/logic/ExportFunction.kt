@@ -15,8 +15,6 @@ class ExportFunction : (File?, String?, TrackContainer?, Float, AppCompatActivit
                                  speedIfNotInTrack: Float, ctx: AppCompatActivity, debugMessages: MutableList<String>): Result {
         return if (dir != null && filename != null && trackContainer != null) {
 
-            val minDistWP = 50.0
-
             var container = trackContainer
             val exportOptionsDataProvider = ctx as ExportOptionsDataProvider
 
@@ -27,11 +25,17 @@ class ExportFunction : (File?, String?, TrackContainer?, Float, AppCompatActivit
             }catch (e: Exception){
                 10.0
             }
+            container.bundleDist = try {
+                Integer.valueOf(exportOptionsDataProvider.getBundleDist()).toDouble()
+            }catch (e: Exception){
+                80.0
+            }
 
             if(DEBUG_MODE){
                 Log.i("EXPORT FUNCTION", "container.clusterize: ${container.clusterize}")
                 Log.i("EXPORT FUNCTION", "container.move: ${container.move}")
                 Log.i("EXPORT FUNCTION", "container.moveDist: ${container.moveDist}")
+                Log.i("EXPORT FUNCTION", "container.bundleDist: ${container.bundleDist}")
             }
 
             // WaypointFilter
@@ -43,7 +47,14 @@ class ExportFunction : (File?, String?, TrackContainer?, Float, AppCompatActivit
 
             // clusterize
             // OPTIONAL
-            if (container.clusterize) Kruskal(debugMessages).clusterize(minDistWP, container, ctx.getString(R.string.moreActions))
+            if (container.clusterize) {
+                val rteActions = RteActionsOnlyWP(container.track).getRteActionsOnlyWP()
+                val TTSLangDetected = TTSLangDetect().detectLang(rteActions)
+                val moreActionsString = if (TTSLangDetected == TTSLangDetect.TTSLang.EN) ctx.getString(R.string.moreActionsEN)
+                else ctx.getString(R.string.moreActions)
+                if(DEBUG_MODE) Log.i("EXPORT FUNCTION", "detected more actions language: $TTSLangDetected")
+                Kruskal(debugMessages).clusterize(container.bundleDist, container, moreActionsString)
+            }
             // filter dismissible
             // NOT OPTIONAL
             Simplify(container).simplify()

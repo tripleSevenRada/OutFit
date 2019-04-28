@@ -445,7 +445,8 @@ data class TrackContainer(val track: Track,
                           var failedMessage: String = "",
                           var clusterize: Boolean = false,
                           var move: Boolean = false,
-                          var moveDist: Double = 40.0)
+                          var moveDist: Double = 40.0,
+                          var bundleDist: Double = 80.0)
 
 // mocked stress test
 class InjectTestWaypoints(val track: Track) {

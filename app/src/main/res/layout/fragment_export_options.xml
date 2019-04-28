@@ -17,13 +17,12 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:id="@+id/export_options_fragmentTVBundle"
                     style="@style/mainTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:layout_marginTop="12dp"
                     android:text="@string/bundle_label"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -32,11 +31,42 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="8dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
+            </android.support.constraint.ConstraintLayout>
+
+            <android.support.constraint.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:id="@+id/export_options_fragmentLLPickerBundle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        style="@style/labelTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginBottom="4dp"
+                        android:text="@string/in_meters" />
+
+                    <NumberPicker
+                        android:id="@+id/export_options_fragmentNPBundle"
+                        style="@style/numberPickerGrey"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginBottom="8dp" />
+
+                </LinearLayout>
+
                 <ImageView
-                    android:id="@+id/export_options_fragmentIVBundle"
+                    android:id="@+id/export_options_fragmentIVMove"
                     android:layout_width="173dp"
                     android:layout_height="107dp"
                     android:contentDescription="explain bundle transformation"
@@ -44,12 +74,11 @@
                     android:src="@drawable/bundle"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/export_options_fragmentTVBundle" />
+                    app:layout_constraintStart_toEndOf="@id/export_options_fragmentLLPickerBundle"
+                    app:layout_constraintTop_toTopOf="parent" />
 
             </android.support.constraint.ConstraintLayout>
 
-            <View style="@style/separator" />
 
             <android.support.constraint.ConstraintLayout
                 android:layout_width="match_parent"
@@ -81,7 +110,7 @@
                 android:layout_height="wrap_content">
 
                 <LinearLayout
-                    android:id="@+id/export_options_fragmentLLPicker"
+                    android:id="@+id/export_options_fragmentLLPickerMove"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
@@ -105,7 +134,6 @@
                 </LinearLayout>
 
                 <ImageView
-                    android:id="@+id/export_options_fragmentIVMove"
                     android:layout_width="173dp"
                     android:layout_height="107dp"
                     android:contentDescription="explain move transformation"
@@ -113,7 +141,7 @@
                     android:src="@drawable/move"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/export_options_fragmentLLPicker"
+                    app:layout_constraintStart_toEndOf="@id/export_options_fragmentLLPickerMove"
                     app:layout_constraintTop_toTopOf="parent" />
 
             </android.support.constraint.ConstraintLayout>
