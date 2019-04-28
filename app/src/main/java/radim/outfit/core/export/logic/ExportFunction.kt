@@ -47,7 +47,14 @@ class ExportFunction : (File?, String?, TrackContainer?, Float, AppCompatActivit
 
             // clusterize
             // OPTIONAL
-            if (container.clusterize) Kruskal(debugMessages).clusterize(container.bundleDist, container, ctx.getString(R.string.moreActions))
+            if (container.clusterize) {
+                val rteActions = RteActionsOnlyWP(container.track).getRteActionsOnlyWP()
+                val TTSLangDetected = TTSLangDetect().detectLang(rteActions)
+                val moreActionsString = if (TTSLangDetected == TTSLangDetect.TTSLang.EN) ctx.getString(R.string.moreActionsEN)
+                else ctx.getString(R.string.moreActions)
+                if(DEBUG_MODE) Log.i("EXPORT FUNCTION", "detected more actions language: $TTSLangDetected")
+                Kruskal(debugMessages).clusterize(container.bundleDist, container, moreActionsString)
+            }
             // filter dismissible
             // NOT OPTIONAL
             Simplify(container).simplify()
