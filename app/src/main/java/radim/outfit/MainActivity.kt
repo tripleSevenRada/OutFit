@@ -167,6 +167,8 @@ class MainActivity : AppCompatActivity(),
     override fun setMove(value: Boolean) = sharedPreferences.edit().putBoolean("move_nav_hints", value).apply()
     override fun getMoveDist(): String = sharedPreferences.getString("move_nav_hints_dist", "10")?:"10"
     override fun setMoveDist(value: String) = sharedPreferences.edit().putString("move_nav_hints_dist", value).apply()
+    override fun getBundleDist(): String = sharedPreferences.getString("bundle_nav_hints_dist", "90")?:"90"
+    override fun setBundleDist(value: String) = sharedPreferences.edit().putString("bundle_nav_hints_dist", value).apply()
     // ExportOptionsDataProvider impl END
 
     inner class TimerCallback(private val viewModel: MainActivityViewModel) : Timer.TimerCallback {

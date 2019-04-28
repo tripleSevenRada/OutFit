@@ -19,6 +19,8 @@ interface ExportOptionsDataProvider{
     fun setMove(value: Boolean)
     fun getMoveDist(): String
     fun setMoveDist(value: String)
+    fun getBundleDist(): String
+    fun setBundleDist(value: String)
     fun onExportOptionsDismiss()
 }
 
@@ -37,12 +39,46 @@ class ExportOptionsFragment: DialogFragment(){
     }
 
     private var moveDistPick: NumberPicker? = null
+    private var bundleDistPick: NumberPicker? = null
     private var moveCheckBox: CheckBox? = null
     private var bundleCheckBox: CheckBox? = null
 
-    private val movePickerPositionToValue = mapOf( 0 to "10", 1 to "20", 2 to "30", 3 to "40", 4 to "50", 5 to "60", 6 to "70", 7 to "80" )
-    private val movePickerValueToPosition = mapOf( "10" to 0, "20" to 1, "30" to 2, "40" to 3, "50" to 4, "60" to 5, "70" to 6, "80" to 7 )
-    private val displayedValues = arrayOf("10","20","30","40","50","60","70","80")
+    // BUNDLE
+    private val bundlePickMinValue = 0
+    private val bundlePickMaxValue = 16
+    private val bundlePickRange = IntRange(bundlePickMinValue, bundlePickMaxValue)
+
+    private val bundlePickerPositionToValue = mapIntString(bundlePickRange, 4)
+    private val bundlePickerValueToPosition = mapStringInt(bundlePickRange, 4)
+    private val bundlePickerDisplayedValues = stringArray(bundlePickRange, 4)
+
+    // MOVE
+    private val movePickMinValue = 0
+    private val movePickMaxValue = 7
+    private val movePickRange = IntRange(movePickMinValue, movePickMaxValue)
+
+    private val movePickerPositionToValue = mapIntString(movePickRange, 1)
+    private val movePickerValueToPosition = mapStringInt(movePickRange, 1)
+    private val movePickerDisplayedValues = stringArray(movePickRange, 1)
+
+    private fun mapStringInt(range: IntRange, offset: Int): Map<String, Int>{
+        // "10" to 0, "20" to 1
+        val data = mutableMapOf<String, Int>()
+        for (i in range){ data["${i+offset}0"] = i }
+        return data
+    }
+    private fun mapIntString(range: IntRange, offset: Int): Map<Int, String>{
+        // 0 to "10", 1 to "20"
+        val data = mutableMapOf<Int, String>()
+        for (i in range){ data[i] = "${i+offset}0" }
+        return data
+    }
+    private fun stringArray(range: IntRange, offset: Int): Array<String>{
+        // "10", "20"
+        val data = mutableListOf<String>()
+        for (i in range) data.add("${i+offset}0")
+        return data.toTypedArray()
+    }
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -54,14 +90,25 @@ class ExportOptionsFragment: DialogFragment(){
 
         moveDistPick = mView?.findViewById(R.id.export_options_fragmentNPMove)
         moveDistPick?.wrapSelectorWheel = false
-        moveDistPick?.minValue = 0
-        moveDistPick?.maxValue = 7
-        moveDistPick?.displayedValues = displayedValues
+        moveDistPick?.minValue = movePickMinValue
+        moveDistPick?.maxValue = movePickMaxValue
+        moveDistPick?.displayedValues = movePickerDisplayedValues
         moveDistPick?.value = movePickerValueToPosition[exportOptionsDataProvider.getMoveDist()]?: 0
         moveDistPick?.setOnValueChangedListener { _,_, newVal ->
             exportOptionsDataProvider.setMoveDist(movePickerPositionToValue[newVal]?: "10")
         }
         moveDistPick?.isEnabled = exportOptionsDataProvider.getMove()
+
+        bundleDistPick = mView?.findViewById(R.id.export_options_fragmentNPBundle)
+        bundleDistPick?.wrapSelectorWheel = false
+        bundleDistPick?.minValue = bundlePickMinValue
+        bundleDistPick?.maxValue = bundlePickMaxValue
+        bundleDistPick?.displayedValues = bundlePickerDisplayedValues
+        bundleDistPick?.value = bundlePickerValueToPosition[exportOptionsDataProvider.getBundleDist()]?: 0
+        bundleDistPick?.setOnValueChangedListener { _,_, newVal ->
+            exportOptionsDataProvider.setBundleDist(bundlePickerPositionToValue[newVal]?: "80")
+        }
+        bundleDistPick?.isEnabled = exportOptionsDataProvider.getBundle()
 
         moveCheckBox = mView?.findViewById(R.id.export_options_fragmentCHCKBMove)
         moveCheckBox?.setOnClickListener{
@@ -72,6 +119,7 @@ class ExportOptionsFragment: DialogFragment(){
 
         bundleCheckBox = mView?.findViewById(R.id.export_options_fragmentCHCKBBundle)
         bundleCheckBox?.setOnClickListener{
+            bundleDistPick?.isEnabled = bundleCheckBox?.isChecked?: false
             exportOptionsDataProvider.setBundle(bundleCheckBox?.isChecked?: true)
         }
         bundleCheckBox?.isChecked = exportOptionsDataProvider.getBundle()

@@ -56,7 +56,7 @@ dependencies {
 }
 
 dependencies {
-    implementation 'com.asamm:locus-api-android:0.3.2'
+    implementation 'com.asamm:locus-api-android:0.3.2' //0.2.25 LT, 0.3.2 in partial rewrite
 
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
 
