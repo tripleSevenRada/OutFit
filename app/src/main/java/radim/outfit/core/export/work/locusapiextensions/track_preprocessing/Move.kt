@@ -151,30 +151,27 @@ class Move(val debugMessages: MutableList<String>) {
         //
         //
         //     wpToMovedLoc
-        //     for rteActionsOnlyWP
+        //     for rteActionsOnly
         //
         //     passPlaceStash = mutableListOf<Point>()
         //     undefinedStash = mutableListOf<Point>()
 
         val rebuiltWpoints: MutableList<WPIndex> = mutableListOf()
         fun addToRebuiltWpoints(point: Point, loc: Location?, indexStart: Int?){
-            if(DEBUG_MODE && (indexStart == null || loc == null)) exitProcess(-5)
+            if(DEBUG_MODE && (indexStart == null || loc == null)) { exitProcess(-5) }
             // search in both directions until you find index of moved location OR -1
             val indexMoved = if (loc != null && indexStart != null) locSearch(loc, indexStart)
             else -1
             // -1 means ERROR
-            if(DEBUG_MODE && indexMoved == -1) exitProcess(-6)
+            if(DEBUG_MODE && indexMoved == -1) { exitProcess(-6) }
             // put waypoint and moved index into WPIndex
             rebuiltWpoints.add(WPIndex(point, indexMoved))
         }
 
-        fun addToRebuild(point: Point){
-            addToRebuiltWpoints(point, wpToMovedLoc[point], wpToOriginalIndex[point])
-        }
         // iterate rteActionsOnlyWP
-        rteActionsOnlyWP.forEach { addToRebuild(it) }
+        rteActionsOnlyWP.forEach { addToRebuiltWpoints(it, wpToMovedLoc[it], wpToOriginalIndex[it]) }
         // iterate stashed PASS_PLACE
-        passPlaceStash.forEach { addToRebuild(it) }
+        passPlaceStash.forEach { addToRebuiltWpoints(it, wpToOriginalLoc[it], wpToOriginalIndex[it]) }
         // sort list of <WPIndex> by indices
         rebuiltWpoints.sort()
 
@@ -184,8 +181,10 @@ class Move(val debugMessages: MutableList<String>) {
         val newDefinedRteActionsToShiftedIndices = mutableMapOf<Point, Int>()
 
         rebuiltWpoints.forEach {
-            trackContainer.track.waypoints.add(it.wp)
-            newDefinedRteActionsToShiftedIndices[it.wp] = it.index
+            if(it.index != -1) {
+                trackContainer.track.waypoints.add(it.wp)
+                newDefinedRteActionsToShiftedIndices[it.wp] = it.index
+            }
         }
         undefinedStash.forEach { trackContainer.track.waypoints.add(it) }
 
@@ -205,7 +204,6 @@ class Move(val debugMessages: MutableList<String>) {
         override fun compareTo(other: WPIndex): Int {
             return this.index.compareTo(other.index)
         }
-
     }
 
     // returns -1 -1 if no pair found

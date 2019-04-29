@@ -49,7 +49,7 @@ fun AppCompatActivity.getString(name: String): String {
     }
 }
 
-const val DEBUG_MODE = true
+const val DEBUG_MODE = false
 
 class MainActivity : AppCompatActivity(),
         TriggerActionProvider,
@@ -387,6 +387,7 @@ class MainActivity : AppCompatActivity(),
                     putExtra(EXTRA_MESSAGE_VIEW_RESULTS, resultsParcel)
                 }
                 startActivity(intent)
+                finish()
             }
             is Result.Fail -> {
                 fail.failGracefully(this, result.errorMessage.toString())

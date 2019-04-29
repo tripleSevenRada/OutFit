@@ -152,7 +152,6 @@ upgrade_needed_cancel — Button text for a user to cancel the dialog and not up
     <!-- ExplainWaypointsActivity -->
     <string name="activity_explain_waypoints_label">OUT FIT - coursepointy</string>
     <string name="frag_label_speed">Rychlost virt. partnera?</string>
-    <string name="moreActions">vice akci</string>
     <string name="in_meters">[metry]</string>
 
 </resources>
