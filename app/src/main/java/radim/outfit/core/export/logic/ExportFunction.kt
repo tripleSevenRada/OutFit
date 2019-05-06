@@ -7,6 +7,7 @@ import radim.outfit.ExportOptionsDataProvider
 import radim.outfit.R
 import radim.outfit.core.export.work.Encoder
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.*
+import radim.outfit.getString
 import java.io.File
 
 class ExportFunction : (File?, String?, TrackContainer?, Float, AppCompatActivity, MutableList<String>) -> Result {
@@ -47,14 +48,8 @@ class ExportFunction : (File?, String?, TrackContainer?, Float, AppCompatActivit
 
             // clusterize
             // OPTIONAL
-            if (container.clusterize) {
-                val rteActions = RteActionsOnlyWP(container.track).getRteActionsOnlyWP()
-                val TTSLangDetected = TTSLangDetect().detectLang(rteActions)
-                val moreActionsString = if (TTSLangDetected == TTSLangDetect.TTSLang.EN) ctx.getString(R.string.moreActionsEN)
-                else ctx.getString(R.string.moreActions)
-                if(DEBUG_MODE) Log.i("EXPORT FUNCTION", "detected more actions language: $TTSLangDetected")
-                Kruskal(debugMessages).clusterize(container.bundleDist, container, moreActionsString)
-            }
+            if (container.clusterize) Kruskal(debugMessages).clusterize(container.bundleDist, container, ctx.getString(R.string.moreActionsEN))
+
             // filter dismissible
             // NOT OPTIONAL
             Simplify(container).simplify()

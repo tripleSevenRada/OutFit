@@ -106,6 +106,17 @@ class ViewResultsActivity : AppCompatActivity(),
                 Context.MODE_PRIVATE).edit().putBoolean(getString("checkbox_cciq"), status).apply()
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        Log.i(tag, "onNewIntent")
+        if (intent != null && intent.hasExtra(EXTRA_MESSAGE_VIEW_RESULTS)) {
+            parcel = intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
+        }
+        val viewModel = getViewModel()
+        viewModel.fileOpsDone = false
+        viewModel.parcelPersistenceDone = false
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_results)
@@ -287,11 +298,6 @@ class ViewResultsActivity : AppCompatActivity(),
             Log.w(tag, "viewModel.parcelPersistenceDone ${viewModel.parcelPersistenceDone}")
         }
 
-        // only the very first entry of regular parcel (got from previous (main) activity)
-        // OR
-        // every entry if in standalone mode (no parcel in the intent)
-        // TODO
-        // -- parcel is not a property of view model.
         if (!viewModel.fileOpsDone ||
                 !::parcel.isInitialized ||
                 !viewModel.parcelPersistenceDone) {
