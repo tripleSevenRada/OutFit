@@ -10,9 +10,9 @@ import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.locusapiextensions.toWptRecord
 import kotlin.system.exitProcess
 
-class Move(val debugMessages: MutableList<String>) {
+const val MIN_DIST_MOVE_CONSIDER = 1.0
 
-    private val minDistConsider = 1.0
+class Move(val debugMessages: MutableList<String>) {
 
     fun move(moveDist: Double, trackContainer: TrackContainer): TrackContainer {
 
@@ -35,7 +35,7 @@ class Move(val debugMessages: MutableList<String>) {
                 wpToOriginalLoc[it] = trackContainer.track.points[trackContainer.definedRteActionsToShiftedIndices[it]
                         ?: 0]
                 wpToOriginalIndex[it] = trackContainer.definedRteActionsToShiftedIndices[it] ?: 0
-                if(it.parameterRteAction == PointRteAction.PASS_PLACE) passPlaceStash.add(it)
+                if (it.parameterRteAction == PointRteAction.PASS_PLACE) passPlaceStash.add(it)
             } else undefinedStash.add(it)
         }
 
@@ -85,7 +85,7 @@ class Move(val debugMessages: MutableList<String>) {
                         trackContainer.track,
                         locThatBelongsToWptToBeShifted,
                         trackLocToOrigIndex)
-                val prePostCoefTriple = getPrePostAndCoef(index, moveDist, trackContainer.track)
+                val prePostCoefTriple = MoveFunctions().getPrePostAndCoef(index, moveDist, trackContainer.track, MIN_DIST_MOVE_CONSIDER)
                 // if prePostPair equals -1, -1 nothing is going to happen
                 if (with(prePostCoefTriple) { first != -1 && second != -1 }) {
                     // we do have a triple, we can insert new trackpoint
@@ -117,26 +117,9 @@ class Move(val debugMessages: MutableList<String>) {
         }
 
         if (DEBUG_MODE) {
-            if(wpToMovedLoc.size != rteActionsOnlyWP.size) exitProcess(-4)
+            if (wpToMovedLoc.size != rteActionsOnlyWP.size) exitProcess(-4)
             debugMessages.add("MOVE: ORIGINALS"); debugMessages.addAll(origLocWPTdebug)
             debugMessages.add("MOVE: MOVED"); debugMessages.addAll(movedLocWPTdebug)
-        }
-
-        // search in track for loc, start @index
-        // if loc not found return -1
-        fun locSearch(loc: Location, start: Int): Int{
-            val trackpoints = trackContainer.track.points
-            if (start !in trackpoints.indices) return -1
-            if(trackpoints[start] === loc) return start
-            var locSearchCount = 1
-            while (true){
-                val left = start - locSearchCount
-                val right = start + locSearchCount
-                if(left in trackpoints.indices && trackpoints[left] === loc) return left
-                if(right in trackpoints.indices && trackpoints[right] === loc) return right
-                if(left !in trackpoints.indices && right !in trackpoints.indices) return -1
-                locSearchCount ++
-            }
         }
 
         // TIDY UP
@@ -157,13 +140,17 @@ class Move(val debugMessages: MutableList<String>) {
         //     undefinedStash = mutableListOf<Point>()
 
         val rebuiltWpoints: MutableList<WPIndex> = mutableListOf()
-        fun addToRebuiltWpoints(point: Point, loc: Location?, indexStart: Int?){
-            if(DEBUG_MODE && (indexStart == null || loc == null)) { exitProcess(-5) }
+        fun addToRebuiltWpoints(point: Point, loc: Location?, indexStart: Int?) {
+            if (DEBUG_MODE && (indexStart == null || loc == null)) {
+                exitProcess(-5)
+            }
             // search in both directions until you find index of moved location OR -1
-            val indexMoved = if (loc != null && indexStart != null) locSearch(loc, indexStart)
+            val indexMoved = if (loc != null && indexStart != null) MoveFunctions().locSearch(loc, indexStart, trackContainer)
             else -1
             // -1 means ERROR
-            if(DEBUG_MODE && indexMoved == -1) { exitProcess(-6) }
+            if (DEBUG_MODE && indexMoved == -1) {
+                exitProcess(-6)
+            }
             // put waypoint and moved index into WPIndex
             rebuiltWpoints.add(WPIndex(point, indexMoved))
         }
@@ -181,7 +168,7 @@ class Move(val debugMessages: MutableList<String>) {
         val newDefinedRteActionsToShiftedIndices = mutableMapOf<Point, Int>()
 
         rebuiltWpoints.forEach {
-            if(it.index != -1) {
+            if (it.index != -1) {
                 trackContainer.track.waypoints.add(it.wp)
                 newDefinedRteActionsToShiftedIndices[it.wp] = it.index
             }
@@ -200,14 +187,16 @@ class Move(val debugMessages: MutableList<String>) {
                 moveDistOldContainer)
     }
 
-    private data class WPIndex(val wp: Point, val index: Int): Comparable<WPIndex>{
+    private data class WPIndex(val wp: Point, val index: Int) : Comparable<WPIndex> {
         override fun compareTo(other: WPIndex): Int {
             return this.index.compareTo(other.index)
         }
     }
+}
 
+class MoveFunctions {
     // returns -1 -1 if no pair found
-    private fun getPrePostAndCoef(index: Int, moveDist: Double, track: Track): Triple<Int, Int, Double> {
+    fun getPrePostAndCoef(index: Int, moveDist: Double, track: Track, minDistConsider: Double): Triple<Int, Int, Double> {
         var distAccumulator = 0.0
         var left = index - 1
         var right = index
@@ -229,6 +218,23 @@ class Move(val debugMessages: MutableList<String>) {
             right = left
             left = right - 1
             if (left !in track.points.indices) return Triple(-1, -1, coef)
+        }
+    }
+
+    // search in track for loc, start @index
+    // if loc not found return -1
+    fun locSearch(loc: Location, start: Int, trackContainer: TrackContainer): Int {
+        val trackpoints = trackContainer.track.points
+        if (start !in trackpoints.indices) return -1
+        if (trackpoints[start] === loc) return start
+        var locSearchCount = 1
+        while (true) {
+            val left = start - locSearchCount
+            val right = start + locSearchCount
+            if (left in trackpoints.indices && trackpoints[left] === loc) return left
+            if (right in trackpoints.indices && trackpoints[right] === loc) return right
+            if (left !in trackpoints.indices && right !in trackpoints.indices) return -1
+            locSearchCount++
         }
     }
 }
