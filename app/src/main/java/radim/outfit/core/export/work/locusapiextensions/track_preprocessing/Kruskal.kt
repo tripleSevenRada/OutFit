@@ -112,6 +112,8 @@ class Kruskal(val debugMessages: MutableList<String>) {
         if (DEBUG_MODE) {
             debugMessages.add("KRUSKAL CLUSTERIZE waypoints rteActionsOnlyWP")
             rteActionsOnlyWP.forEach { debugMessages.add(it.parameterRteAction.toString()) }
+            rteActionsOnlyWP.forEach {if(it.parameterRteAction == PointRteAction.PASS_PLACE ||
+                    it.parameterRteAction == PointRteAction.UNDEFINED) exitProcess(-1)}
         }
 
         // EDGES
