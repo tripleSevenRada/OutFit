@@ -3,13 +3,17 @@ package radim.outfit.core.export.work
 import android.util.Log
 import com.garmin.fit.CoursePoint
 import locus.api.objects.enums.PointRteAction
+import locus.api.objects.extra.Location
 import locus.api.objects.extra.Point
 import locus.api.objects.utils.LocationCompute.computeDistanceFast
+import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.WaypointSimplified
 import radim.outfit.core.export.work.locusapiextensions.getCoursepointEnumForced
 import radim.outfit.core.export.work.locusapiextensions.getWaypointName
 import radim.outfit.core.export.work.locusapiextensions.stringdumps.LocationStringDump
+import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.MIN_DIST_MOVE_CONSIDER
+import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.MoveFunctions
 import kotlin.system.exitProcess
 
 const val COURSEPOINTS_LIMIT = 100
@@ -400,9 +404,85 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
         waypointsSimplified.sort()
         if (debug) {
             debugMessages.add("Sorted rebuilt simplified waypoints")
-            waypointsSimplified.forEach { debugMessages.add(it.toString()) }
+            waypointsSimplified.forEach { debugMessages.add(it.toString()); Log.i(tag, "Wpt Simplified: $it") }
         }
-        return waypointsSimplified // rebuild
+
+
+        // move PASS_PLACE waypoints towards start if selected in export options
+        val selectedMock = true
+        val moveDist = 80.0
+        // new list of copies
+        val waypointsSimplifiedCopies = mutableListOf<WaypointSimplified>()
+        if(selectedMock){
+
+            // memoization and optimization
+            val wptToOrigIndex = mutableMapOf<WaypointSimplified, Int>()
+            waypointsSimplified.forEach { wptToOrigIndex[it] = it.rteIndex }
+            val wptToOrigLocation = mutableMapOf<WaypointSimplified, Location>()
+            waypointsSimplified.forEach { wptToOrigLocation[it] = trackContainer.track.getPoint(it.rteIndex) }
+            // keep track of new location
+            val wptToMovedLocation = mutableMapOf<WaypointSimplified, Location>()
+
+            // split waypointsSimplified into
+            // -waypointsSimplified
+            // -waypointsSimplifiedPassPlace
+            val waypointsSimplifiedPassPlace =
+                    waypointsSimplified.filter { it.rteAction == PointRteAction.PASS_PLACE }
+            waypointsSimplified.removeAll (waypointsSimplifiedPassPlace)
+
+            // move
+            val functions = MoveFunctions()
+            waypointsSimplifiedPassPlace.forEach { passPlaceWptToMove ->
+                val currentIndexWptToMove = functions.locSearch(
+                        wptToOrigLocation[passPlaceWptToMove]?: trackContainer.track.getPoint(0),
+                        wptToOrigIndex[passPlaceWptToMove]?: 0,
+                        trackContainer
+                )
+                val prePostAndCoef = functions.getPrePostAndCoef(currentIndexWptToMove,
+                        moveDist,
+                        trackContainer.track,
+                        MIN_DIST_MOVE_CONSIDER
+                )
+                if (with(prePostAndCoef) { first != -1 && second != -1 }) {
+                    // new Location
+                    val locToInsert = functions.locationFactory(trackContainer, prePostAndCoef)
+                    // insert
+                    trackContainer.track.points.add(prePostAndCoef.second, locToInsert)
+                    // keep track of new Location
+                    wptToMovedLocation[passPlaceWptToMove] = locToInsert
+                } else Log.w(tag, "$passPlaceWptToMove NOT MOVED")
+            }
+
+            // fix indices for all waypointsSimplified
+            waypointsSimplified.addAll(waypointsSimplifiedPassPlace)
+            waypointsSimplified.forEach {
+
+                val locToSearch: Location = if(
+                        it.rteAction == PointRteAction.PASS_PLACE &&
+                        wptToMovedLocation.keys.contains(it)){
+                    wptToMovedLocation[it]?: trackContainer.track.getPoint(0)
+                } else {
+                    wptToOrigLocation[it]?: trackContainer.track.getPoint(0)
+                }
+
+                val newIndex = functions.locSearch(
+                        locToSearch,
+                        wptToOrigIndex[it]?: 0,
+                        trackContainer
+                        )
+
+                val delta = (wptToOrigIndex[it]?:0) - newIndex
+                if (DEBUG_MODE) Log.i(tag, "delta for waypointsSimplified: $delta")
+
+                waypointsSimplifiedCopies.add(WaypointSimplified(it, newIndex))
+
+            }
+            // sort by rteIndex
+            waypointsSimplifiedCopies.sort()
+            return waypointsSimplifiedCopies
+        }
+
+        return waypointsSimplified// rebuild
     }
 
     private fun getSortedListOfIndicesCloseEnough(waypoint: Point): List<Int> {

@@ -57,6 +57,13 @@ data class WaypointSimplified(val rteIndex: Int,
     constructor(point: Point) : this(point.paramRteIndex, point.getWaypointName(),
             point.parameterRteAction, point.getCoursepointEnumForced())
 
+    constructor(waypointSimplified: WaypointSimplified, newIndex: Int) : this(
+            newIndex,
+            waypointSimplified.name,
+            waypointSimplified.rteAction,
+            waypointSimplified.coursepointEnumForced
+    )
+
     override fun compareTo(other: WaypointSimplified): Int = this.rteIndex.compareTo(other.rteIndex)
 }
 

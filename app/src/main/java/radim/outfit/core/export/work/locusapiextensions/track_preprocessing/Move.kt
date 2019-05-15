@@ -85,24 +85,12 @@ class Move(val debugMessages: MutableList<String>) {
                         trackContainer.track,
                         locThatBelongsToWptToBeShifted,
                         trackLocToOrigIndex)
-                val prePostCoefTriple = MoveFunctions().getPrePostAndCoef(index, moveDist, trackContainer.track, MIN_DIST_MOVE_CONSIDER)
+                val functions = MoveFunctions()
+                val prePostCoefTriple = functions.getPrePostAndCoef(index, moveDist, trackContainer.track, MIN_DIST_MOVE_CONSIDER)
                 // if prePostPair equals -1, -1 nothing is going to happen
                 if (with(prePostCoefTriple) { first != -1 && second != -1 }) {
                     // we do have a triple, we can insert new trackpoint
-                    val right = trackContainer.track.points[prePostCoefTriple.second]
-                    val left = trackContainer.track.points[prePostCoefTriple.first]
-                    val lat = linearInterpolatorGeneric(right.latitude, left.latitude, prePostCoefTriple.third)
-                    val lon = linearInterpolatorGeneric(right.longitude, left.longitude, prePostCoefTriple.third)
-                    val locToInsert = Location()
-                    with(locToInsert) { latitude = lat; longitude = lon }
-                    if (left.hasAltitude() && right.hasAltitude()) {
-                        locToInsert.altitude =
-                                linearInterpolatorGeneric(right.altitude, left.altitude, prePostCoefTriple.third)
-                    }
-                    if (left.time > 100L && right.time > 100L) {
-                        locToInsert.time =
-                                linearInterpolatorGeneric(right.time, left.time, prePostCoefTriple.third)
-                    }
+                    val locToInsert = functions.locationFactory(trackContainer, prePostCoefTriple)
                     if (DEBUG_MODE) movedLocWPTdebug.add(locToInsert.toWptRecord())
                     // actually insert
                     trackContainer.track.points.add(prePostCoefTriple.second, locToInsert)
@@ -237,4 +225,23 @@ class MoveFunctions {
             locSearchCount++
         }
     }
+
+    fun locationFactory(trackContainer: TrackContainer, prePostCoefTriple: Triple<Int,Int,Double>): Location{
+        val right = trackContainer.track.points[prePostCoefTriple.second]
+        val left = trackContainer.track.points[prePostCoefTriple.first]
+        val lat = linearInterpolatorGeneric(right.latitude, left.latitude, prePostCoefTriple.third)
+        val lon = linearInterpolatorGeneric(right.longitude, left.longitude, prePostCoefTriple.third)
+        val locationProduced = Location()
+        with(locationProduced) { latitude = lat; longitude = lon }
+        if (left.hasAltitude() && right.hasAltitude()) {
+            locationProduced.altitude =
+                    linearInterpolatorGeneric(right.altitude, left.altitude, prePostCoefTriple.third)
+        }
+        if (left.time > 100L && right.time > 100L) {
+            locationProduced.time =
+                    linearInterpolatorGeneric(right.time, left.time, prePostCoefTriple.third)
+        }
+        return locationProduced
+    }
+
 }
