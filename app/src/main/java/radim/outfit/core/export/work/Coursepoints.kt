@@ -5,6 +5,7 @@ import com.garmin.fit.CoursePoint
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Point
 import locus.api.objects.utils.LocationCompute.computeDistanceFast
+import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.WaypointSimplified
 import radim.outfit.core.export.work.locusapiextensions.getCoursepointEnumForced
@@ -419,7 +420,7 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
                 var index = indexStart
                 val startLoc = trackContainer.track.getPoint(index)
                 while (index >= 0) {
-                    if (computeDistanceFast(startLoc, trackContainer.track.getPoint(index)) > 200.0)
+                    if (computeDistanceFast(startLoc, trackContainer.track.getPoint(index)) > 140.0)
                         return -1
                     if (!indicesMoveTaken.contains(index)) return index
                     else index--
@@ -457,6 +458,8 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
                 if (firstNonTakenLeft != -1) {
                     indicesMoveTaken.add(firstNonTakenLeft)
                     waypointsSimplifiedCopies.add(WaypointSimplified(it, firstNonTakenLeft))
+                    if (debug) System.out.println("<wpt lat=\"${trackContainer.track.getPoint(firstNonTakenLeft).latitude}\"" +
+                            " lon=\"${trackContainer.track.getPoint(firstNonTakenLeft).longitude}\">")
                 } else {
                     indicesMoveTaken.add(it.rteIndex)
                     waypointsSimplifiedCopies.add(WaypointSimplified(it, it.rteIndex))
@@ -465,6 +468,15 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
 
             waypointsSimplifiedCopies.sort()
             return waypointsSimplifiedCopies
+        }
+
+        if(debug) {
+            waypointsSimplified.forEach {
+                if (it.rteAction == PointRteAction.PASS_PLACE) {
+                    System.out.println("<wpt lat=\"${trackContainer.track.getPoint(it.rteIndex).latitude}\"" +
+                            " lon=\"${trackContainer.track.getPoint(it.rteIndex).longitude}\">")
+                }
+            }
         }
 
         waypointsSimplified.sort()
