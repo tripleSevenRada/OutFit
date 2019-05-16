@@ -222,7 +222,11 @@ event_type (1-1-ENUM): start (0)
             // WAYPOINTS START
 
             val waypointsRebuilder = AttachWaypointsToTrack(trackContainer)
-            val waypointsRebuilt = waypointsRebuilder.rebuild(DEBUG_MODE)
+            val waypointsRebuilt = waypointsRebuilder.rebuild(
+                    DEBUG_MODE,
+                    trackContainer.move,
+                    trackContainer.moveDist
+            )
             if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
                 debugMessages.add("++++++++++++++++++++++AttachWaypointsToTrack")

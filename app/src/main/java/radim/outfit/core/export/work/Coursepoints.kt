@@ -5,7 +5,6 @@ import com.garmin.fit.CoursePoint
 import locus.api.objects.enums.PointRteAction
 import locus.api.objects.extra.Point
 import locus.api.objects.utils.LocationCompute.computeDistanceFast
-import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.WaypointSimplified
 import radim.outfit.core.export.work.locusapiextensions.getCoursepointEnumForced
@@ -313,7 +312,7 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
     private var tag = "AttachWaypoints"
 
     // https://drive.google.com/open?id=1PEPjcHli7wXzy4iCc9TiGRuv7SIGzL8j
-    fun rebuild(debug: Boolean): List<WaypointSimplified> {
+    fun rebuild(debug: Boolean, moveCustom: Boolean, moveDist: Double): List<WaypointSimplified> {
 
         val waypoints = trackContainer.track.waypoints.toMutableList() // IS POINT
         val indicesTaken = mutableSetOf<Int>()
@@ -407,17 +406,16 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
         }
 
         // move PASS_PLACE waypoints towards start if selected in export options
-        val selectedMock = true
-        val moveDist = 80.0
         // new list of copies
         val waypointsSimplifiedCopies = mutableListOf<WaypointSimplified>()
-        if (selectedMock) {
+        if (moveCustom) {
 
             val functions = MoveFunctions()
             val indicesMoveTaken = mutableSetOf<Int>()
 
             fun firstLeftNonTakenIndexOrThis(indexStart: Int): Int {
                 var index = indexStart
+                if(index !in trackContainer.track.points.indices) return -1
                 val startLoc = trackContainer.track.getPoint(index)
                 while (index >= 0) {
                     if (computeDistanceFast(startLoc, trackContainer.track.getPoint(index)) > 140.0)

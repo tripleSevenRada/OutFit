@@ -16,7 +16,7 @@
     <string name="btn_extra">Export options</string>
 
     <string name="bundle_label">Bundle navigation hints?</string>
-    <string name="move_label">Move navigation hints?</string>
+    <string name="move_label">Move navigation hints and custom waypoints?</string>
     <string name="in_meters">[metres]</string>
 
 

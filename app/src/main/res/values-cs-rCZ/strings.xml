@@ -11,7 +11,7 @@
     <string name="btn_extra">Možnosti exportu</string>
 
     <string name="bundle_label">Shlukovat navigační pokyny?</string>
-    <string name="move_label">Posunout navigační pokyny?</string>
+    <string name="move_label">Posunout navigační pokyny a uživatelské body?</string>
 
 
     <!-- activity_finish_gracefully.xml -->
