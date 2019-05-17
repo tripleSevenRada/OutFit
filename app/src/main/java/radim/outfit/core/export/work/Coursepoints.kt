@@ -406,20 +406,20 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
         }
 
         // move PASS_PLACE waypoints towards start if selected in export options
-        // new list of copies
-        val waypointsSimplifiedCopies = mutableListOf<WaypointSimplified>()
         if (moveCustom) {
-
+            // new list of copies
+            val waypointsSimplifiedCopies = mutableListOf<WaypointSimplified>()
             val functions = MoveFunctions()
             val indicesMoveTaken = mutableSetOf<Int>()
 
-            fun firstLeftNonTakenIndexOrThis(indexStart: Int): Int {
-                var index = indexStart
-                if(index !in trackContainer.track.points.indices) return -1
-                val startLoc = trackContainer.track.getPoint(index)
+            fun startOrFirstNonTaken(indexStart: Int): Int {
+                if (indexStart == 0 && indicesMoveTaken.contains(0)) return -1
+                if (!indicesMoveTaken.contains(indexStart)) return indexStart
+                var index = indexStart - 1
+                val startLoc = trackContainer.track.getPoint(indexStart)
                 while (index >= 0) {
-                    if (computeDistanceFast(startLoc, trackContainer.track.getPoint(index)) > 140.0)
-                        return -1
+                    val distFromStartIndex = computeDistanceFast(startLoc, trackContainer.track.getPoint(index))
+                    if (distFromStartIndex > 100.0) return -1
                     if (!indicesMoveTaken.contains(index)) return index
                     else index--
                 }
@@ -438,6 +438,15 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
                 indicesMoveTaken.add(it.rteIndex)
             }
 
+            if (debug) {
+                debugMessages.add("indicesMoveTaken.size = ${indicesMoveTaken.size}")
+                indicesMoveTaken.forEach { debugMessages.add("$it") }
+                for (i in trackContainer.track.points.indices) {
+                    val moved = startOrFirstNonTaken(i)
+                    if (moved != i) debugMessages.add("i $i, moved $moved")
+                }
+            }
+
             // move waypointsSimplifiedPassPlace
             waypointsSimplifiedPassPlace.forEach {
                 val leftRightCoef = functions.getPrePostAndCoef(
@@ -452,29 +461,28 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
                 //Log.e(tag, "orig index: ${it.rteIndex}")
                 //Log.e(tag, "desired index: $indexCloserToDesiredLocation")
 
-                val firstNonTakenLeft = firstLeftNonTakenIndexOrThis(indexCloserToDesiredLocation)
-                if (firstNonTakenLeft != -1) {
-                    indicesMoveTaken.add(firstNonTakenLeft)
-                    waypointsSimplifiedCopies.add(WaypointSimplified(it, firstNonTakenLeft))
-                    if (debug) System.out.println("<wpt lat=\"${trackContainer.track.getPoint(firstNonTakenLeft).latitude}\"" +
-                            " lon=\"${trackContainer.track.getPoint(firstNonTakenLeft).longitude}\">")
+                val startOrFirstNonTaken = startOrFirstNonTaken(indexCloserToDesiredLocation)
+                if (startOrFirstNonTaken != -1) {
+                    // do move
+                    indicesMoveTaken.add(startOrFirstNonTaken)
+                    waypointsSimplifiedCopies.add(WaypointSimplified(it, startOrFirstNonTaken))
                 } else {
+                    // no move at all
                     indicesMoveTaken.add(it.rteIndex)
                     waypointsSimplifiedCopies.add(WaypointSimplified(it, it.rteIndex))
                 }
+            }
+
+            if (debug) {
+                logWptLines(waypointsSimplifiedCopies)
             }
 
             waypointsSimplifiedCopies.sort()
             return waypointsSimplifiedCopies
         }
 
-        if(debug) {
-            waypointsSimplified.forEach {
-                if (it.rteAction == PointRteAction.PASS_PLACE) {
-                    System.out.println("<wpt lat=\"${trackContainer.track.getPoint(it.rteIndex).latitude}\"" +
-                            " lon=\"${trackContainer.track.getPoint(it.rteIndex).longitude}\">")
-                }
-            }
+        if (debug) {
+            logWptLines(waypointsSimplified)
         }
 
         waypointsSimplified.sort()
@@ -493,6 +501,15 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
         }
         with(listDistInd) { sort(); forEach { list.add(it.index) } }
         return list
+    }
+
+    private fun logWptLines(data: Iterable<WaypointSimplified>) {
+        data.forEach {
+            if (it.rteAction == PointRteAction.PASS_PLACE) {
+                System.out.println("<wpt lat=\"${trackContainer.track.getPoint(it.rteIndex).latitude}\"" +
+                        " lon=\"${trackContainer.track.getPoint(it.rteIndex).longitude}\"></wpt>")
+            }
+        }
     }
 }
 
