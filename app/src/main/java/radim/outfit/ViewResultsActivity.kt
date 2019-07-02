@@ -28,6 +28,7 @@ import android.widget.Toast
 import com.garmin.android.connectiq.ConnectIQ
 import com.garmin.android.connectiq.IQApp
 import com.garmin.android.connectiq.IQDevice
+import fi.iki.elonen.NanoHTTPD
 import kotlinx.android.synthetic.main.activity_view_results.*
 import kotlinx.android.synthetic.main.content_connectiq.*
 import org.jetbrains.anko.doAsync
@@ -45,6 +46,10 @@ import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
 import radim.outfit.core.viewmodels.ViewResultsActivityViewModel
 import java.io.File
+import java.io.IOException
+import java.io.InputStream
+import java.security.KeyStore
+import javax.net.ssl.KeyManagerFactory
 
 const val NANOHTTPD_SERVE_FROM_DIR_NAME = "nano-httpd-serve-from" // plus xml resources - paths...
 const val NANOHTTPD_PORT = 22333
@@ -249,6 +254,15 @@ class ViewResultsActivity : AppCompatActivity(),
                     filenamesExisting,
                     shallowParcel.fileNameToCoursename)
             if (DEBUG_MODE) Log.i(tag, "JSONArray, coursenames: ${server.coursenamesAsJSON()}")
+
+            //server.start()
+
+            //val keystore: KeyStore = KeyStore.getInstance(KeyStore.getDefaultType())
+            //val keystoreStream: InputStream = assets.open("keystore.bks")?: throw IOException("Unable to load keystore from classpath: " + "keystore.bks")
+            //keystore.load(keystoreStream, "jakesikheslo".toCharArray())
+            //val keyManagerFactory: KeyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
+            //keyManagerFactory.init(keystore, "banik".toCharArray());
+            //server.makeSecure(NanoHTTPD.makeSSLSocketFactory(keystore, keyManagerFactory), null)
             server.start()
 
         } catch (e: Exception) {
