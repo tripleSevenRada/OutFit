@@ -2,12 +2,18 @@ package radim.outfit.core.export.logic
 
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.widget.Toast
+import facade.SegmentsMatchAPI
 import radim.outfit.DEBUG_MODE
 import radim.outfit.ExportOptionsDataProvider
 import radim.outfit.R
 import radim.outfit.core.export.work.Encoder
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.*
 import radim.outfit.getString
+import resources.ActivityType
+import resources.LatLonPair
+import resources.MatchingResult
+import resources.MatchingScenario
 import java.io.File
 
 class ExportFunction : (File?, String?, TrackContainer?, Float, AppCompatActivity, MutableList<String>) -> Result {
@@ -37,6 +43,27 @@ class ExportFunction : (File?, String?, TrackContainer?, Float, AppCompatActivit
                 Log.i("EXPORT FUNCTION", "container.move: ${container.move}")
                 Log.i("EXPORT FUNCTION", "container.moveDist: ${container.moveDist}")
                 Log.i("EXPORT FUNCTION", "container.bundleDist: ${container.bundleDist}")
+
+
+                //TODO
+                val locations = container.track.points
+                val latLonPairs = mutableListOf<LatLonPair>()
+                locations.forEach { l -> latLonPairs.add(LatLonPair(l.latitude, l.longitude)) }
+
+                var matchingResult: MatchingResult? = null
+                try {
+                    matchingResult = SegmentsMatchAPI().synchronousCall(
+                            latLonPairs,
+                            ActivityType.RIDE,
+                            MatchingScenario.LOOSE,
+                            "b0d77cdd6000365506e7149b77283eb064f36982"
+                    )
+                } catch(e: Exception){
+                    Log.e("EXPORT FUNCTION", e.toString())
+                }
+                var toast = "result"
+                matchingResult?.segmentsDetected?.forEach { segment -> toast += segment.name + ", " }
+                Toast.makeText(ctx,"S: " + toast,Toast.LENGTH_LONG).show()
             }
 
             // WaypointFilter

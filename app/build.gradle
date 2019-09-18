@@ -95,4 +95,5 @@ dependencies {
 
 dependencies {
     implementation 'com.android.support:support-v4:28.+'
+    implementation files('libs/SegmentsMatchAPI-debug.aar')
 }
