@@ -95,5 +95,9 @@ dependencies {
 
 dependencies {
     implementation 'com.android.support:support-v4:28.+'
-    implementation files('libs/SegmentsMatchAPI-debug.aar')
+}
+
+dependencies {
+    implementation files('libs/SegmentsMatchingAPI-debug-1.0.aar')
+    implementation 'com.squareup.retrofit2:retrofit:2.6.1'
 }

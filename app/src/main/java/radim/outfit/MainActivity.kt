@@ -33,6 +33,7 @@ import radim.outfit.core.share.work.*
 import radim.outfit.core.timer.SimpleTimer
 import radim.outfit.core.timer.Timer
 import radim.outfit.core.viewmodels.MainActivityViewModel
+import resources.MatchingResult
 import java.lang.RuntimeException
 
 const val LOG_TAG_MAIN = "MAIN"

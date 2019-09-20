@@ -4,7 +4,6 @@ import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
 import android.content.Intent
-import android.support.v4.content.res.TypedArrayUtils.getString
 import android.util.Log
 import locus.api.android.utils.LocusUtils
 import locus.api.android.utils.exceptions.RequiredVersionMissingException
@@ -15,9 +14,12 @@ import radim.outfit.DEBUG_MODE
 import radim.outfit.LOG_TAG_MAIN
 import radim.outfit.R
 import radim.outfit.core.export.work.locusapiextensions.hasUndefinedWaypoints
-import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.Kruskal
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.WaypointsRelatedTrackPreprocessing
+import resources.MatchingResult
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivityViewModel (application: Application): AndroidViewModel (application){
 
@@ -42,8 +44,11 @@ class MainActivityViewModel (application: Application): AndroidViewModel (applic
 
     fun buildTrackContainer(intent: Intent, debugMessages: MutableList<String>) {
         preprocessInProgress = true
-
         var failMessage = ""
+
+
+
+
         doAsync {
             var trackContainerBuilt: TrackContainer? = null
             try {
