@@ -5,6 +5,8 @@ import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
 import android.content.Intent
 import android.util.Log
+import android.widget.Toast
+import facade.SegmentsMatchAPI
 import locus.api.android.utils.LocusUtils
 import locus.api.android.utils.exceptions.RequiredVersionMissingException
 import locus.api.objects.extra.Point
@@ -16,7 +18,10 @@ import radim.outfit.R
 import radim.outfit.core.export.work.locusapiextensions.hasUndefinedWaypoints
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.WaypointsRelatedTrackPreprocessing
+import resources.ActivityType
+import resources.LatLonPair
 import resources.MatchingResult
+import resources.MatchingScenario
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -46,7 +51,22 @@ class MainActivityViewModel (application: Application): AndroidViewModel (applic
         preprocessInProgress = true
         var failMessage = ""
 
+        // TODO
+        val callbacks = object : Callback<MatchingResult>{
+            override fun onFailure(call: Call<MatchingResult>, t: Throwable) {
+                Toast.makeText(app, "Segments: onFailure -> ${t.localizedMessage}",Toast.LENGTH_LONG).show()
+            }
+            override fun onResponse(call: Call<MatchingResult>, response: Response<MatchingResult>) {
+                Toast.makeText(app, "Segments: onResponse -> ${response.body()?.segmentsDetected?.size}",Toast.LENGTH_LONG).show()
+            }
+        }
 
+        // TODO async
+        val tokenValid = "b0d77cdd6000365506e7149b77283eb064f36982"
+        val trackUp = LocusUtils.handleIntentTrackTools(app, intent)
+        val locations = mutableListOf<LatLonPair>()
+        trackUp.points.forEach { locations.add(LatLonPair(it.latitude, it.longitude)) }
+        SegmentsMatchAPI().asynchronousCall(locations, ActivityType.RIDE, MatchingScenario.LOOSE, tokenValid, callbacks)
 
 
         doAsync {
