@@ -92,3 +92,10 @@ dependencies {
 dependencies {
     implementation 'com.android.support:support-v4:28.+'
 }
+
+dependencies {
+    implementation files('libs/SegmentsMatchingAPI-debug-1.0.aar')
+    // TODO https://stackoverflow.com/questions/25698160/can-an-aar-include-transitive-dependencies
+    implementation 'com.squareup.retrofit2:retrofit:2.6.1'
+    implementation 'com.squareup.retrofit2:converter-gson:2.6.1'
+}
