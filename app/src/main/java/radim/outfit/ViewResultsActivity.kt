@@ -108,6 +108,7 @@ class ViewResultsActivity : AppCompatActivity(),
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
+        setIntent(intent)
         Log.i(tag, "onNewIntent")
         if (intent != null && intent.hasExtra(EXTRA_MESSAGE_VIEW_RESULTS)) {
             parcel = intent.getParcelableExtra(EXTRA_MESSAGE_VIEW_RESULTS)
@@ -277,9 +278,9 @@ class ViewResultsActivity : AppCompatActivity(),
     //
     //
     //
-    override fun onStart() {
-        super.onStart()
-        Log.e(tag, "onStart")
+    override fun onResume() {
+        super.onResume()
+        Log.e(tag, "onResume")
 
         // fire and forget writing stats to ui
         fun doStats(shallowParcel: ShallowParcel) {
@@ -414,9 +415,9 @@ class ViewResultsActivity : AppCompatActivity(),
         onSaveCalled = true
     }
 
-    override fun onStop() {
-        super.onStop()
-        Log.i(tag, "onStop")
+    override fun onPause() {
+        super.onPause()
+        Log.i(tag, "onPause")
         stopConnectIQServices()
     }
 
