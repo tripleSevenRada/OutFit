@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
+import facade.SegmentsMatchAPI
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.core.export.work.getFilename
@@ -12,6 +13,13 @@ import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.Trac
 import radim.outfit.core.export.work.locusapiextensions.isTimestamped
 import radim.outfit.core.viewmodels.MainActivityViewModel
 import radim.outfit.getString
+import resources.ActivityType
+import resources.LatLonPair
+import resources.MatchingResult
+import resources.MatchingScenario
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.io.File
 
 interface PermInfoProvider {
@@ -85,19 +93,49 @@ class ExportListener(
         val finalExportPojo = getFinalExportPOJO()
         onStartCallback()
         viewModel.exportInProgress = true
-        doAsync {
-            val result = execute(finalExportPojo.file,
-                    finalExportPojo.filename,
-                    finalExportPojo.trackContainer,
-                    speedMperS,
-                    ctx,
-                    debugMessages
-            )
-            uiThread {
-                viewModel.exportInProgress = false
-                onFinishCallback(result, viewModel)
+
+        fun carryOnAsync() {
+            doAsync {
+                val result = execute(finalExportPojo.file,
+                        finalExportPojo.filename,
+                        finalExportPojo.trackContainer,
+                        speedMperS,
+                        ctx,
+                        debugMessages
+                )
+                uiThread {
+                    viewModel.exportInProgress = false
+                    onFinishCallback(result, viewModel)
+                }
             }
         }
+
+        val callForSegments = true
+        // TODO
+        // maybe retrofit async call to SegmentsMatchAPI
+        // both onResponse and onFailure callbacks -> carry on
+
+        val callbacks = object : Callback<MatchingResult> {
+            override fun onFailure(call: Call<MatchingResult>, t: Throwable) {
+                Toast.makeText(ctx, "Segments: onFailure -> ${t.localizedMessage}",Toast.LENGTH_LONG).show()
+                carryOnAsync()
+            }
+            override fun onResponse(call: Call<MatchingResult>, response: Response<MatchingResult>) {
+                Toast.makeText(ctx, "Segments: onResponse -> ${response.body()?.segmentsDetected?.size}",Toast.LENGTH_LONG).show()
+                carryOnAsync()
+            }
+        }
+
+        if(callForSegments) {
+            val tokenValid = "b0d77cdd6000365506e7149b77283eb064f36982"
+            val locations = mutableListOf<LatLonPair>()
+            doAsync {
+                finalExportPojo.trackContainer?.track?.points?.forEach { locations.add(LatLonPair(it.latitude, it.longitude)) }
+                uiThread {
+                    SegmentsMatchAPI().asynchronousCall(locations, ActivityType.RIDE, MatchingScenario.LOOSE, tokenValid, callbacks)
+                }
+            }
+        } else carryOnAsync()
     }
 
     private fun getFinalExportPOJO(): ExportPOJO {
