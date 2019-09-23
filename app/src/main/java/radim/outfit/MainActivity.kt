@@ -296,7 +296,7 @@ class MainActivity : AppCompatActivity(),
             val btAdapter = btManager.adapter
             val state = btAdapter?.state
             if (state == BluetoothAdapter.STATE_OFF) {
-                Log.w("onCreateMain", "onCreate BT STATE OFF")
+                Log.w("onResumeMain", "onResume BT STATE OFF")
                 val checkboxInShare = sharedPreferences.getBoolean((getString("checkbox_cciq")), true)
                 val viewModel =
                         ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
