@@ -8,6 +8,7 @@ import android.widget.Toast
 import facade.SegmentsMatchAPI
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.getFilename
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.isTimestamped
@@ -110,24 +111,26 @@ class ExportListener(
             }
         }
 
-        val callForSegments = true
         // TODO
+        val callForSegments = true
+        val tokenValid = "b0d77cdd6000365506e7149b77283eb064f36982"
         // maybe retrofit async call to SegmentsMatchAPI
         // both onResponse and onFailure callbacks -> carry on
-
         val callbacks = object : Callback<MatchingResult> {
             override fun onFailure(call: Call<MatchingResult>, t: Throwable) {
-                Toast.makeText(ctx, "Segments: onFailure -> ${t.localizedMessage}",Toast.LENGTH_LONG).show()
+                Log.w(tag, "Segments: onFailure -> ${t.localizedMessage}")
                 carryOnAsync()
             }
+
             override fun onResponse(call: Call<MatchingResult>, response: Response<MatchingResult>) {
-                Toast.makeText(ctx, "Segments: onResponse -> ${response.body()?.segmentsDetected?.size}",Toast.LENGTH_LONG).show()
+                if(DEBUG_MODE) response.body()?.segmentsDetected?.forEach {
+                     Log.i(tag, "Segments: onResponse -> ${it?.toString()}")
+                }
                 carryOnAsync()
             }
         }
 
-        if(callForSegments) {
-            val tokenValid = "b0d77cdd6000365506e7149b77283eb064f36982"
+        if (callForSegments) {
             val locations = mutableListOf<LatLonPair>()
             doAsync {
                 finalExportPojo.trackContainer?.track?.points?.forEach { locations.add(LatLonPair(it.latitude, it.longitude)) }
