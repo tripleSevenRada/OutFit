@@ -26,13 +26,13 @@ class ExportPOJOTest {
         val appContext = InstrumentationRegistry.getTargetContext()
         assertEquals("radim.outfit", appContext.packageName)
 
-        val pojo1 = ExportPOJO(File("/"),"filename.fit", TrackContainer(Track(), mutableMapOf()))
-        val pojo2 = ExportPOJO(null, null, null)
+        val pojo1 = ExportPOJO(File("/"),"filename.fit", TrackContainer(Track(), mutableMapOf()), null)
+        val pojo2 = ExportPOJO(null, null, null, null)
 
         val pojo3 = mergeExportPOJOS(pojo1, pojo2)
         assertEquals(pojo1, pojo3)
 
-        val pojo4 = ExportPOJO(File("/doc"),"filename.fit", TrackContainer(Track(), mutableMapOf()))
+        val pojo4 = ExportPOJO(File("/doc"),"filename.fit", TrackContainer(Track(), mutableMapOf()), null)
         val pojo5 = mergeExportPOJOS(pojo1, pojo4)
         assertEquals(pojo4, pojo5)
     }

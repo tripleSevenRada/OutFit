@@ -12,6 +12,7 @@ import radim.outfit.DEBUG_MODE
 import radim.outfit.core.export.work.getFilename
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.TrackContainer
 import radim.outfit.core.export.work.locusapiextensions.isTimestamped
+import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.WaypointsRelatedTrackPreprocessing
 import radim.outfit.core.viewmodels.MainActivityViewModel
 import radim.outfit.getString
 import resources.ActivityType
@@ -101,17 +102,48 @@ class ExportListener(
         viewModel.exportInProgress = true
 
         fun carryOnAsync(matchingResult: MatchingResult = MatchingResult()) {
+            if (detectSummits)
+                toaster.toast(ctx.getString("detecting_summits"), Toast.LENGTH_SHORT)
             doAsync {
 
                 //TODO
-                if(detectSummits){
-                    toaster.toast(ctx.getString("detecting_summits"), Toast.LENGTH_SHORT)
-                    Thread.sleep(5000)
+                if (detectSummits) {
+                    Thread.sleep(2000)
                 }
 
-                val result = execute(finalExportPojo.file,
-                        finalExportPojo.filename,
-                        finalExportPojo.trackContainer,
+                // at this moment, summits / valleys AND
+                // segments matchingResult are available.
+
+                // unfortunately, if there are new segments in matchingResult
+                // or new elevationPoints
+                // trackContainer needs to be rebuilt from scratch.
+
+                val rebuildNeeded = true
+                val exportPOJO = if (rebuildNeeded && finalExportPojo.trackContainer != null) {
+                    if (DEBUG_MODE) Log.i(tag, "WaypointsRelatedTrackPreprocessing - started in export listener")
+                    finalExportPojo.trackContainer.track.points = finalExportPojo.originalPoints
+                    val preprocessing = WaypointsRelatedTrackPreprocessing(
+                            finalExportPojo.trackContainer.track,
+                            debugMessages
+                    )
+                    val rebuiltTrackContainer = preprocessing.preprocess()
+                    if (DEBUG_MODE) Log.i(tag, "WaypointsRelatedTrackPreprocessing - finished in export listener")
+                    mergeExportPOJOS(
+                            finalExportPojo,
+                            ExportPOJO(
+                                    finalExportPojo.file,
+                                    finalExportPojo.filename,
+                                    rebuiltTrackContainer,
+                                    finalExportPojo.originalPoints)
+                    )
+                } else {
+                    finalExportPojo
+                }
+
+                val result = execute(
+                        exportPOJO.file,
+                        exportPOJO.filename,
+                        exportPOJO.trackContainer,
                         speedMperS,
                         ctx,
                         debugMessages
@@ -123,9 +155,9 @@ class ExportListener(
             }
         }
 
-        if(callForSegments) {
+        if (callForSegments) {
             toaster.toast(ctx.getString("fetching_segments"), Toast.LENGTH_SHORT)
-            if(DEBUG_MODE) debugMessages.add ("CALL_FOR_SEGMENTS")
+            if (DEBUG_MODE) debugMessages.add("CALL_FOR_SEGMENTS")
         }
         // maybe retrofit async call to SegmentsMatchAPI
         // both onResponse and onFailure callbacks -> carry on
@@ -133,17 +165,17 @@ class ExportListener(
             override fun onFailure(call: Call<MatchingResult>, t: Throwable) {
                 val message = "Segments: onFailure -> ${t.localizedMessage}"
                 Log.w(tag, message)
-                if(DEBUG_MODE) debugMessages.add(message)
+                if (DEBUG_MODE) debugMessages.add(message)
                 carryOnAsync()
             }
 
             override fun onResponse(call: Call<MatchingResult>, response: Response<MatchingResult>) {
-                if(DEBUG_MODE) response.body()?.segmentsDetected?.forEach {
+                if (DEBUG_MODE) response.body()?.segmentsDetected?.forEach {
                     val message = "Segments: onResponse -> ${it?.toString()}"
                     Log.i(tag, message)
                     debugMessages.add(message)
                 }
-                carryOnAsync(response.body()?: MatchingResult())
+                carryOnAsync(response.body() ?: MatchingResult())
             }
         }
 
@@ -164,12 +196,14 @@ class ExportListener(
         return mergeExportPOJOS(exportPOJO,
                 ExportPOJO(exportPOJO.file,
                         mostRecentFilenameNotEmptyAsserted,
-                        exportPOJO.trackContainer))
+                        exportPOJO.trackContainer,
+                        exportPOJO.originalPoints))
     }
 
     private fun dataIsValid(): Boolean {
         val trackContainer = exportPOJO.trackContainer
         trackContainer ?: return false
+        exportPOJO.originalPoints ?: return false
         val dir = exportPOJO.file
         if (dir == null) {
             callBackResultError("9 - trackPOJO.file = null")

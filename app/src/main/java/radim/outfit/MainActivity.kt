@@ -215,7 +215,7 @@ class MainActivity : AppCompatActivity(),
         debugMessages.add("Debug:")
         exportListener = ExportListener(
                 ExportFunction(),
-                ExportPOJO(null, null, null),
+                ExportPOJO(null, null, null, null),
                 ::exportListenerCallback,
                 ::disableExecutive,
                 ::showSpeedPickerDialog,
@@ -335,6 +335,7 @@ class MainActivity : AppCompatActivity(),
         val filename = getFilename(trackContainer.track.name, getString("default_filename"))
         content_pathETFilename?.setText(filename)
         setTrack(trackContainer, exportListener)
+        setOriginalPoints(trackContainer, exportListener)
         setFilename(filename, exportListener)
     }
 
