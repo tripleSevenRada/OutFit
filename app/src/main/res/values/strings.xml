@@ -16,7 +16,7 @@
     <string name="btn_extra">Export options</string>
 
     <string name="bundle_label">Bundle navigation hints?</string>
-    <string name="move_label">Move all waypoints?</string>
+    <string name="move_label">Move navigation hints?</string>
     <string name="in_meters">[metres]</string>
 
 
@@ -84,6 +84,8 @@
     <string name="nmb_coursepoints">Number of coursepoints:</string>
     <string name="found_devices_label">Found devices:</string>
     <string name="found_companion">. IN FIT, the companion app: </string>
+    <string name="fetching_segments">Fetching Strava segments.</string>
+    <string name="detecting_summits">Detecting summits and valleys.</string>
 
     <string name="est_download_time">Estimated CIQ download time (over BLE):</string>
 

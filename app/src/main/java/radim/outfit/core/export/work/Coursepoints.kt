@@ -405,7 +405,7 @@ class AttachWaypointsToTrack(val trackContainer: TrackContainer) {
             waypointsSimplified.forEach { debugMessages.add(it.toString()); Log.i(tag, "Wpt Simplified: $it") }
         }
 
-        // move PASS_PLACE waypoints towards start if selected in export options
+        // move PASS_PLACE waypoints towards start
         if (moveCustom) {
             // new list of copies
             val waypointsSimplifiedCopies = mutableListOf<WaypointSimplified>()

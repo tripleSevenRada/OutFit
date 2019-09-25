@@ -90,13 +90,25 @@ class ExportListener(
     fun getOkAction(): (Float) -> Unit = ::executeAsync
 
     private fun executeAsync(speedMperS: Float) {
+        // TODO
+        val detectSummits = true
+        val callForSegments = true
+        val tokenValid = "b0d77cdd6000365506e7149b77283eb064f36982"
+
         if (!dataIsValid()) return
         val finalExportPojo = getFinalExportPOJO()
         onStartCallback()
         viewModel.exportInProgress = true
 
-        fun carryOnAsync() {
+        fun carryOnAsync(matchingResult: MatchingResult = MatchingResult()) {
             doAsync {
+
+                //TODO
+                if(detectSummits){
+                    toaster.toast(ctx.getString("detecting_summits"), Toast.LENGTH_SHORT)
+                    Thread.sleep(5000)
+                }
+
                 val result = execute(finalExportPojo.file,
                         finalExportPojo.filename,
                         finalExportPojo.trackContainer,
@@ -111,22 +123,27 @@ class ExportListener(
             }
         }
 
-        // TODO
-        val callForSegments = true
-        val tokenValid = "b0d77cdd6000365506e7149b77283eb064f36982"
+        if(callForSegments) {
+            toaster.toast(ctx.getString("fetching_segments"), Toast.LENGTH_SHORT)
+            if(DEBUG_MODE) debugMessages.add ("CALL_FOR_SEGMENTS")
+        }
         // maybe retrofit async call to SegmentsMatchAPI
         // both onResponse and onFailure callbacks -> carry on
         val callbacks = object : Callback<MatchingResult> {
             override fun onFailure(call: Call<MatchingResult>, t: Throwable) {
-                Log.w(tag, "Segments: onFailure -> ${t.localizedMessage}")
+                val message = "Segments: onFailure -> ${t.localizedMessage}"
+                Log.w(tag, message)
+                if(DEBUG_MODE) debugMessages.add(message)
                 carryOnAsync()
             }
 
             override fun onResponse(call: Call<MatchingResult>, response: Response<MatchingResult>) {
                 if(DEBUG_MODE) response.body()?.segmentsDetected?.forEach {
-                     Log.i(tag, "Segments: onResponse -> ${it?.toString()}")
+                    val message = "Segments: onResponse -> ${it?.toString()}"
+                    Log.i(tag, message)
+                    debugMessages.add(message)
                 }
-                carryOnAsync()
+                carryOnAsync(response.body()?: MatchingResult())
             }
         }
 

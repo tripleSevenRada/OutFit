@@ -11,7 +11,7 @@
     <string name="btn_extra">Možnosti exportu</string>
 
     <string name="bundle_label">Shlukovat navigační pokyny?</string>
-    <string name="move_label">Posunout všechny značky (Waypointy)?</string>
+    <string name="move_label">Posunout navigační pokyny?</string>
 
 
     <!-- activity_finish_gracefully.xml -->
@@ -62,6 +62,8 @@
     <string name="nmb_coursepoints">Počet značek na trase (Coursepointy):</string>
     <string name="found_devices_label">Nalezená zařízení:</string>
     <string name="found_companion">. IN FIT, Connect IQ aplikace:</string>
+    <string name="fetching_segments">Volání pro Strava segmenty.</string>
+    <string name="detecting_summits">Vyhledávání vrcholů a údolí.</string>
 
     <string name="how_to_use_infit">"Prosím podrž OUT FIT na popředí a spusť IN FIT na"</string>
     <string name="waiting_for_a_device_connected">Čeká se na nějaké CIQ zařízení.</string>

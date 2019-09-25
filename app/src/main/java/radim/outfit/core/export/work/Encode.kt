@@ -222,9 +222,12 @@ event_type (1-1-ENUM): start (0)
             // WAYPOINTS START
 
             val waypointsRebuilder = AttachWaypointsToTrack(trackContainer)
+
+            val moveCustom = false
+
             val waypointsRebuilt = waypointsRebuilder.rebuild(
                     DEBUG_MODE,
-                    trackContainer.move,
+                    moveCustom,
                     trackContainer.moveDist
             )
             if (DEBUG_MODE) {
