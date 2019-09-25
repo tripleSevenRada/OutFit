@@ -6,6 +6,9 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import facade.SegmentsMatchAPI
+import locus.api.objects.enums.PointRteAction
+import locus.api.objects.extra.Location
+import locus.api.objects.extra.Point
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import radim.outfit.DEBUG_MODE
@@ -15,10 +18,7 @@ import radim.outfit.core.export.work.locusapiextensions.isTimestamped
 import radim.outfit.core.export.work.locusapiextensions.track_preprocessing.WaypointsRelatedTrackPreprocessing
 import radim.outfit.core.viewmodels.MainActivityViewModel
 import radim.outfit.getString
-import resources.ActivityType
-import resources.LatLonPair
-import resources.MatchingResult
-import resources.MatchingScenario
+import resources.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -118,8 +118,21 @@ class ExportListener(
                 // or new elevationPoints
                 // trackContainer needs to be rebuilt from scratch.
 
-                val rebuildNeeded = true
-                val exportPOJO = if (rebuildNeeded && finalExportPojo.trackContainer != null) {
+                matchingResult.segmentsDetected.forEach {
+                    if(it != null && finalExportPojo.trackContainer?.track != null) {
+                        val pointsSegment: Pair<Point, Point> = getPointsSegment(it)
+                        with(finalExportPojo.trackContainer.track.waypoints) {
+                            add(pointsSegment.first)
+                            add(pointsSegment.second)
+                        }
+                    }
+                }
+
+                // TODO think of summits too
+                val rebuildNeeded = matchingResult.segmentsDetected.size > 0
+
+                val exportPOJO = if (rebuildNeeded && finalExportPojo.trackContainer != null &&
+                        finalExportPojo.originalPoints != null) {
                     if (DEBUG_MODE) Log.i(tag, "WaypointsRelatedTrackPreprocessing - started in export listener")
                     finalExportPojo.trackContainer.track.points = finalExportPojo.originalPoints
                     val preprocessing = WaypointsRelatedTrackPreprocessing(
@@ -188,6 +201,24 @@ class ExportListener(
                 }
             }
         } else carryOnAsync()
+    }
+
+    private fun getPointsSegment(segmentDetected: SegmentDetected): Pair<Point, Point>{
+        val start = Point()
+        with(start) {
+            location = Location(segmentDetected.latitudeStart, segmentDetected.longitudeStart)
+            name = segmentDetected.name + "-" + ctx.getString("start")
+            parameterRteAction = PointRteAction.UNDEFINED
+            parameterStyleName = "segment_start"
+        }
+        val finish = Point()
+        with(finish) {
+            location = Location(segmentDetected.latitudeFinish, segmentDetected.longitudeFinish)
+            name = segmentDetected.name + "-" + ctx.getString("finish")
+            parameterRteAction = PointRteAction.UNDEFINED
+            parameterStyleName = "segment_finish"
+        }
+        return Pair(start, finish)
     }
 
     private fun getFinalExportPOJO(): ExportPOJO {

@@ -61,6 +61,9 @@
     <string name="no">NO</string>
     <string name="later">Later</string>
 
+    <string name="start">Start</string>
+    <string name="finish">Finish</string>
+
     <!-- shared preferences -->
     <string name="main_activity_preferences" translatable="false">radim.outfit.MainActivity</string>
     <string name="last_seen_speed_value_m_s" translatable="false">value_for_duration_picker</string>

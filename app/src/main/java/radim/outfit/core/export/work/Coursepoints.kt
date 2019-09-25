@@ -232,7 +232,10 @@ val styleNameORIconStyleIconUrlToCoursePoints: Map<String, CoursePoint> = mapOf(
         "Medical Facility.png" to CoursePoint.FIRST_AID,
 
         "transport-accident.png" to CoursePoint.DANGER,
-        "Skull and Crossbones.png" to CoursePoint.DANGER
+        "Skull and Crossbones.png" to CoursePoint.DANGER,
+
+        "segment_start" to CoursePoint.SEGMENT_START,
+        "segment_finish" to CoursePoint.SEGMENT_END
 )
 
 val coursePointsDisplayOrder: List<CoursePoint> = listOf(

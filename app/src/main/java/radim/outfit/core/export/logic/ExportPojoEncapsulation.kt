@@ -47,13 +47,15 @@ fun setFilename(filename: String, listener: ExportListener){
 fun setOriginalPoints(trackContainer: TrackContainer?, listener: ExportListener){
     val originalPoints = mutableListOf<Location>()
     trackContainer?.track?.points?.forEach {
-        val newLocation = Location()
-        newLocation.setLatitude(it.latitude)
-        newLocation.setLongitude(it.longitude)
-        newLocation.altitude = it.altitude
-        newLocation.speed = it.speed
-        newLocation.time = it.time
-        originalPoints.add(newLocation)
+        if(it != null) {
+            val newLocation = Location()
+            newLocation.setLatitude(it.latitude)
+            newLocation.setLongitude(it.longitude)
+            newLocation.altitude = it.altitude
+            newLocation.speed = it.speed
+            newLocation.time = it.time
+            originalPoints.add(newLocation)
+        }
     }
     listener.exportPOJO = mergeExportPOJOS(listener.exportPOJO, ExportPOJO(null, null, null, originalPoints))
 }

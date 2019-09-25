@@ -46,6 +46,9 @@
     <string name="yes">ANO</string>
     <string name="no">NE</string>
 
+    <string name="start">Start</string>
+    <string name="finish">Cíl</string>
+
     <!-- shared preferences -->
 
     <!-- public messages  - Encode-->
