@@ -261,6 +261,7 @@ event_type (1-1-ENUM): start (0)
                     throw RuntimeException("assertWaypointsAreLinkedToTrackpointsOneToOneIncreasing")
             }
 
+            val segmentsDetectedNames = mutableListOf<String>()
             var indexCP = 0
             reducedToLimit.forEach {
                 val coursePointMesg = getCoursepointMesg(
@@ -273,12 +274,17 @@ event_type (1-1-ENUM): start (0)
                     encoder.write(coursePointMesg)
                     countCP++
                     countFrequencies(coursePointMesg.type, mapCoursePointsTypesToFrequencies)
+                    if (coursePointMesg.type == CoursePoint.SEGMENT_START) {
+                        segmentsDetectedNames.add(it.name)
+                    }
                     if (DEBUG_MODE) debugMessages.addAll(Dumps.coursePointMessageDumpLine(coursePointMesg))
                 }
-                indexCP ++
+                indexCP++
             }
 
             val indexToInsertTrackpointsInfo = publicMessages.size
+
+            // report coursepoints
             publicMessages.add(spString("${ctx.getString("nmb_coursepoints")} ${reducedToLimit.size}"))
 
             coursePointsDisplayOrder.forEach {
@@ -286,8 +292,21 @@ event_type (1-1-ENUM): start (0)
                     publicMessages.add(spString("$it : ${mapCoursePointsTypesToFrequencies[it]}"))
                 }
             }
+
+            // report elevation
             publicMessages.add(if (trackHasAltitude) spString(ctx.getString("course_has_elevation_yes"))
             else spString(ctx.getString("course_has_elevation_no")))
+
+            // report segments detected
+            if (segmentsDetectedNames.isNotEmpty()) {
+                publicMessages.add(spString(ctx.getString("strava_segments")))
+                val postfix = "-" + ctx.getString("start")
+                segmentsDetectedNames.forEach {
+                    val reportName = if (it.endsWith(postfix))
+                        it.slice(0 until (it.length - postfix.length)) else it
+                    publicMessages.add(spString(reportName))
+                }
+            }
 
             if (DEBUG_MODE) {
                 debugMessages.addAll(Dumps.banner())
@@ -323,7 +342,7 @@ event_type (1-1-ENUM): start (0)
 
             // sanity check
             if (DEBUG_MODE && (index != distancesNonNullPoints.size ||
-                    (!trackIsFullyTimestamped && index != timestampsNonNullPoints.size))) {
+                            (!trackIsFullyTimestamped && index != timestampsNonNullPoints.size))) {
                 errorMessages.add("Sizes mismatch: Encode")
                 return Result.Fail(debugMessages, errorMessages, dir, filename)
             }
@@ -378,7 +397,7 @@ event_type (1-1-ENUM): stop_disable_all (9)
             map[word] = 1
         else {
             var count = map[word]
-            count?.let{ count++; map[word] = count }
+            count?.let { count++; map[word] = count }
         }
     }
 }

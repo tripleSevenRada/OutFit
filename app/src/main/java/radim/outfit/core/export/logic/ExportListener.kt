@@ -204,19 +204,22 @@ class ExportListener(
     }
 
     private fun getPointsSegment(segmentDetected: SegmentDetected): Pair<Point, Point>{
+        fun decorate(namePostfix: String, psn: String, point: Point){
+            with(point){
+                name = segmentDetected.name + "-" + ctx.getString(namePostfix)
+                parameterRteAction = PointRteAction.UNDEFINED
+                parameterStyleName = psn
+            }
+        }
         val start = Point()
         with(start) {
             location = Location(segmentDetected.latitudeStart, segmentDetected.longitudeStart)
-            name = segmentDetected.name + "-" + ctx.getString("start")
-            parameterRteAction = PointRteAction.UNDEFINED
-            parameterStyleName = "segment_start"
+            decorate("start","segment_start", this )
         }
         val finish = Point()
         with(finish) {
             location = Location(segmentDetected.latitudeFinish, segmentDetected.longitudeFinish)
-            name = segmentDetected.name + "-" + ctx.getString("finish")
-            parameterRteAction = PointRteAction.UNDEFINED
-            parameterStyleName = "segment_finish"
+            decorate("finish","segment_finish", this )
         }
         return Pair(start, finish)
     }

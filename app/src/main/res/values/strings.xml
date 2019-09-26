@@ -64,6 +64,8 @@
     <string name="start">Start</string>
     <string name="finish">Finish</string>
 
+    <string name="strava_segments">Strava segments:</string>
+
     <!-- shared preferences -->
     <string name="main_activity_preferences" translatable="false">radim.outfit.MainActivity</string>
     <string name="last_seen_speed_value_m_s" translatable="false">value_for_duration_picker</string>

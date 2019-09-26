@@ -49,6 +49,9 @@
     <string name="start">Start</string>
     <string name="finish">Cíl</string>
 
+    <string name="strava_segments">Strava segmenty:</string>
+
+
     <!-- shared preferences -->
 
     <!-- public messages  - Encode-->
