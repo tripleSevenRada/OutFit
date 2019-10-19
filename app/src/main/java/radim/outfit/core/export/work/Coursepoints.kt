@@ -205,6 +205,8 @@ val routePointActionsToCoursePoints: Map<PointRteAction, CoursePoint> = mapOf(
 val styleNameORIconStyleIconUrlToCoursePoints: Map<String, CoursePoint> = mapOf(
         "Summit.png" to CoursePoint.SUMMIT,
         "Dropoff.png" to CoursePoint.VALLEY,
+        "Summit" to CoursePoint.SUMMIT,
+        "Dropoff" to CoursePoint.VALLEY,
 
         "tourism-drinkingwater.png" to CoursePoint.WATER,
         "restaurant-teahouse.png" to CoursePoint.WATER,
